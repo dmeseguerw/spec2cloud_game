@@ -6,7 +6,7 @@ model: Claude Opus 4.6 (copilot)
 handoffs:
   - label: Create technical tasks for implementation
     agent: dev
-    prompt: /plan.prompt.md
+    prompt: /plan
     send: false
   - label: Request ADRs
     agent: architect

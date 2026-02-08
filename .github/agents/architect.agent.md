@@ -6,11 +6,11 @@ model: Claude Opus 4.6 (copilot)
 handoffs:
   - label: Create ADR (/adr)
     agent: architect
-    prompt: /adr.prompt.md
+    prompt: /adr
     send: false
   - label: Generate AGENTS.md (/generate-agents)
     agent: architect
-    prompt: /generate-agents.prompt.md
+    prompt: /generate-agents
     send: false
   - label: Review with Dev Lead
     agent: devlead

@@ -6,7 +6,7 @@ model: Claude Opus 4.6 (copilot)
 handoffs:
   - label: Create technical tasks for implementation
     agent: dev
-    prompt: /plan.prompt.md
+    prompt: /plan
   - label: Implement Code for technical tasks (/implement)
     agent: dev
     prompt: /implement

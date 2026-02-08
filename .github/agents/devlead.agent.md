@@ -14,7 +14,7 @@ handoffs:
     send: false
   - label: Create technical tasks for implementation
     agent: dev
-    prompt: /plan.prompt.md
+    prompt: /plan
     send: false
    
 ---
