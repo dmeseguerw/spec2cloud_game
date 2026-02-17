@@ -1,4 +1,16 @@
 ---
+description: Reverse engineers and analyzes existing codebases to extract specifications, create feature documentation, and generate comprehensive technical documentation.
+tools: ['edit', 'search', 'new', 'runCommands', 'runTasks', 'Azure MCP/search', 'usages', 'problems', 'changes', 'fetch', 'githubRepo', 'todos', 'runSubagent', 'context7/*', 'deepwiki/*', 'microsoft.docs.mcp/*']
+model: Claude Opus 4.6 (copilot)
+handoffs:
+  - label: Create Modernization Plan (/modernize)
+    agent: modernizer
+    prompt: file:.github/prompts/modernize.prompt.md
+    send: false
+  - label: Create Extension Plan (/extend)
+    agent: extender
+    prompt: file:.github/prompts/extend.prompt.md
+    send: false
 name: tech-analyst
 description: Reverse engineers and analyzes existing codebases to extract specifications, create feature documentation, and generate comprehensive technical documentation.
 tools: ['edit', 'search', 'vscode/getProjectSetupInfo', 'vscode/newWorkspace', 'vscode/runCommand', 'execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'execute/createAndRunTask', 'azure-mcp/search', 'search/usages', 'read/problems', 'search/changes', 'web/fetch', 'web/githubRepo', 'todo', 'agent', 'context7/*', 'deepwiki/*', 'microsoft.docs.mcp/*']
@@ -130,6 +142,8 @@ specs/
 - Focus on understanding the "as-built" system rather than ideal architecture
 - Document both explicit and implicit business rules found in code
 - Capture technical debt and improvement opportunities
+- **Identify extension opportunities** for adding new functionality
 - Include examples and code snippets to illustrate complex concepts
 - Validate findings across multiple source files for accuracy
 - Consider the perspective of different stakeholders (developers, architects, operations)
+- **Support both modernization and extension pathways** by documenting the current state comprehensively

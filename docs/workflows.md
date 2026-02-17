@@ -38,30 +38,39 @@ graph TB
     style Choice fill:#fff9c4
 ```
 
-## Brownfield Workflow (Reverse: Code → Documentation)
+## Brownfield Workflow (Reverse: Code → Documentation → Evolution)
 
 ```mermaid
 graph TB
     StartBrown[("📦 Existing Codebase<br/>Undocumented or<br/>poorly documented")]
 
-    StartBrown --> RevEng["<b>/rev-eng</b><br/>📋 Reverse Engineering Agent Analyses code<br/>& documents technical tasks"]
+    StartBrown --> RevEng["<b>/rev-eng</b><br/>📋 Reverse Engineering Agent<br/>Analyzes code & documents<br/>current state + extension points"]
 
-    RevEng --> Modernize["<b>/modernize</b><br/>(Optional)<br/>💻 Modernization Agent Documents<br/>& documents modernization tasks"]
+    RevEng --> Choice{"Evolution<br/>Choice"}
 
-    Modernize --> Plan["<b>/plan</b><br/>(Optional)<br/>💻 Developer Agent Implements<br/>Modernization tasks"]
+    Choice -->|Improve Quality| Modernize["<b>/modernize</b><br/>🔧 Modernization Agent<br/>Plans technical improvements"]
 
-    Plan --> Deploy["<b>/deploy</b><br/>(Optional)<br/>☁️ Azure Agent<br/>creates IaC + deploys to Azure"]
+    Choice -->|Add Features| Extend["<b>/extend</b><br/>✨ Extension Agent<br/>Plans new capabilities"]
 
-    Deploy --> Done[("✅ Modernized(optional) and documented<br/>Application on Azure")]
+    Modernize --> Plan["<b>/plan</b><br/>💻 Developer Agent<br/>Implements changes"]
 
-    RevEng --> Done
+    Extend --> Plan
+
+    Plan --> Deploy["<b>/deploy</b><br/>☁️ Azure Agent<br/>creates IaC + deploys to Azure"]
+
+    Deploy --> Done[("✅ Evolved Application<br/>Modernized and/or Extended<br/>on Azure")]
+
+    RevEng --> DocOnly[("📚 Documentation Only<br/>Comprehensive technical docs")]
 
     style StartBrown fill:#ffe0b2
     style RevEng fill:#e8f5e9
-    style Modernize fill:#e8f5e9
+    style Choice fill:#fff9c4
+    style Modernize fill:#e3f2fd
+    style Extend fill:#f3e5f5
     style Plan fill:#e8f5e9
     style Deploy fill:#f3e5f5
     style Done fill:#e1f5ff
+    style DocOnly fill:#e1f5ff
 ```
 
 ## Greenfield Workflow Steps (Forward)
@@ -101,42 +110,80 @@ graph TB
 
 1. **`/rev-eng`** - Reverse Engineer Codebase
    - Reverse Engineering Agent analyzes existing codebase
-   - Creates technical tasks, feature requirements, and product vision documents
+   - Creates technical documentation, feature requirements, and current state analysis
+   - **NEW**: Identifies extension points, capability gaps, and integration opportunities
    - Follows strict rules to ensure accuracy and honesty about existing functionality
    - **Critical Rules**:
      - ⚠️ **NEVER modifies code** - Read-only analysis
      - ⚠️ **Documents ONLY what exists** - No fabrication
      - ⚠️ **Honest about gaps** - Notes missing tests, incomplete features
-     - Links each task to actual code files and implementations
+     - Links each finding to actual code files and implementations
+   - **Output supports two pathways**: Modernization OR Extension
 
-2. **`/modernize`** - Create Modernization Plan (Optional)
-   - Modernization Agent assesses existing codebase for modernization opportunities
+2. **`/modernize`** - Create Modernization Plan (Option A)
+   - Modernization Agent assesses existing codebase for technical improvements
    - Creates files in `specs/modernize/` with modernization analysis
    - Creates files in `specs/tasks/` with specific modernization tasks
    - Develops risk assessment and mitigation strategies
+   - **Focus**: Technical debt, security, performance, architecture improvements
    - **Critical Rules**:
      - ⚠️ **NEVER modifies code** - Read-only analysis
      - ⚠️ **Evidence-based** - Recommendations based on actual code quality
      - ⚠️ **Honest about feasibility** - Notes technical debt and potential risks
 
-3. **`/plan`** - Implement Modernization Tasks (Optional)
-   - Dev Agent reads modernization tasks from `specs/tasks/`
-   - Implements modernization tasks in the codebase
-   - Follows best practices and architectural patterns
+3. **`/extend`** - Create Extension Plan (Option B) **NEW**
+   - Extension Agent gathers requirements from the user for new features
+   - **Creates FRDs** in `specs/features/` for user-requested capabilities (same format as greenfield)
+   - Creates extension strategy in `specs/extend/` (how to integrate with existing system)
+   - Creates implementation tasks in `specs/tasks/`
+   - **Focus**: New features, API extensions, data model extensions, UI additions
+   - **Critical Rules**:
+     - ⚠️ **User defines features** - Always ask user what they want to add
+     - ⚠️ **FRDs in standard location** - New features go in `specs/features/`
+     - ⚠️ **Leverages existing patterns** - New features follow established conventions
+     - ⚠️ **Preserves stability** - Extensions must not break existing functionality
 
-4. **`/deploy`** - Azure Deployment (Optional)
-   - Azure Agent deploys the modernized application to Azure
+4. **`/plan`** - Implement Tasks (Optional)
+   - Dev Agent reads tasks from `specs/tasks/` (modernization OR extension)
+   - Implements tasks in the codebase
+   - Follows best practices and existing architectural patterns
+   - Ensures comprehensive testing of both new and existing functionality
+
+5. **`/deploy`** - Azure Deployment (Optional)
+   - Azure Agent deploys the evolved application to Azure
    - Generates updated Bicep IaC templates and CI/CD workflows
    - Uses Azure Dev CLI and MCP tools for deployment
 
 ## Why Use Brownfield Workflow?
 
+### Documentation-Only Use Cases
+
 - **Onboard new team members** - Comprehensive documentation of existing systems
 - **Legacy system understanding** - Reverse engineer undocumented codebases
 - **Pre-acquisition due diligence** - Document technical assets before purchase
-- **Migration planning** - Understand current state before modernization
 - **Audit and compliance** - Document what the system actually does
 - **Knowledge preservation** - Capture tribal knowledge before team changes
-- **Bridge to modernization** - After documenting, use greenfield workflow to add features
+
+### Modernization Use Cases (Option A: `/modernize`)
+
+- **Technical debt reduction** - Upgrade dependencies, fix code smells
+- **Security improvements** - Patch vulnerabilities, implement security patterns
+- **Performance optimization** - Fix bottlenecks, improve scalability
+- **Architecture evolution** - Refactor toward modern patterns
+- **Cloud migration** - Prepare legacy apps for cloud deployment
+
+### Extension Use Cases (Option B: `/extend`) **NEW**
+
+- **Feature additions** - Add new business capabilities to existing systems
+- **API expansion** - Add new endpoints to existing APIs
+- **Integration additions** - Connect new external services
+- **UI enhancements** - Add new pages and user interactions
+- **Workflow extensions** - Add new business processes
+
+### Combined Use Cases
+
+- **Comprehensive evolution** - First modernize, then extend (or vice versa)
+- **Iterative improvement** - Alternate between modernization and extension phases
+- **Prioritized evolution** - Address critical technical debt before adding features
 
 Back to [docs index](index.md).

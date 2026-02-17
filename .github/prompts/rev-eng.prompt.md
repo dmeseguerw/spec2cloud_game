@@ -191,12 +191,25 @@ You have successfully completed your analysis when:
 ✅ **Code quality assessed** with honest evaluation of current state
 ✅ **Everything linked to actual code** with file paths and examples
 
-## Handoff to Modernizer Agent
+## Handoff to Next Agent
 
-Once your analysis is complete:
+Once your analysis is complete, the documentation supports **two pathways**:
+
+### Pathway A: Modernization (via Modernizer Agent)
 - **Your comprehensive documentation** will enable the Modernizer Agent to create strategic modernization plans
 - **Feature documentation** will guide functionality preservation during modernization
 - **Technical assessment** will inform modernization priorities and risk management
 - **Architecture documentation** will support well-architected transformation planning
+
+### Pathway B: Extension (via Extender Agent)
+- **Architecture documentation** will help the Extender Agent understand system constraints
+- **Feature documentation** identifies existing capabilities to integrate with
+- **API documentation** shows where new endpoints can be added
+- **The user will define what new features to add** - the Extender gathers requirements from users
+
+**The user will choose which pathway to pursue based on their goals:**
+- Choose `/modernize` to improve the technical quality of the existing codebase
+- Choose `/extend` to add new features and capabilities to the existing system
+- Both pathways can be combined for comprehensive system evolution
 
 **Begin your analysis now!** Start with repository discovery and work systematically through each phase. Document everything you find, be thorough in your investigation, and honest about the current state of the codebase.
