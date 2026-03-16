@@ -6,6 +6,8 @@
  * All animations respect the REDUCED_MOTION registry setting.
  */
 
+import { REDUCED_MOTION } from '../constants/RegistryKeys.js';
+
 // Priority level constants
 export const PRIORITY = {
   LOW: 'low',
@@ -258,10 +260,10 @@ export class NotificationManager {
 
   /**
    * Check whether the reduced-motion accessibility setting is active.
-   * Reads the 'reduced_motion' key from the scene registry.
+   * Reads the REDUCED_MOTION registry key from the scene registry.
    * @returns {boolean}
    */
   _isReducedMotion() {
-    return this._scene?.registry?.get?.('reduced_motion') === true;
+    return this._scene?.registry?.get?.(REDUCED_MOTION) === true;
   }
 }

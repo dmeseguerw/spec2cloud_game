@@ -349,11 +349,24 @@ export class DaySummaryScene extends BaseScene {
   _renderLevelUp(cx, y) {
     const { currentLevel, currentPhase } = this._summary;
 
-    this.add.text(cx, y, `🎉 Level Up! Level ${currentLevel} — ${currentPhase}`, {
+    const txt = this.add.text(cx, y, `🎉 Level Up! Level ${currentLevel} — ${currentPhase}`, {
       fontFamily: 'Georgia, serif',
       fontSize:   '22px',
       color:      '#ffd700',
     }).setOrigin(0.5).setDepth(3);
+
+    // Celebration scale-pop when tweens are available and motion is not reduced
+    if (this.tweens && !this._isReducedMotion()) {
+      txt.setAlpha(0);
+      this.tweens.add({
+        targets:  txt,
+        alpha:    1,
+        scaleX:   { from: 0.5, to: 1 },
+        scaleY:   { from: 0.5, to: 1 },
+        duration: 600,
+        ease:     'Back.easeOut',
+      });
+    }
 
     this._playSound(SFX_LEVEL_UP);
   }
@@ -481,26 +494,48 @@ export class DaySummaryScene extends BaseScene {
 
   /**
    * Render a single tally row (gain category on left, loss category on right).
+   * Gains slide in from the left, losses from the right, when tweens are available.
    */
   _renderTallyRow(cx, baseY, gains, losses, gainCats, lossCats, rowIndex) {
-    const rowY = baseY + rowIndex * 24;
+    const rowY      = baseY + rowIndex * 24;
+    const canAnimate = this.tweens && !this._isReducedMotion();
 
     if (gainCats[rowIndex]) {
-      const cat   = gainCats[rowIndex];
-      const total = gains[cat].reduce((s, e) => s + e.amount, 0);
-      const txt = this.add.text(cx - 180, rowY, `${cat}: +${total}`, {
+      const cat     = gainCats[rowIndex];
+      const total   = gains[cat].reduce((s, e) => s + e.amount, 0);
+      const targetX = cx - 180;
+      const txt = this.add.text(targetX, rowY, `${cat}: +${total}`, {
         fontFamily: 'Arial', fontSize: '13px', color: '#66cc66',
       }).setOrigin(0.5).setDepth(2);
+
+      if (canAnimate) {
+        txt.setAlpha(0);
+        txt.x = targetX - 80;
+        this.tweens.add({
+          targets: txt, x: targetX, alpha: 1, duration: 250, ease: 'Quad.easeOut',
+        });
+      }
+
       this._tallyTexts.push(txt);
       this._playSound(SFX_XP_GAIN);
     }
 
     if (lossCats[rowIndex]) {
-      const cat   = lossCats[rowIndex];
-      const total = losses[cat].reduce((s, e) => s + e.amount, 0);
-      const txt = this.add.text(cx + 180, rowY, `${cat}: ${total}`, {
+      const cat     = lossCats[rowIndex];
+      const total   = losses[cat].reduce((s, e) => s + e.amount, 0);
+      const targetX = cx + 180;
+      const txt = this.add.text(targetX, rowY, `${cat}: ${total}`, {
         fontFamily: 'Arial', fontSize: '13px', color: '#cc4444',
       }).setOrigin(0.5).setDepth(2);
+
+      if (canAnimate) {
+        txt.setAlpha(0);
+        txt.x = targetX + 80;
+        this.tweens.add({
+          targets: txt, x: targetX, alpha: 1, duration: 250, ease: 'Quad.easeOut',
+        });
+      }
+
       this._tallyTexts.push(txt);
       this._playSound(SFX_XP_LOSS);
     }
@@ -525,6 +560,14 @@ export class DaySummaryScene extends BaseScene {
   // ---------------------------------------------------------------------------
   // Internal helpers
   // ---------------------------------------------------------------------------
+
+  /**
+   * Return true if the reduced-motion accessibility setting is active.
+   * @returns {boolean}
+   */
+  _isReducedMotion() {
+    return this.registry?.get?.(RK.REDUCED_MOTION) === true;
+  }
 
   /**
    * Play a sound effect if the Phaser sound system is available.
