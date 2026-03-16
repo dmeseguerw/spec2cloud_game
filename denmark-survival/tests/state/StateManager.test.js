@@ -14,6 +14,9 @@ import {
   getSaveMetadata,
   exportSave,
   importSave,
+  validateSaveData,
+  getMostRecentSave,
+  autoSave,
 } from '../../src/state/StateManager.js';
 import * as RK from '../../src/constants/RegistryKeys.js';
 
@@ -211,6 +214,145 @@ describe('StateManager', () => {
       storage.setItem('denmarkSurvival_save_1', 'not-valid-json{{{');
       const result = getSaveMetadata(1, storage);
       expect(result).toBeNull();
+    });
+  });
+
+  describe('validateSaveData', () => {
+    it('returns valid=true for fully populated save data', () => {
+      initializeNewGame(registry, { name: 'Test', nationality: 'Danish', job: 'Student' });
+      saveGame(registry, 1, storage);
+      const raw = storage.getItem('denmarkSurvival_save_1');
+      const data = JSON.parse(raw);
+      const result = validateSaveData(data);
+      expect(result.valid).toBe(true);
+      expect(result.missing).toHaveLength(0);
+    });
+
+    it('returns valid=false when required keys are missing', () => {
+      const data = { [RK.PLAYER_NAME]: 'Test' }; // missing most required keys
+      const result = validateSaveData(data);
+      expect(result.valid).toBe(false);
+      expect(result.missing.length).toBeGreaterThan(0);
+      expect(result.missing).toContain(RK.PLAYER_XP);
+    });
+
+    it('reports versionMismatch=true when version differs', () => {
+      const data = {
+        [RK.PLAYER_NAME]:  'Test',
+        [RK.PLAYER_XP]:    0,
+        [RK.CURRENT_DAY]:  1,
+        [RK.PLAYER_LEVEL]: 1,
+        [RK.PLAYER_HEALTH]: 100,
+        [RK.PLAYER_SCENE]: 'GameScene',
+        _version: '9.9.9',
+      };
+      const result = validateSaveData(data);
+      expect(result.versionMismatch).toBe(true);
+    });
+
+    it('reports versionMismatch=false when version matches', () => {
+      initializeNewGame(registry, { name: 'Test', nationality: 'Danish', job: 'Student' });
+      saveGame(registry, 1, storage);
+      const data = JSON.parse(storage.getItem('denmarkSurvival_save_1'));
+      const result = validateSaveData(data);
+      expect(result.versionMismatch).toBe(false);
+    });
+
+    it('returns valid=false for null input', () => {
+      const result = validateSaveData(null);
+      expect(result.valid).toBe(false);
+    });
+
+    it('returns valid=false for non-object input', () => {
+      const result = validateSaveData('not an object');
+      expect(result.valid).toBe(false);
+    });
+  });
+
+  describe('getMostRecentSave', () => {
+    it('returns null when no saves exist', () => {
+      expect(getMostRecentSave(storage)).toBeNull();
+    });
+
+    it('returns the only slot when one save exists', () => {
+      initializeNewGame(registry, { name: 'Solo', nationality: 'Danish', job: 'Student' });
+      saveGame(registry, 2, storage);
+      expect(getMostRecentSave(storage)).toBe(2);
+    });
+
+    it('returns the slot with the most recent savedAt timestamp', () => {
+      // Save to slot 1, then slot 3 slightly later using synthetic timestamps
+      const old = JSON.stringify({ [RK.PLAYER_NAME]: 'Old', _savedAt: 1000, _version: '0.1.0' });
+      const recent = JSON.stringify({ [RK.PLAYER_NAME]: 'New', _savedAt: 9999, _version: '0.1.0' });
+      storage.setItem('denmarkSurvival_save_1', old);
+      storage.setItem('denmarkSurvival_save_3', recent);
+      expect(getMostRecentSave(storage)).toBe(3);
+    });
+
+    it('ignores corrupted save slots when choosing most recent', () => {
+      storage.setItem('denmarkSurvival_save_1', 'corrupted{{{');
+      initializeNewGame(registry, { name: 'Valid', nationality: 'Danish', job: 'Student' });
+      saveGame(registry, 2, storage);
+      expect(getMostRecentSave(storage)).toBe(2);
+    });
+  });
+
+  describe('autoSave', () => {
+    it('saves to the current SAVE_SLOT and returns slot number', () => {
+      initializeNewGame(registry, { name: 'AutoTest', nationality: 'Danish', job: 'Student' });
+      registry.set(RK.SAVE_SLOT, 2);
+      const slot = autoSave(registry, storage);
+      expect(slot).toBe(2);
+      expect(hasSave(2, storage)).toBe(true);
+    });
+
+    it('defaults to slot 1 when SAVE_SLOT is not set', () => {
+      initializeNewGame(registry, { name: 'AutoDefault', nationality: 'Danish', job: 'Student' });
+      const freshRegistry = new MockRegistry();
+      initializeNewGame(freshRegistry, { name: 'AutoDefault', nationality: 'Danish', job: 'Student' });
+      // SAVE_SLOT not explicitly set — defaults to 1 via initializeNewGame
+      const slot = autoSave(freshRegistry, storage);
+      expect(slot).toBe(1);
+    });
+
+    it('emits auto_saved event with the slot number', () => {
+      initializeNewGame(registry, { name: 'AutoEvent', nationality: 'Danish', job: 'Student' });
+      registry.set(RK.SAVE_SLOT, 3);
+      let emittedSlot = null;
+      registry.events.on('auto_saved', (s) => { emittedSlot = s; });
+      autoSave(registry, storage);
+      expect(emittedSlot).toBe(3);
+    });
+  });
+
+  describe('loadGame — forward compatibility', () => {
+    it('fills defaults for keys missing from an old save', () => {
+      // Simulate an old save that is missing newer keys
+      const partialSave = {
+        [RK.PLAYER_NAME]:    'OldSave',
+        [RK.PLAYER_XP]:     50,
+        [RK.PLAYER_LEVEL]:  2,
+        [RK.CURRENT_DAY]:   5,
+        [RK.PLAYER_HEALTH]: 80,
+        [RK.PLAYER_SCENE]:  'GameScene',
+        _savedAt: Date.now(),
+        _version: '0.1.0',
+      };
+      storage.setItem('denmarkSurvival_save_1', JSON.stringify(partialSave));
+
+      const newRegistry = new MockRegistry();
+      const result = loadGame(newRegistry, 1, storage);
+      expect(result).toBe(true);
+
+      // Keys present in save are loaded correctly
+      expect(newRegistry.get(RK.PLAYER_NAME)).toBe('OldSave');
+      expect(newRegistry.get(RK.PLAYER_XP)).toBe(50);
+
+      // Keys absent from save are filled with defaults
+      expect(newRegistry.get(RK.PLAYER_ENERGY)).toBe(100);
+      expect(newRegistry.get(RK.INVENTORY)).toEqual([]);
+      expect(newRegistry.get(RK.VOLUME_MASTER)).toBe(0.8);
+      expect(newRegistry.get(RK.TIME_OF_DAY)).toBe('morning');
     });
   });
 });
