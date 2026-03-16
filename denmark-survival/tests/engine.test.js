@@ -130,7 +130,7 @@ assert(boot.includes('Denmark Survival'), 'BootScene displays game title');
 assert(boot.includes('preload()') || boot.includes('preload ()'), 'BootScene implements preload()');
 assert(boot.includes("'progress'") || boot.includes('"progress"'), 'BootScene listens for loader progress event');
 assert(boot.includes("'complete'") || boot.includes('"complete"'), 'BootScene listens for loader complete event');
-assert(boot.includes("this.scene.start('MenuScene')") || boot.includes('this.scene.start("MenuScene")'),
+assert(boot.includes("this.scene.start('MenuScene')") || boot.includes('this.scene.start("MenuScene")') || boot.includes("fadeToScene(this, 'MenuScene')") || boot.includes('fadeToScene(this, "MenuScene")'),
   'BootScene transitions to MenuScene');
 assert(boot.includes('progressBar') || boot.includes('progress_bar'), 'BootScene has progress bar');
 assert(boot.includes('percentText') || boot.includes('percent'), 'BootScene has percentage text');
