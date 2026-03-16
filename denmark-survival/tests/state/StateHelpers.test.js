@@ -316,5 +316,137 @@ describe('StateHelpers', () => {
       const spoiled = checkSpoiledFood(registry);
       expect(spoiled).toHaveLength(1);
     });
+
+    it('handles missing INVENTORY key using fallback', () => {
+      const r = new MockRegistry();
+      r.set(RK.CURRENT_DAY, 5);
+      // INVENTORY not set — exercises the `|| []` fallback
+      const spoiled = checkSpoiledFood(r);
+      expect(spoiled).toHaveLength(0);
+    });
+
+    it('handles missing CURRENT_DAY key using fallback', () => {
+      const r = new MockRegistry();
+      r.set(RK.INVENTORY, [
+        { id: 'bread', name: 'Bread', quantity: 1, category: 'food', spoilsAt: 1 },
+      ]);
+      // CURRENT_DAY not set → defaults to 1, spoilsAt=1 → item is spoiled
+      const spoiled = checkSpoiledFood(r);
+      expect(spoiled).toHaveLength(1);
+    });
+  });
+
+  describe('edge cases — fallback branches', () => {
+    it('addXP treats negative amount as zero', () => {
+      const result = addXP(registry, -10);
+      expect(result.newXP).toBe(0);
+      expect(result.leveledUp).toBe(false);
+    });
+
+    it('addXP uses provided source in event', () => {
+      const handler = vi.fn();
+      registry.events.on('xp_changed', handler);
+      addXP(registry, 20, 'encounter');
+      expect(handler).toHaveBeenCalledWith({ xp: 20, delta: 20, source: 'encounter' });
+    });
+
+    it('removeXP uses provided source', () => {
+      registry.set(RK.PLAYER_XP, 100);
+      const handler = vi.fn();
+      registry.events.on('xp_changed', handler);
+      removeXP(registry, 10, 'penalty');
+      expect(handler).toHaveBeenCalledWith({ xp: 90, delta: -10, source: 'penalty' });
+    });
+
+    it('removeXP works from zero XP (fallback to 0)', () => {
+      // XP = 0 from beforeEach — exercises the || 0 falsy path
+      const result = removeXP(registry, 5);
+      expect(result).toBe(0);
+    });
+
+    it('updateSkill works with uninitialized skill key (fallback to 0)', () => {
+      const r = new MockRegistry();
+      const result = updateSkill(r, RK.SKILL_LANGUAGE, 15);
+      expect(result).toBe(15);
+    });
+
+    it('updateNPCRelationship with unset relationships map (fallback to {})', () => {
+      const r = new MockRegistry();
+      // NPC_RELATIONSHIPS not set — exercises || {} fallback
+      const result = updateNPCRelationship(r, 'npc_test', 10);
+      expect(result).toBe(60); // 50 default + 10
+    });
+
+    it('addItem with unset inventory (fallback to [])', () => {
+      const r = new MockRegistry();
+      // INVENTORY not set — exercises || [] fallback
+      addItem(r, { id: 'bread', name: 'Rugbrød' });
+      expect(r.get(RK.INVENTORY)).toHaveLength(1);
+    });
+
+    it('addItem increments quantity of existing item with no prior quantity field', () => {
+      // existing.quantity is undefined → exercises existing.quantity || 1
+      registry.set(RK.INVENTORY, [{ id: 'bread', name: 'Rugbrød' }]);
+      addItem(registry, { id: 'bread', name: 'Rugbrød' });
+      expect(registry.get(RK.INVENTORY)[0].quantity).toBe(2);
+    });
+
+    it('addItem with item missing quantity field defaults to 1', () => {
+      // item.quantity is undefined → exercises item.quantity || 1
+      addItem(registry, { id: 'cheese', name: 'Ost' });
+      expect(registry.get(RK.INVENTORY)[0].quantity).toBe(1);
+    });
+
+    it('removeItem with unset inventory returns false', () => {
+      const r = new MockRegistry();
+      const result = removeItem(r, 'bread');
+      expect(result).toBe(false);
+    });
+
+    it('addMoney with negative amount returns current balance unchanged', () => {
+      const result = addMoney(registry, -50);
+      expect(result).toBe(500);
+      expect(registry.get(RK.PLAYER_MONEY)).toBe(500);
+    });
+
+    it('spendMoney with unset money key (fallback to 0)', () => {
+      const r = new MockRegistry();
+      // PLAYER_MONEY not set — exercises || 0 fallback
+      const result = spendMoney(r, 10);
+      expect(result).toBe(false);
+    });
+
+    it('unlockEncyclopediaEntry with unset entries (fallback to [])', () => {
+      const r = new MockRegistry();
+      // ENCYCLOPEDIA_ENTRIES not set — exercises || [] fallback
+      const result = unlockEncyclopediaEntry(r, 'hygge');
+      expect(result).toBe(true);
+    });
+
+    it('recordEncounter with unset history and day (fallback branches)', () => {
+      const r = new MockRegistry();
+      // ENCOUNTER_HISTORY and CURRENT_DAY not set — exercises || [] and || 1
+      recordEncounter(r, 'test_encounter');
+      const history = r.get(RK.ENCOUNTER_HISTORY);
+      expect(history).toHaveLength(1);
+      expect(history[0]).toEqual({ id: 'test_encounter', day: 1 });
+    });
+
+    it('advanceTimeOfDay with unset TIME_OF_DAY (fallback to morning)', () => {
+      const r = new MockRegistry();
+      r.set(RK.CURRENT_DAY, 1);
+      // TIME_OF_DAY not set — exercises || 'morning' fallback
+      const result = advanceTimeOfDay(r);
+      expect(result.timeOfDay).toBe('afternoon');
+    });
+
+    it('advanceTimeOfDay with unset CURRENT_DAY when day wraps (fallback to 1)', () => {
+      const r = new MockRegistry();
+      r.set(RK.TIME_OF_DAY, 'night');
+      // CURRENT_DAY not set — exercises || 1 fallback in wrap branch
+      const result = advanceTimeOfDay(r);
+      expect(result.dayAdvanced).toBe(true);
+      expect(r.get(RK.CURRENT_DAY)).toBe(2);
+    });
   });
 });
