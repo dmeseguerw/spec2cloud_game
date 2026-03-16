@@ -38,6 +38,7 @@ export const PLAYER_Y = 'player_y';
 export const PLAYER_SCENE = 'player_scene';
 export const PLAYER_LOCATION = 'player_location';
 export const NPC_RELATIONSHIPS = 'npc_relationships';
+export const NPC_MEMORY = 'npc_memory';
 export const ENCYCLOPEDIA_ENTRIES = 'encyclopedia_entries';
 export const COMPLETED_SCENARIOS = 'completed_scenarios';
 export const DIALOGUE_HISTORY = 'dialogue_history';

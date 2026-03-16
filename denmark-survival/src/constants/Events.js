@@ -9,6 +9,7 @@ export const MONEY_CHANGED = 'money_changed';
 export const ITEM_ADDED = 'item_added';
 export const ITEM_REMOVED = 'item_removed';
 export const RELATIONSHIP_CHANGED = 'relationship_changed';
+export const RELATIONSHIP_STAGE_CHANGED = 'relationship_stage_changed';
 export const ENCYCLOPEDIA_UNLOCKED = 'encyclopedia_unlocked';
 export const BILL_RECEIVED = 'bill_received';
 export const BILL_PAID = 'bill_paid';
