@@ -22,6 +22,7 @@ import {
 } from '../constants/AssetKeys.js';
 import {
   PLAYER_X, PLAYER_Y, PLAYER_SCENE, PLAYER_LOCATION,
+  CURRENT_LOCATION, CONTEXT_HINT,
 } from '../constants/RegistryKeys.js';
 
 /** Default spawn position when no saved position exists. */
@@ -262,7 +263,9 @@ export class GameScene extends BaseScene {
       ) {
         if (zone.name !== this._currentZone) {
           this._currentZone = zone.name;
+          // Set both registry keys: PLAYER_LOCATION (task 008) and CURRENT_LOCATION (task 007 UIScene).
           this.registry.set(PLAYER_LOCATION, zone.name);
+          this.registry.set(CURRENT_LOCATION, zone.name);
           // Notify UIScene to refresh the location label.
           this.events.emit('zoneupdated', zone.name);
         }
@@ -329,10 +332,11 @@ export class GameScene extends BaseScene {
         nearest.indicator.setVisible(true);
       }
 
-      // Notify UIScene with context hint text.
+      // Notify UIScene with context hint text via registry (task 007 UIScene) and event.
       const hint = nearest
         ? `Press E to ${nearest.type === 'talk' ? 'talk to' : nearest.type} ${nearest.name}`
         : null;
+      this.registry.set(CONTEXT_HINT, hint ?? '');
       this.events.emit('interactionhint', hint);
     }
 
