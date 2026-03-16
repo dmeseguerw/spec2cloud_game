@@ -5,5 +5,6 @@ export default defineConfig({
     include: ['tests/**/*.test.js'],
     exclude: ['tests/structure.test.js', 'tests/engine.test.js'],
     environment: 'node',
+    setupFiles: ['tests/mocks/setupPhaser.js'],
   },
 });
