@@ -15,8 +15,12 @@ const SAVE_SLOT_COUNT = 3;
 
 /** Minimum set of keys that must be present for a save to be considered valid */
 const REQUIRED_KEYS = [
-  RK.PLAYER_NAME, RK.PLAYER_XP, RK.CURRENT_DAY,
-  RK.PLAYER_LEVEL, RK.PLAYER_HEALTH, RK.PLAYER_SCENE,
+  RK.PLAYER_NAME,
+  RK.PLAYER_XP,
+  RK.CURRENT_DAY,
+  RK.PLAYER_LEVEL,
+  RK.PLAYER_HEALTH,
+  RK.PLAYER_SCENE,
 ];
 
 /** Default values applied when a save is missing a key (forward compatibility). */

@@ -1,6 +1,6 @@
 /**
  * src/systems/GameOverManager.js
- * Centralises all game-over and warning threshold logic.
+ * Centralizes all game-over and warning threshold logic.
  *
  * The XPEngine tracks consecutive negative days and clamps XP to
  * GAME_OVER_FLOOR (-500).  This module provides pure functions to
