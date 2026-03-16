@@ -21,6 +21,13 @@ export const HEALTH_CHANGED = 'health_changed';
 export const ENERGY_CHANGED = 'energy_changed';
 export const HAPPINESS_CHANGED = 'happiness_changed';
 
+// Day Cycle
+export const DAY_ADVANCED = 'day_advanced';
+export const WEATHER_CHANGED = 'weather_changed';
+export const ACTIVITY_COMPLETED = 'activity_completed';
+export const MANDATORY_ACTIVITY_MISSED = 'mandatory_activity_missed';
+export const DAY_ENDED = 'day_ended';
+
 // Scene Navigation
 export const SCENE_TRANSITION_START = 'scene_transition_start';
 export const SCENE_TRANSITION_COMPLETE = 'scene_transition_complete';
