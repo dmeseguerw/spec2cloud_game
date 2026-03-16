@@ -1,33 +1,478 @@
 /**
  * src/scenes/UIScene.js
- * HUD overlay placeholder scene — runs in parallel with GameScene.
+ * HUD overlay scene — runs in parallel with GameScene.
+ * Displays player stats, time/day info, location, and notifications.
+ * Listens to registry change events for reactive updates.
  */
 
 import { BaseScene } from './BaseScene.js';
+import { ProgressBar } from '../ui/ProgressBar.js';
+import { NotificationManager } from '../ui/NotificationManager.js';
+import {
+  PLAYER_XP,
+  PLAYER_LEVEL,
+  TIME_OF_DAY,
+  CURRENT_DAY,
+  SEASON,
+  WEATHER,
+  PLAYER_HEALTH,
+  PLAYER_ENERGY,
+  PLAYER_MONEY,
+  CURRENT_LOCATION,
+  CONTEXT_HINT,
+} from '../constants/RegistryKeys.js';
+
+/** Map time-of-day values to display labels. */
+const TIME_LABELS = {
+  morning: '🌅 Morning',
+  afternoon: '☀️ Afternoon',
+  evening: '🌆 Evening',
+  night: '🌙 Night',
+};
+
+/** XP required to advance from one level to the next. */
+const XP_PER_LEVEL = 100;
+
+/** Map weather values to display labels. */
+const WEATHER_LABELS = {
+  sunny: '☀️ Sunny',
+  cloudy: '☁️ Cloudy',
+  rainy: '🌧️ Rainy',
+  snowy: '❄️ Snowy',
+  windy: '💨 Windy',
+  foggy: '🌫️ Foggy',
+};
 
 export class UIScene extends BaseScene {
   constructor() {
     super({ key: 'UIScene' });
-  }
 
-  init(data) {
-    super.init(data);
+    // HUD state
+    this._collapsed = false;
+    this._xpBar = null;
+    this._healthBar = null;
+    this._energyBar = null;
+
+    // Text references
+    this._levelText = null;
+    this._xpText = null;
+    this._timeText = null;
+    this._dayText = null;
+    this._weatherText = null;
+    this._moneyText = null;
+    this._healthLabel = null;
+    this._energyLabel = null;
+    this._locationText = null;
+    this._contextHintText = null;
+
+    // HUD element group (for collapse toggle)
+    this._hudGroup = [];
+
+    // Key binding for collapse toggle
+    this._collapseKey = null;
+
+    // Notification manager
+    this._notificationManager = null;
+
+    // Cached values for compound display
+    this._currentDay = 1;
+    this._currentSeason = 'spring';
   }
 
   create() {
     const { width, height } = this.scale;
-    this.add.text(width / 2, height / 2, 'UIScene', {
-      fontFamily: 'Arial',
-      fontSize:   '32px',
-      color:      '#e8d5b7',
-    }).setOrigin(0.5);
+
+    this._createTopLeftHUD(width, height);
+    this._createTopRightHUD(width, height);
+    this._createBottomHUD(width, height);
+
+    // Notification manager
+    this._notificationManager = new NotificationManager(this, {
+      x: width / 2,
+      y: 80,
+      depth: 100,
+    });
+
+    // Register registry event listeners
+    this._registerListeners();
+
+    // Set up H key for HUD collapse toggle
+    this._collapseKey = this.input.keyboard.addKey('H');
+    this._collapseKey.on('down', () => this._toggleCollapsed());
+
+    // Initial refresh from registry
+    this._refreshAll();
   }
 
+  // ---------------------------------------------------------------------------
+  // HUD creation
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Create top-left HUD elements (level, XP, time, day, weather).
+   */
+  _createTopLeftHUD(width, height) {
+    const x = 16;
+    let y = 16;
+
+    // Level text
+    this._levelText = this.add.text(x, y, 'Level 1', {
+      fontSize: '16px',
+      color: '#ffd700',
+      fontStyle: 'bold',
+    });
+    this._levelText.setScrollFactor(0);
+    this._levelText.setDepth(50);
+    this._hudGroup.push(this._levelText);
+
+    y += 24;
+
+    // XP bar
+    this._xpBar = new ProgressBar(this, x, y + 10, {
+      width: 150,
+      height: 12,
+      bgColor: 0x333333,
+      fillColor: 0x4a90d9,
+      max: XP_PER_LEVEL,
+      value: 0,
+      depth: 50,
+    });
+    this._hudGroup.push(this._xpBar);
+
+    // XP text
+    this._xpText = this.add.text(x + 155, y + 10, `0/${XP_PER_LEVEL} XP`, {
+      fontSize: '12px',
+      color: '#aaaaee',
+    });
+    this._xpText.setOrigin(0, 0.5);
+    this._xpText.setScrollFactor(0);
+    this._xpText.setDepth(50);
+    this._hudGroup.push(this._xpText);
+
+    y += 30;
+
+    // Time text
+    this._timeText = this.add.text(x, y, '🌅 Morning', {
+      fontSize: '14px',
+      color: '#e8d5b7',
+    });
+    this._timeText.setScrollFactor(0);
+    this._timeText.setDepth(50);
+    this._hudGroup.push(this._timeText);
+
+    y += 22;
+
+    // Day text
+    this._dayText = this.add.text(x, y, 'Day 1 — Spring', {
+      fontSize: '14px',
+      color: '#aaccaa',
+    });
+    this._dayText.setScrollFactor(0);
+    this._dayText.setDepth(50);
+    this._hudGroup.push(this._dayText);
+
+    y += 22;
+
+    // Weather text
+    this._weatherText = this.add.text(x, y, '', {
+      fontSize: '14px',
+      color: '#bbddee',
+    });
+    this._weatherText.setScrollFactor(0);
+    this._weatherText.setDepth(50);
+    this._hudGroup.push(this._weatherText);
+  }
+
+  /**
+   * Create top-right HUD elements (money, health, energy).
+   */
+  _createTopRightHUD(width, height) {
+    const rightX = width - 16;
+    let y = 16;
+
+    // Money text
+    this._moneyText = this.add.text(rightX, y, '0 DKK', {
+      fontSize: '16px',
+      color: '#ffd700',
+      fontStyle: 'bold',
+    });
+    this._moneyText.setOrigin(1, 0);
+    this._moneyText.setScrollFactor(0);
+    this._moneyText.setDepth(50);
+    this._hudGroup.push(this._moneyText);
+
+    y += 28;
+
+    // Health label
+    this._healthLabel = this.add.text(rightX - 155, y + 6, '❤️ HP', {
+      fontSize: '12px',
+      color: '#ff6666',
+    });
+    this._healthLabel.setOrigin(1, 0.5);
+    this._healthLabel.setScrollFactor(0);
+    this._healthLabel.setDepth(50);
+    this._hudGroup.push(this._healthLabel);
+
+    // Health bar
+    this._healthBar = new ProgressBar(this, rightX - 150, y + 6, {
+      width: 150,
+      height: 12,
+      bgColor: 0x333333,
+      fillColor: 0xcc3333,
+      max: 100,
+      value: 100,
+      depth: 50,
+    });
+    this._hudGroup.push(this._healthBar);
+
+    y += 24;
+
+    // Energy label
+    this._energyLabel = this.add.text(rightX - 155, y + 6, '⚡ EN', {
+      fontSize: '12px',
+      color: '#66ccff',
+    });
+    this._energyLabel.setOrigin(1, 0.5);
+    this._energyLabel.setScrollFactor(0);
+    this._energyLabel.setDepth(50);
+    this._hudGroup.push(this._energyLabel);
+
+    // Energy bar
+    this._energyBar = new ProgressBar(this, rightX - 150, y + 6, {
+      width: 150,
+      height: 12,
+      bgColor: 0x333333,
+      fillColor: 0x3399ff,
+      max: 100,
+      value: 100,
+      depth: 50,
+    });
+    this._hudGroup.push(this._energyBar);
+  }
+
+  /**
+   * Create bottom HUD elements (location, context hint).
+   */
+  _createBottomHUD(width, height) {
+    const centerX = width / 2;
+
+    // Location text
+    this._locationText = this.add.text(centerX, height - 50, '', {
+      fontSize: '16px',
+      color: '#e8d5b7',
+      fontStyle: 'bold',
+    });
+    this._locationText.setOrigin(0.5, 0.5);
+    this._locationText.setScrollFactor(0);
+    this._locationText.setDepth(50);
+    this._hudGroup.push(this._locationText);
+
+    // Context hint text
+    this._contextHintText = this.add.text(centerX, height - 28, '', {
+      fontSize: '13px',
+      color: '#aaaaaa',
+      fontStyle: 'italic',
+    });
+    this._contextHintText.setOrigin(0.5, 0.5);
+    this._contextHintText.setScrollFactor(0);
+    this._contextHintText.setDepth(50);
+    this._hudGroup.push(this._contextHintText);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Registry event listeners
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Register change listeners for all HUD-related registry keys.
+   */
+  _registerListeners() {
+    this.trackEvent(this.registry.events, `changedata-${PLAYER_XP}`, (_p, _k, value) => {
+      this._updateXP(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${PLAYER_LEVEL}`, (_p, _k, value) => {
+      this._updateLevel(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${TIME_OF_DAY}`, (_p, _k, value) => {
+      this._updateTime(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${CURRENT_DAY}`, (_p, _k, value) => {
+      this._updateDay(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${SEASON}`, (_p, _k, value) => {
+      this._updateSeason(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${WEATHER}`, (_p, _k, value) => {
+      this._updateWeather(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${PLAYER_HEALTH}`, (_p, _k, value) => {
+      this._updateHealth(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${PLAYER_ENERGY}`, (_p, _k, value) => {
+      this._updateEnergy(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${PLAYER_MONEY}`, (_p, _k, value) => {
+      this._updateMoney(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${CURRENT_LOCATION}`, (_p, _k, value) => {
+      this._updateLocation(value);
+    });
+
+    this.trackEvent(this.registry.events, `changedata-${CONTEXT_HINT}`, (_p, _k, value) => {
+      this._updateContextHint(value);
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Update methods
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Refresh all HUD elements from current registry state.
+   */
+  _refreshAll() {
+    const reg = this.registry;
+    this._updateXP(reg.get(PLAYER_XP) ?? 0);
+    this._updateLevel(reg.get(PLAYER_LEVEL) ?? 1);
+    this._updateTime(reg.get(TIME_OF_DAY) ?? 'morning');
+    this._updateDay(reg.get(CURRENT_DAY) ?? 1);
+    this._updateSeason(reg.get(SEASON) ?? 'spring');
+    this._updateWeather(reg.get(WEATHER) ?? '');
+    this._updateHealth(reg.get(PLAYER_HEALTH) ?? 100);
+    this._updateEnergy(reg.get(PLAYER_ENERGY) ?? 100);
+    this._updateMoney(reg.get(PLAYER_MONEY) ?? 0);
+    this._updateLocation(reg.get(CURRENT_LOCATION) ?? '');
+    this._updateContextHint(reg.get(CONTEXT_HINT) ?? '');
+  }
+
+  _updateXP(xp) {
+    const xpInLevel = xp % XP_PER_LEVEL;
+    this._xpBar.setValue(xpInLevel, false);
+    this._xpText.setText(`${xpInLevel}/${XP_PER_LEVEL} XP`);
+  }
+
+  _updateLevel(level) {
+    this._levelText.setText(`Level ${level}`);
+  }
+
+  _updateTime(timeOfDay) {
+    const label = TIME_LABELS[timeOfDay] ?? timeOfDay;
+    this._timeText.setText(label);
+  }
+
+  _updateDay(day) {
+    this._currentDay = day;
+    this._refreshDayText();
+  }
+
+  _updateSeason(season) {
+    this._currentSeason = season;
+    this._refreshDayText();
+  }
+
+  _refreshDayText() {
+    const season = this._currentSeason.charAt(0).toUpperCase() + this._currentSeason.slice(1);
+    this._dayText.setText(`Day ${this._currentDay} — ${season}`);
+  }
+
+  _updateWeather(weather) {
+    const label = WEATHER_LABELS[weather] ?? weather;
+    this._weatherText.setText(label);
+  }
+
+  _updateHealth(health) {
+    this._healthBar.setValue(health, true);
+  }
+
+  _updateEnergy(energy) {
+    this._energyBar.setValue(energy, true);
+  }
+
+  _updateMoney(money) {
+    this._moneyText.setText(`${money} DKK`);
+  }
+
+  _updateLocation(location) {
+    this._locationText.setText(location || '');
+  }
+
+  _updateContextHint(hint) {
+    this._contextHintText.setText(hint || '');
+  }
+
+  // ---------------------------------------------------------------------------
+  // HUD collapse toggle
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Toggle the collapsed state of the HUD.
+   */
+  _toggleCollapsed() {
+    this._collapsed = !this._collapsed;
+    this._setHudVisible(!this._collapsed);
+  }
+
+  /**
+   * Set visibility of all HUD elements.
+   * @param {boolean} visible
+   */
+  _setHudVisible(visible) {
+    for (const item of this._hudGroup) {
+      if (item && typeof item.setVisible === 'function') {
+        item.setVisible(visible);
+      }
+    }
+  }
+
+  /**
+   * Check if the HUD is collapsed.
+   * @returns {boolean}
+   */
+  isCollapsed() {
+    return this._collapsed;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Show a toast notification via the notification manager.
+   * @param {string} message
+   * @param {object} options
+   */
+  showNotification(message, options = {}) {
+    if (this._notificationManager) {
+      this._notificationManager.addNotification(message, options);
+    }
+  }
+
+  /**
+   * Update loop — empty since registry events handle all updates.
+   */
   update(time, delta) {
-    // UI update loop — override in future tasks
+    // Registry events handle HUD updates reactively
   }
 
+  /**
+   * Clean up resources on shutdown.
+   */
   shutdown() {
+    if (this._notificationManager) {
+      this._notificationManager.clearAll();
+    }
+    if (this._xpBar) this._xpBar.destroy();
+    if (this._healthBar) this._healthBar.destroy();
+    if (this._energyBar) this._energyBar.destroy();
     super.shutdown();
   }
 }
