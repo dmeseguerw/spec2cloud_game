@@ -1,5 +1,8 @@
 # Task 012: XP & Level Progression Engine
 
+**GitHub Issue:** [#19 - Task 012: XP & Level Progression Engine](https://github.com/dmeseguerw/spec2cloud_game/issues/19)
+**GitHub PR:** [#25 - [WIP] Implement XP and level progression engine](https://github.com/dmeseguerw/spec2cloud_game/pull/25)
+
 ## Description
 Implement the XP (Life Adaptation Score) engine that tracks player experience, calculates level thresholds, manages the 4 progression phases, tracks soft skill advancement, and handles level-up events. This is the core scoring system that every other feature interacts with.
 

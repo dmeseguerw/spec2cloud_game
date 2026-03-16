@@ -1,5 +1,8 @@
 # Task 011: Character Creation System
 
+**GitHub Issue:** [#21 - Task 011: Character Creation System](https://github.com/dmeseguerw/spec2cloud_game/issues/21)
+**GitHub PR:** [#24 - [WIP] Implement character creation system wizard](https://github.com/dmeseguerw/spec2cloud_game/pull/24)
+
 ## Description
 Implement the CharacterCreationScene — a 3-step wizard where players choose their character's name, nationality, and job. Each choice affects starting stats, skills, and DKK. The "no wrong choice" design ensures all options are viable. On completion, the system initializes game state and transitions to gameplay.
 

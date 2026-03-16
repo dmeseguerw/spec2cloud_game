@@ -1,5 +1,8 @@
 # Task 010: Main Menu & Settings Screen
 
+**GitHub Issue:** [#20 - Task 010: Main Menu & Settings Screen](https://github.com/dmeseguerw/spec2cloud_game/issues/20)
+**GitHub PR:** [#23 - [WIP] Implement main menu and settings screen](https://github.com/dmeseguerw/spec2cloud_game/pull/23)
+
 ## Description
 Implement the MainMenuScene and SettingsScene that serve as the game's entry point and configuration screen. The main menu offers New Game, Continue, Settings, and Credits options. The settings screen allows volume, controls, and accessibility adjustments. This is the first full screen players see after the boot sequence.
 

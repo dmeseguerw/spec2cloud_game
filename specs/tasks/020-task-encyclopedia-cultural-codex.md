@@ -1,5 +1,8 @@
 # Task 020: Encyclopedia & Cultural Codex
 
+**GitHub Issue:** [#22 - Task 020: Encyclopedia & Cultural Codex](https://github.com/dmeseguerw/spec2cloud_game/issues/22)
+**GitHub PR:** [#26 - [WIP] Implement encyclopedia and cultural codex system](https://github.com/dmeseguerw/spec2cloud_game/pull/26)
+
 ## Description
 Implement the encyclopedia/codex system — a journal of Danish cultural knowledge that grows through gameplay. It includes 5 category tabs (Culture, Language, Places, Activities, Tips), trigger-based entry discovery, completion tracking, and a browsable UI. Entries unlock naturally through gameplay events and conversations, never through explicit "research" mechanics.
 
