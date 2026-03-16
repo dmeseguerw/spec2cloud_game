@@ -58,6 +58,37 @@ export const PITCH_VARIATION_KEYS = new Set([
 /** Default pitch variation range (±fraction of 1.0). */
 export const PITCH_VARIATION_RANGE = 0.1;
 
+// ── NPC Dialogue Blip Sounds ──────────────────────────────────────────────────
+// Each NPC has a unique short blip played during typewriter text display.
+export const SFX_BLIP_LARS    = 'sfx_blip_lars';
+export const SFX_BLIP_METTE   = 'sfx_blip_mette';
+export const SFX_BLIP_THOMAS  = 'sfx_blip_thomas';
+export const SFX_BLIP_SOFIE   = 'sfx_blip_sofie';
+export const SFX_BLIP_HENRIK  = 'sfx_blip_henrik';
+export const SFX_BLIP_KASPER  = 'sfx_blip_kasper';
+export const SFX_BLIP_DR_JENSEN = 'sfx_blip_dr_jensen';
+export const SFX_BLIP_BJORN   = 'sfx_blip_bjorn';
+export const SFX_BLIP_FREJA   = 'sfx_blip_freja';
+export const SFX_BLIP_EMMA    = 'sfx_blip_emma';
+export const SFX_BLIP_DEFAULT = 'sfx_blip_default';
+
+/**
+ * Maps NPC id strings to their blip sound key.
+ * DialogueScene uses this to play the correct blip during typewriter effect.
+ */
+export const NPC_BLIP_MAP = {
+  lars:      SFX_BLIP_LARS,
+  mette:     SFX_BLIP_METTE,
+  thomas:    SFX_BLIP_THOMAS,
+  sofie:     SFX_BLIP_SOFIE,
+  henrik:    SFX_BLIP_HENRIK,
+  kasper:    SFX_BLIP_KASPER,
+  dr_jensen: SFX_BLIP_DR_JENSEN,
+  bjorn:     SFX_BLIP_BJORN,
+  freja:     SFX_BLIP_FREJA,
+  emma:      SFX_BLIP_EMMA,
+};
+
 /**
  * Scene → music track mapping.
  * Used by AudioManager.playMusicForScene() to select the correct track.

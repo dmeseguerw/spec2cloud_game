@@ -73,3 +73,6 @@ export const GAME_VERSION = 'game_version';
 export const WEATHER = 'weather';
 export const CURRENT_LOCATION = 'current_location';
 export const CONTEXT_HINT = 'context_hint';
+
+// Game Flags — free-form key/value pairs set by dialogue effects and scenarios
+export const GAME_FLAGS = 'game_flags';
