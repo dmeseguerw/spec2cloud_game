@@ -8,6 +8,7 @@ AGENTS.md
 # Game project dependencies and build artifacts
 denmark-survival/node_modules/
 denmark-survival/dist/
+denmark-survival/coverage/
 
 # OS / editor files
 .DS_Store

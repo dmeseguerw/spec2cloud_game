@@ -199,4 +199,18 @@ describe('StateManager', () => {
       expect(exportSave(99, storage)).toBeNull();
     });
   });
+
+  describe('error handling — corrupted save data', () => {
+    it('loadGame returns false for corrupted JSON', () => {
+      storage.setItem('denmarkSurvival_save_1', 'not-valid-json{{{');
+      const result = loadGame(registry, 1, storage);
+      expect(result).toBe(false);
+    });
+
+    it('getSaveMetadata returns null for corrupted JSON', () => {
+      storage.setItem('denmarkSurvival_save_1', 'not-valid-json{{{');
+      const result = getSaveMetadata(1, storage);
+      expect(result).toBeNull();
+    });
+  });
 });

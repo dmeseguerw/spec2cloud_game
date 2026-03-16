@@ -11,6 +11,7 @@
     "test:coverage": "npx vitest run --coverage"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.0",
     "http-server": "^14.1.1",
     "vitest": "^4.1.0"
   }
