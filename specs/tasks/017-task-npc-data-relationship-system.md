@@ -1,5 +1,8 @@
 # Task 017: NPC Data & Relationship System
 
+**GitHub Issue:** [#27 - Task 017: NPC Data & Relationship System](https://github.com/dmeseguerw/spec2cloud_game/issues/27)
+**GitHub PR:** [#29 - [WIP] Implement NPC data and relationship system](https://github.com/dmeseguerw/spec2cloud_game/pull/29)
+
 ## Description
 Implement the NPC data model, relationship tracking system, and NPC world presence. This covers the 10 main NPCs with their profiles, starting relationships, relationship stages (Stranger → Close Friend), NPC memory of past interactions, and NPC placement/scheduling in the game world. The dialogue engine is in a separate task (018) — this task focuses on WHO the NPCs are and HOW relationships are tracked.
 

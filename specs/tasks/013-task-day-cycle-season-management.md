@@ -1,5 +1,8 @@
 # Task 013: Day Cycle & Season Management
 
+**GitHub Issue:** [#28 - Task 013: Day Cycle & Season Management](https://github.com/dmeseguerw/spec2cloud_game/issues/28)
+**GitHub PR:** [#30 - [WIP] Implement day/night cycle and season management](https://github.com/dmeseguerw/spec2cloud_game/pull/30)
+
 ## Description
 Implement the day/night cycle, time-of-day progression, season rotation, and weather system that drive the game's temporal mechanics. Each in-game day has 4 time periods with a limited number of activities. Seasons cycle every ~22 days and affect weather probabilities, sunset times, and difficulty. This system is the heartbeat of the game — everything revolves around the daily cycle.
 
