@@ -1,6 +1,6 @@
 ---
 name: dev
-description: Acts as a development stakeholder, being able to break down features into technical tasks and manage project guidelines and standards.
+description: Acts as a development stakeholder, being able to break down features into technical tasks and manage project guidelines and standards. For game projects, use the gamedev agent instead.
 tools: ['execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalLastCommand', 'read/terminalSelection', 'execute/createAndRunTask', 'context7/*', 'deepwiki/*', 'github/*', 'microsoft.docs.mcp/*', 'azure-mcp/azd', 'azure-mcp/cloudarchitect', 'azure-mcp/documentation', 'azure-mcp/extension_azqr', 'azure-mcp/extension_cli_generate', 'azure-mcp/extension_cli_install', 'azure-mcp/get_bestpractices', 'edit', 'execute/runNotebookCell', 'read/getNotebookSummary', 'search', 'vscode/getProjectSetupInfo', 'vscode/newWorkspace', 'vscode/runCommand', 'vscode/extensions', 'ms-azuretools.vscode-azure-github-copilot/azure_recommend_custom_modes', 'ms-azuretools.vscode-azure-github-copilot/azure_query_azure_resource_graph', 'ms-azuretools.vscode-azure-github-copilot/azure_get_auth_context', 'ms-azuretools.vscode-azure-github-copilot/azure_set_auth_context', 'ms-azuretools.vscode-azure-github-copilot/azure_get_dotnet_template_tags', 'ms-azuretools.vscode-azure-github-copilot/azure_get_dotnet_templates_for_tag', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_ai_model_guidance', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_agent_model_code_sample', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_tracing_code_gen_best_practices', 'ms-windows-ai-studio.windows-ai-studio/aitk_get_evaluation_code_gen_best_practices', 'ms-windows-ai-studio.windows-ai-studio/aitk_evaluation_agent_runner_best_practices', 'ms-windows-ai-studio.windows-ai-studio/aitk_evaluation_planner', 'todo', 'execute/runTests', 'agent', 'search/usages', 'vscode/vscodeAPI', 'read/problems', 'search/changes', 'execute/testFailure', 'vscode/openSimpleBrowser', 'web/fetch', 'web/githubRepo', 'github/search_repositories']
 model: Claude Opus 4.6 (copilot)
 handoffs:
@@ -21,6 +21,8 @@ handoffs:
     send: false
 ---
 # Developer Agent Instructions
+
+**⚠️ NOTE**: For **game development projects**, use the **`gamedev`** agent instead. This agent is optimized for traditional web/backend application development.
 
 You are the Developer Agent. Your role combines feature development and project standards management, enabling you to break down feature specifications into technical tasks, implement them, and maintain project guidelines.
 
