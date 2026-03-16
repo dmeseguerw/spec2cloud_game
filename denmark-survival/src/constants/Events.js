@@ -32,6 +32,11 @@ export const ACTIVITY_COMPLETED = 'activity_completed';
 export const MANDATORY_ACTIVITY_MISSED = 'mandatory_activity_missed';
 export const DAY_ENDED = 'day_ended';
 
+// Save / Persistence
+export const AUTO_SAVED = 'auto_saved';
+export const GAME_OVER = 'game_over';
+export const GAME_OVER_WARNING = 'game_over_warning';
+
 // Scene Navigation
 export const SCENE_TRANSITION_START = 'scene_transition_start';
 export const SCENE_TRANSITION_COMPLETE = 'scene_transition_complete';
