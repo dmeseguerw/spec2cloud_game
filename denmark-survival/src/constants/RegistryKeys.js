@@ -64,3 +64,8 @@ export const DIFFICULTY = 'difficulty';
 export const SAVE_SLOT = 'save_slot';
 export const TOTAL_PLAYTIME = 'total_playtime';
 export const GAME_VERSION = 'game_version';
+
+// World Context
+export const WEATHER = 'weather';
+export const CURRENT_LOCATION = 'current_location';
+export const CONTEXT_HINT = 'context_hint';

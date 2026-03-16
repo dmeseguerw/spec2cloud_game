@@ -221,6 +221,8 @@ export class MockGameObject {
   constructor() {
     this.x = 0;
     this.y = 0;
+    this.width = 0;
+    this.height = 0;
     this.visible = true;
     this.text = '';
     this.alpha = 1;
@@ -238,6 +240,9 @@ export class MockGameObject {
   setScrollFactor() { return this; }
   setTint() { return this; }
   on() { return this; }
+  setFillStyle(color, alpha) { this._fillColor = color; this._fillAlpha = alpha; return this; }
+  setStyle(style) { this._style = style; return this; }
+  setSize(width, height) { this.width = width; this.height = height; return this; }
   destroy() {}
 }
 
