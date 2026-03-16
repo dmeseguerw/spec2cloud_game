@@ -1,5 +1,8 @@
 # Task 021: Day Summary & Review Screen
 
+**GitHub Issue:** [#35 - Task 021: Day Summary & Review Screen](https://github.com/dmeseguerw/spec2cloud_game/issues/35)
+**GitHub PR:** [#39 - [WIP] Implement DaySummaryScene for end-of-day report](https://github.com/dmeseguerw/spec2cloud_game/pull/39)
+
 ## Description
 Implement the DaySummaryScene that displays at the end of each in-game day. It shows a breakdown of XP gained and lost, activities completed, notable events, net XP change, and a preview of tomorrow's obligations. This is the player's daily "report card" that reinforces learning and provides a satisfying end-of-day rhythm.
 
