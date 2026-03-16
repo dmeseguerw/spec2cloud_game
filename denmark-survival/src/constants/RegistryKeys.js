@@ -69,6 +69,7 @@ export const VOLUME_SFX = 'volume_sfx';
 export const CONTROLS_SCHEME = 'controls_scheme';
 export const TUTORIAL_COMPLETED = 'tutorial_completed';
 export const DIFFICULTY = 'difficulty';
+export const REDUCED_MOTION = 'reduced_motion';
 
 // Meta
 export const SAVE_SLOT = 'save_slot';

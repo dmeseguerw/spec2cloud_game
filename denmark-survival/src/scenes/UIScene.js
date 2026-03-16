@@ -20,14 +20,15 @@ import {
   PLAYER_MONEY,
   CURRENT_LOCATION,
   CONTEXT_HINT,
+  REDUCED_MOTION,
 } from '../constants/RegistryKeys.js';
 
 /** Map time-of-day values to display labels. */
 const TIME_LABELS = {
-  morning: '🌅 Morning',
+  morning:   '🌅 Morning',
   afternoon: '☀️ Afternoon',
-  evening: '🌆 Evening',
-  night: '🌙 Night',
+  evening:   '🌆 Evening',
+  night:     '🌙 Night',
 };
 
 /** XP required to advance from one level to the next. */
@@ -35,13 +36,22 @@ const XP_PER_LEVEL = 100;
 
 /** Map weather values to display labels. */
 const WEATHER_LABELS = {
-  sunny: '☀️ Sunny',
+  sunny:  '☀️ Sunny',
   cloudy: '☁️ Cloudy',
-  rainy: '🌧️ Rainy',
-  snowy: '❄️ Snowy',
-  windy: '💨 Windy',
-  foggy: '🌫️ Foggy',
+  rainy:  '🌧️ Rainy',
+  snowy:  '❄️ Snowy',
+  windy:  '💨 Windy',
+  foggy:  '🌫️ Foggy',
 };
+
+/** Health/energy percentage below which a pulse effect activates. */
+const CRITICAL_THRESHOLD = 25;
+
+/** Duration of the bar tween animation (ms). */
+const BAR_ANIM_DURATION = 300;
+
+/** Duration of the money flash scale tween (ms). */
+const MONEY_FLASH_DURATION = 120;
 
 export class UIScene extends BaseScene {
   constructor() {
