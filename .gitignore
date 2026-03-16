@@ -4,3 +4,14 @@ apm_modules/
 **/AGENTS.md
 AGENTS.md
 .apm
+
+# Game project dependencies and build artifacts
+denmark-survival/node_modules/
+denmark-survival/dist/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+npm-debug.log*

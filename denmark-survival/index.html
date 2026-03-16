@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Denmark Survival - Master the art of Danish living, one bike ride at a time.">
+  <title>Denmark Survival</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Phaser 3.80 via jsDelivr CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+</head>
+<body>
+  <!-- Game canvas target -->
+  <div id="game-container"></div>
+
+  <!-- HTML overlay containers (hidden by default, shown by UI manager) -->
+  <div id="overlay-main-menu" class="overlay" aria-hidden="true">
+    <div class="overlay-content" id="main-menu-content"></div>
+  </div>
+
+  <div id="overlay-character-creation" class="overlay" aria-hidden="true">
+    <div class="overlay-content" id="character-creation-content"></div>
+  </div>
+
+  <div id="overlay-inventory" class="overlay" aria-hidden="true">
+    <div class="overlay-content" id="inventory-content"></div>
+  </div>
+
+  <div id="overlay-settings" class="overlay" aria-hidden="true">
+    <div class="overlay-content" id="settings-content"></div>
+  </div>
+
+  <div id="overlay-pause" class="overlay" aria-hidden="true">
+    <div class="overlay-content" id="pause-content"></div>
+  </div>
+
+  <div id="overlay-day-summary" class="overlay" aria-hidden="true">
+    <div class="overlay-content" id="day-summary-content"></div>
+  </div>
+
+  <!-- Notification container (HUD layer) -->
+  <div id="notification-container" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Bootstrap game as ES6 module -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
