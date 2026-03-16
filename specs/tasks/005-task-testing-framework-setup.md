@@ -1,5 +1,8 @@
 # Task 005: Testing Framework Setup
 
+**GitHub Issue:** [#6 - Task 005: Testing Framework Setup](https://github.com/dmeseguerw/spec2cloud_game/issues/6)
+**GitHub PR:** [#9 - [WIP] Add testing framework setup for Denmark Survival game](https://github.com/dmeseguerw/spec2cloud_game/pull/9)
+
 ## Description
 Set up the testing infrastructure for Denmark Survival, including a test runner, mock utilities for Phaser objects, and test helpers. Since this is a browser-based Phaser game with ES6 modules, the testing framework must support module imports and provide utilities to mock Phaser's Game, Scene, and Registry objects for unit testing game logic without requiring a running browser/canvas.
 

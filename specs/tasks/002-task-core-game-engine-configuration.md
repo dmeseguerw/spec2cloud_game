@@ -1,5 +1,8 @@
 # Task 002: Core Game Engine Configuration
 
+**GitHub Issue:** [#7 - Task 002: Core Game Engine Configuration](https://github.com/dmeseguerw/spec2cloud_game/issues/7)
+**GitHub PR:** [#8 - [WIP] Configure Phaser.js game instance for Denmark Survival](https://github.com/dmeseguerw/spec2cloud_game/pull/8)
+
 ## Description
 Configure the Phaser.js game instance with appropriate settings for Denmark Survival — a 2D top-down RPG running at 60 FPS. Set up the game configuration object, define rendering settings, physics, and register the initial BootScene that displays a loading screen while assets load.
 
