@@ -36,6 +36,7 @@ export const INVENTORY = 'inventory';
 export const PLAYER_X = 'player_x';
 export const PLAYER_Y = 'player_y';
 export const PLAYER_SCENE = 'player_scene';
+export const PLAYER_LOCATION = 'player_location';
 export const NPC_RELATIONSHIPS = 'npc_relationships';
 export const ENCYCLOPEDIA_ENTRIES = 'encyclopedia_entries';
 export const COMPLETED_SCENARIOS = 'completed_scenarios';

@@ -239,6 +239,9 @@ export class MockGameObject {
   setInteractive() { return this; }
   setScrollFactor() { return this; }
   setTint() { return this; }
+  setFillStyle(color, alpha) { this._fillColor = color; this._fillAlpha = alpha; return this; }
+  setStyle(style) { this._style = style; return this; }
+  setSize(width, height) { this.width = width; this.height = height; return this; }
   on() { return this; }
   setFillStyle(color, alpha) { this._fillColor = color; this._fillAlpha = alpha; return this; }
   setStyle(style) { this._style = style; return this; }
