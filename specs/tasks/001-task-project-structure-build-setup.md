@@ -1,5 +1,8 @@
 # Task 001: Project Structure & Build Setup
 
+**GitHub Issue:** [#1 - Task 001: Project Structure & Build Setup](https://github.com/dmeseguerw/spec2cloud_game/issues/1)
+**GitHub PR:** [#2 - [WIP] Set up initial project structure and development server](https://github.com/dmeseguerw/spec2cloud_game/pull/2)
+
 ## Description
 Set up the initial project directory structure, HTML entry point, and development server for Denmark Survival. This establishes the foundation that all other tasks build upon. Per ADR 0007, start with Phase 1 (plain HTML + ES6 modules + CDN Phaser) and prepare for Phase 2 (Vite migration).
 
