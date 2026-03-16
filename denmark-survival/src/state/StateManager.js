@@ -4,11 +4,57 @@
  */
 
 import * as RK from '../constants/RegistryKeys.js';
-import { GAME_SAVED, GAME_LOADED } from '../constants/Events.js';
+import { GAME_SAVED, GAME_LOADED, AUTO_SAVED } from '../constants/Events.js';
 import { STARTING_HEALTH, STARTING_CURRENCY } from '../config.js';
 
 const SAVE_PREFIX = 'denmarkSurvival_save_';
 const GAME_VER = '0.1.0';
+
+/** Number of save slots */
+const SAVE_SLOT_COUNT = 3;
+
+/** Minimum set of keys that must be present for a save to be considered valid */
+const REQUIRED_KEYS = [
+  RK.PLAYER_NAME,
+  RK.PLAYER_XP,
+  RK.CURRENT_DAY,
+  RK.PLAYER_LEVEL,
+  RK.PLAYER_HEALTH,
+  RK.PLAYER_SCENE,
+];
+
+/** Default values applied when a save is missing a key (forward compatibility). */
+const KEY_DEFAULTS = new Map([
+  [RK.PLAYER_AVATAR,          'player'],
+  [RK.CURRENT_CHAPTER,        1],
+  [RK.CURRENT_PHASE,          'Newcomer'],
+  [RK.PLAYER_ENERGY,          100],
+  [RK.PLAYER_HAPPINESS,       70],
+  [RK.INVENTORY,              []],
+  [RK.NPC_RELATIONSHIPS,      {}],
+  [RK.ENCYCLOPEDIA_ENTRIES,   []],
+  [RK.COMPLETED_SCENARIOS,    []],
+  [RK.DIALOGUE_HISTORY,       {}],
+  [RK.ENCOUNTER_HISTORY,      []],
+  [RK.PENDING_BILLS,          []],
+  [RK.LAST_SALARY_DAY,        0],
+  [RK.PANT_BOTTLES,           0],
+  [RK.VOLUME_MASTER,          0.8],
+  [RK.VOLUME_MUSIC,           0.6],
+  [RK.VOLUME_SFX,             0.8],
+  [RK.CONTROLS_SCHEME,        'keyboard'],
+  [RK.TUTORIAL_COMPLETED,     false],
+  [RK.DIFFICULTY,             'normal'],
+  [RK.TOTAL_PLAYTIME,         0],
+  [RK.GAME_VERSION,           GAME_VER],
+  [RK.TIME_OF_DAY,            'morning'],
+  [RK.SEASON,                 'spring'],
+  [RK.DAY_IN_SEASON,          1],
+  [RK.PLAYER_X,               640],
+  [RK.PLAYER_Y,               360],
+  [RK.PLAYER_SCENE,           'GameScene'],
+  [RK.SAVE_SLOT,              1],
+]);
 
 /** All registry keys that should be persisted */
 const ALL_KEYS = [
@@ -153,6 +199,8 @@ export function loadGame(registry, slot, storage = globalThis.localStorage) {
     for (const key of ALL_KEYS) {
       if (key in data) {
         registry.set(key, data[key]);
+      } else if (KEY_DEFAULTS.has(key)) {
+        registry.set(key, KEY_DEFAULTS.get(key));
       }
     }
     registry.events.emit(GAME_LOADED, slot);
@@ -237,4 +285,59 @@ export function importSave(registry, jsonString, slot, storage = globalThis.loca
   } catch {
     return false;
   }
+}
+
+/**
+ * Validate save data structure and integrity.
+ * Checks that all required keys are present and that the data is not corrupted.
+ *
+ * @param {object} data - Parsed save data object
+ * @returns {{ valid: boolean, missing: string[], versionMismatch: boolean }}
+ */
+export function validateSaveData(data) {
+  if (!data || typeof data !== 'object') {
+    return { valid: false, missing: [...REQUIRED_KEYS], versionMismatch: false };
+  }
+  const missing = REQUIRED_KEYS.filter(key => !(key in data));
+  const versionMismatch = Boolean(data._version && data._version !== GAME_VER);
+  return {
+    valid: missing.length === 0,
+    missing,
+    versionMismatch,
+  };
+}
+
+/**
+ * Return the slot number (1–3) of the most recently saved game, or null if
+ * no saves exist.
+ *
+ * @param {object} [storage=localStorage]
+ * @returns {number|null}
+ */
+export function getMostRecentSave(storage = globalThis.localStorage) {
+  let mostRecentSlot = null;
+  let mostRecentTime = -1;
+  for (let slot = 1; slot <= SAVE_SLOT_COUNT; slot++) {
+    const meta = getSaveMetadata(slot, storage);
+    if (meta && meta.savedAt > mostRecentTime) {
+      mostRecentTime = meta.savedAt;
+      mostRecentSlot = slot;
+    }
+  }
+  return mostRecentSlot;
+}
+
+/**
+ * Auto-save to the current save slot (stored in registry under SAVE_SLOT key).
+ * Emits AUTO_SAVED after saving.
+ *
+ * @param {object} registry - Phaser registry (or MockRegistry)
+ * @param {object} [storage=localStorage]
+ * @returns {number} The slot number that was saved to
+ */
+export function autoSave(registry, storage = globalThis.localStorage) {
+  const slot = registry.get(RK.SAVE_SLOT) || 1;
+  saveGame(registry, slot, storage);
+  registry.events.emit(AUTO_SAVED, slot);
+  return slot;
 }
