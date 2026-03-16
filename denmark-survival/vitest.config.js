@@ -17,5 +17,6 @@ export default defineConfig({
         functions: 85,
       },
     },
+    setupFiles: ['tests/mocks/setupPhaser.js'],
   },
 });
