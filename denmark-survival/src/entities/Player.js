@@ -220,7 +220,8 @@ export class Player {
 
   /**
    * Play the correct idle or walk animation based on movement state.
-   * Silently skips if the animation manager is unavailable.
+   * Silently skips if the animation manager is unavailable or the
+   * animation has no valid frames (e.g. placeholder textures).
    */
   _updateAnimation() {
     if (!this.sprite || typeof this.sprite.play !== 'function') return;
@@ -232,6 +233,13 @@ export class Player {
       : `player_idle_${cardinalFacing}`;
 
     if (this.sprite.anims && this.sprite.anims.currentAnim?.key === animKey) return;
+
+    // Guard: only play if the animation exists and has valid frame data.
+    const anims = this.scene.anims;
+    if (!anims || typeof anims.exists !== 'function' || !anims.exists(animKey)) return;
+    const anim = typeof anims.get === 'function' ? anims.get(animKey) : null;
+    if (!anim || !anim.frames || anim.frames.length === 0 || anim.frames[0].duration == null) return;
+
     this.sprite.play(animKey, true);
   }
 

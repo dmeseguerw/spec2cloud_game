@@ -1,5 +1,8 @@
 # Task 016: Economy & Financial System
 
+**GitHub Issue:** [#41 - Task 016: Implement Economy & Financial System](https://github.com/dmeseguerw/spec2cloud_game/issues/41)
+**GitHub PR:** [#44 - [WIP] [TASK-016] Implement economy and financial system](https://github.com/dmeseguerw/spec2cloud_game/pull/44)
+
 ## Description
 Implement the DKK economy — salary income, shop purchasing, bill payments, and financial tracking. This covers the monetary side of the economy: where money comes from (salary), where it goes (shopping, bills, fines), and how it's tracked. The shopping interface is part of this task.
 

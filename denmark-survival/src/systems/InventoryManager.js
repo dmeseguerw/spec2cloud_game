@@ -12,7 +12,6 @@
  * Emits: ITEM_ADDED, ITEM_REMOVED, ITEM_USED, ITEM_SPOILED, PANT_RETURNED
  */
 
-import { createRequire } from 'node:module';
 import * as RK from '../constants/RegistryKeys.js';
 import {
   ITEM_ADDED,
@@ -22,27 +21,13 @@ import {
   PANT_RETURNED,
 } from '../constants/Events.js';
 import { grantXP } from './XPEngine.js';
+import ITEMS_DATA from '../data/items.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Item data loading
+// Item data
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Load item definitions from items.json.
- * Uses createRequire for Node/Vitest compatibility and falls back to an
- * empty array so the module remains importable in browser bundlers that
- * handle JSON via their own plugin.
- */
-function _loadItemData() {
-  try {
-    const require = createRequire(import.meta.url);
-    return require('../data/items.json');
-  } catch {
-    return [];
-  }
-}
-
-const ITEMS = _loadItemData();
+const ITEMS = ITEMS_DATA;
 
 /** Fast lookup map: itemId → item definition. */
 const ITEM_MAP = new Map(ITEMS.map(item => [item.id, item]));

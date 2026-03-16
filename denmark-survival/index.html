@@ -6,8 +6,20 @@
   <meta name="description" content="Denmark Survival - Master the art of Danish living, one bike ride at a time.">
   <title>Denmark Survival</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Phaser 3.80 via jsDelivr CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <!-- Phaser 3.80 — local copy (fallback from CDN) -->
+  <script src="node_modules/phaser/dist/phaser.min.js"></script>
+  <script>
+    // Verify Phaser loaded — show visible error if not
+    if (typeof Phaser === 'undefined') {
+      document.addEventListener('DOMContentLoaded', function() {
+        var el = document.getElementById('game-container');
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.innerHTML = '<p style="color:#e8d5b7;font-size:24px;">Error: Phaser failed to load. Check console.</p>';
+      });
+    }
+  </script>
 </head>
 <body>
   <!-- Game canvas target -->
