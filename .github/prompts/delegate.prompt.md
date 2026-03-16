@@ -16,6 +16,8 @@ Read the complete task file from `specs\tasks` to understand:
 
 ### 2. Create GitHub Issue
 
+Always target repository **dmeseguerw/spec2cloud_game** — explicitly pass `owner: dmeseguerw` and `repo: spec2cloud_game` to every GitHub MCP tool call.
+
 Use the GitHub MCP server to create an issue with:
 
 **Title:** Clear, concise task name (e.g., "Implement user authentication API")
