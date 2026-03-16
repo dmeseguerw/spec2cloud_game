@@ -1,5 +1,8 @@
 # Task 009: Audio System Foundation
 
+**GitHub Issue:** [#10 - Task 009: Audio System Foundation](https://github.com/dmeseguerw/spec2cloud_game/issues/10)
+**GitHub PR:** [#13 - [WIP] Add audio management system for background music and sound effects](https://github.com/dmeseguerw/spec2cloud_game/pull/13)
+
 ## Description
 Implement the audio management system that handles background music, sound effects, and audio settings. This includes a centralized AudioManager that plays, stops, and crossfades music tracks, plays one-shot sound effects, and respects user volume settings stored in the registry. The audio system is used by every feature for feedback sounds.
 

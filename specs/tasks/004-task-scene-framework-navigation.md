@@ -1,5 +1,8 @@
 # Task 004: Scene Framework & Navigation System
 
+**GitHub Issue:** [#11 - Task 004: Scene Framework & Navigation System](https://github.com/dmeseguerw/spec2cloud_game/issues/11)
+**GitHub PR:** [#12 - [WIP] Implement scene transition and navigation framework](https://github.com/dmeseguerw/spec2cloud_game/pull/12)
+
 ## Description
 Implement the scene transition and navigation framework that all game screens will use. This includes scene transition effects (fade in/out, slide), a scene manager utility for common transition patterns, and the parallel scene pattern (GameScene + UIScene running simultaneously). This establishes the navigation patterns that all subsequent scene-based tasks depend on.
 
