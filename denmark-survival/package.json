@@ -1,0 +1,14 @@
+{
+  "name": "denmark-survival",
+  "version": "0.1.0",
+  "description": "Denmark Survival — Master the art of Danish living, one bike ride at a time.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "npx http-server -p 8080 -c-1",
+    "test": "node tests/structure.test.js"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
