@@ -34,3 +34,15 @@ export const SCENE_TRANSITION_START = 'scene_transition_start';
 export const SCENE_TRANSITION_COMPLETE = 'scene_transition_complete';
 export const OVERLAY_OPENED = 'overlay_opened';
 export const OVERLAY_CLOSED = 'overlay_closed';
+
+// Transportation
+export const TRANSPORT_MODE_CHANGED      = 'transport_mode_changed';
+export const BIKE_MOUNTED                = 'bike_mounted';
+export const BIKE_DISMOUNTED             = 'bike_dismounted';
+export const BIKE_SIGNAL_CHECK           = 'bike_signal_check';
+export const BIKE_LIGHTS_WARNING         = 'bike_lights_warning';
+export const BIKE_ACCIDENT               = 'bike_accident';
+export const METRO_CHECKED_IN            = 'metro_checked_in';
+export const METRO_CHECKED_OUT           = 'metro_checked_out';
+export const METRO_FARE_DEDUCTED         = 'metro_fare_deducted';
+export const METRO_INSPECTOR_ENCOUNTER   = 'metro_inspector_encounter';

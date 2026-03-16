@@ -73,3 +73,14 @@ export const GAME_VERSION = 'game_version';
 export const WEATHER = 'weather';
 export const CURRENT_LOCATION = 'current_location';
 export const CONTEXT_HINT = 'context_hint';
+
+// Transportation
+export const TRANSPORT_MODE    = 'transport_mode';
+export const BIKE_MOUNTED      = 'bike_mounted';
+export const BIKE_LIGHTS_ON    = 'bike_lights_on';
+export const HAS_BIKE          = 'has_bike';
+export const HAS_BIKE_LIGHTS   = 'has_bike_lights';
+export const REJSEKORT_BALANCE = 'rejsekort_balance';
+export const METRO_CHECKED_IN  = 'metro_checked_in';
+export const METRO_MONTHLY_PASS = 'metro_monthly_pass';
+export const VISITED_LOCATIONS = 'visited_locations';
