@@ -56,6 +56,12 @@ export const PENDING_BILLS = 'pending_bills';
 export const LAST_SALARY_DAY = 'last_salary_day';
 export const PANT_BOTTLES = 'pant_bottles';
 
+// Inventory daily flags (reset each day)
+export const ATE_TODAY = 'ate_today';
+export const VITAMIN_D_TAKEN = 'vitamin_d_taken';
+export const SICK_RECOVERY_BOOST = 'sick_recovery_boost';
+export const BIKE_REPAIRED = 'bike_repaired';
+
 // Settings
 export const VOLUME_MASTER = 'volume_master';
 export const VOLUME_MUSIC = 'volume_music';
