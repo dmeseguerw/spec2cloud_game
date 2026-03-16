@@ -403,6 +403,9 @@ describe('BaseScene', () => {
       scene.init({ _parentSceneKey: 'GameScene', npcId: 'anna' });
       expect(scene._parentSceneKey).toBe('GameScene');
       expect(scene._isOverlay).toBe(true);
+      // Internal key is stripped from user-facing data
+      expect(scene._sceneData._parentSceneKey).toBeUndefined();
+      expect(scene._sceneData.npcId).toBe('anna');
     });
 
     it('does not set overlay flags when _parentSceneKey is absent', () => {

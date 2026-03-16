@@ -53,6 +53,8 @@ export class BaseScene extends Phaser.Scene {
     if (data._parentSceneKey) {
       this._parentSceneKey = data._parentSceneKey;
       this._isOverlay = true;
+      // Remove internal key from user-facing data
+      delete this._sceneData._parentSceneKey;
     }
   }
 
