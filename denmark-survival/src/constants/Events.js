@@ -35,6 +35,11 @@ export const SCENE_TRANSITION_COMPLETE = 'scene_transition_complete';
 export const OVERLAY_OPENED = 'overlay_opened';
 export const OVERLAY_CLOSED = 'overlay_closed';
 
+// Dialogue
+export const DIALOGUE_STARTED = 'dialogue_started';
+export const DIALOGUE_ENDED = 'dialogue_ended';
+export const DIALOGUE_NODE_CHANGED = 'dialogue_node_changed';
+export const DIALOGUE_RESPONSE_SELECTED = 'dialogue_response_selected';
 // Transportation
 export const TRANSPORT_MODE_CHANGED      = 'transport_mode_changed';
 export const BIKE_MOUNTED                = 'bike_mounted';
