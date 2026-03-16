@@ -29,6 +29,8 @@ const ALL_KEYS = [
 
 /**
  * Nationality starting bonuses for character creation.
+ * Each entry maps nationality name → starting skill values (0-100 scale).
+ * Unknown nationalities fall back to 'Other'.
  */
 const NATIONALITY_BONUSES = {
   Danish:      { language: 50, cultural: 40, cycling: 30, bureaucracy: 20 },
@@ -36,11 +38,15 @@ const NATIONALITY_BONUSES = {
   Norwegian:   { language: 25, cultural: 25, cycling: 20, bureaucracy: 15 },
   German:      { language: 15, cultural: 15, cycling: 25, bureaucracy: 20 },
   British:     { language: 10, cultural: 10, cycling: 10, bureaucracy: 10 },
-  American:    { language: 5,  cultural: 5,  cycling: 5,  bureaucracy: 5 },
+  American:    { language: 5,  cultural: 5,  cycling: 5,  bureaucracy: 5  },
   French:      { language: 10, cultural: 15, cycling: 15, bureaucracy: 10 },
-  Spanish:     { language: 5,  cultural: 10, cycling: 10, bureaucracy: 5 },
-  Italian:     { language: 5,  cultural: 10, cycling: 15, bureaucracy: 5 },
-  Other:       { language: 0,  cultural: 0,  cycling: 0,  bureaucracy: 0 },
+  Spanish:     { language: 5,  cultural: 10, cycling: 10, bureaucracy: 5  },
+  Italian:     { language: 5,  cultural: 10, cycling: 15, bureaucracy: 5  },
+  Dutch:       { language: 10, cultural: 15, cycling: 20, bureaucracy: 10 },
+  Polish:      { language: 10, cultural: 10, cycling: 15, bureaucracy: 20 },
+  Turkish:     { language: 5,  cultural: 10, cycling: 5,  bureaucracy: 5  },
+  Indian:      { language: 5,  cultural: 5,  cycling: 5,  bureaucracy: 10 },
+  Other:       { language: 0,  cultural: 0,  cycling: 0,  bureaucracy: 0  },
 };
 
 /**
@@ -70,8 +76,9 @@ export function initializeNewGame(registry, characterData) {
   registry.set(RK.SKILL_CULTURAL, bonuses.cultural);
   registry.set(RK.SKILL_BUREAUCRACY, bonuses.bureaucracy);
 
-  // Resources
-  registry.set(RK.PLAYER_MONEY, STARTING_CURRENCY);
+  // Resources — use job salary if provided, otherwise fall back to STARTING_CURRENCY
+  const money = characterData.startingMoney !== undefined ? characterData.startingMoney : STARTING_CURRENCY;
+  registry.set(RK.PLAYER_MONEY, money);
   registry.set(RK.PLAYER_HEALTH, STARTING_HEALTH);
   registry.set(RK.PLAYER_HAPPINESS, 70);
   registry.set(RK.PLAYER_ENERGY, 100);
