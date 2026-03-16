@@ -17,21 +17,23 @@ import {
   HEIGHT,
   BACKGROUND_COLOR,
   GAME_CONTAINER_ID,
+  PIXEL_ART,
+  ANTIALIAS,
+  ROUND_PIXELS,
 } from './config.js';
 
 // ---------------------------------------------------------------------------
 // Scene imports — add new scenes here as they are created
 // ---------------------------------------------------------------------------
-// Example (uncomment when the file exists):
-// import { BootScene }             from './scenes/BootScene.js';
-// import { MenuScene }             from './scenes/MenuScene.js';
-// import { CharacterCreationScene } from './scenes/CharacterCreationScene.js';
-// import { GameScene }             from './scenes/GameScene.js';
-// import { UIScene }               from './scenes/UIScene.js';
-// import { DialogueScene }         from './scenes/DialogueScene.js';
-// import { InventoryScene }        from './scenes/InventoryScene.js';
-// import { DaySummaryScene }       from './scenes/DaySummaryScene.js';
-// import { SettingsScene }         from './scenes/SettingsScene.js';
+import { BootScene }              from './scenes/BootScene.js';
+import { MenuScene }              from './scenes/MenuScene.js';
+import { CharacterCreationScene } from './scenes/CharacterCreationScene.js';
+import { GameScene }              from './scenes/GameScene.js';
+import { UIScene }                from './scenes/UIScene.js';
+import { DialogueScene }          from './scenes/DialogueScene.js';
+import { InventoryScene }         from './scenes/InventoryScene.js';
+import { DaySummaryScene }        from './scenes/DaySummaryScene.js';
+import { SettingsScene }          from './scenes/SettingsScene.js';
 
 // ---------------------------------------------------------------------------
 // Phaser game configuration
@@ -49,6 +51,13 @@ const phaserConfig = {
   parent: GAME_CONTAINER_ID,  // Mount inside the #game-container div
 
   backgroundColor: BACKGROUND_COLOR,
+
+  // Pixel-art rendering — disable anti-aliasing for crisp sprites
+  render: {
+    pixelArt:    PIXEL_ART,
+    antialias:   ANTIALIAS,
+    roundPixels: ROUND_PIXELS,
+  },
 
   // Responsive scaling — fit inside the viewport while keeping aspect ratio
   scale: {
@@ -70,7 +79,15 @@ const phaserConfig = {
   // Register scenes in boot order.
   // BootScene goes first; it preloads assets before handing off to MenuScene.
   scene: [
-    // Add scene classes here
+    BootScene,
+    MenuScene,
+    CharacterCreationScene,
+    GameScene,
+    UIScene,
+    DialogueScene,
+    InventoryScene,
+    DaySummaryScene,
+    SettingsScene,
   ],
 };
 

@@ -41,3 +41,8 @@ export const BACKGROUND_COLOR = '#1a1814';
 
 /** DOM id of the element that Phaser mounts its canvas into */
 export const GAME_CONTAINER_ID = 'game-container';
+
+/** Pixel-art rendering settings — disable anti-aliasing for crisp sprites */
+export const PIXEL_ART    = true;
+export const ANTIALIAS    = false;
+export const ROUND_PIXELS = true;
