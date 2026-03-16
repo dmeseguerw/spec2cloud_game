@@ -7,6 +7,107 @@
 import { EventEmitter } from 'node:events';
 
 /**
+ * MockSound — Mimics a Phaser BaseSound object.
+ * Tracks play/stop/pause/resume/destroy calls and exposes volume as a property.
+ */
+export class MockSound {
+  constructor(key) {
+    this.key      = key;
+    this.volume   = 1;
+    this.detune   = 0;
+    this.isPlaying = false;
+    this.isPaused  = false;
+    this.loop      = false;
+    this._calls    = { play: [], stop: 0, pause: 0, resume: 0, destroy: 0 };
+  }
+
+  play(config = {}) {
+    this.isPlaying = true;
+    this.isPaused  = false;
+    if (config.volume !== undefined) this.volume = config.volume;
+    if (config.detune !== undefined) this.detune = config.detune;
+    if (config.loop   !== undefined) this.loop   = config.loop;
+    this._calls.play.push({ ...config });
+    return this;
+  }
+
+  stop() {
+    this.isPlaying = false;
+    this._calls.stop++;
+    return this;
+  }
+
+  pause() {
+    if (this.isPlaying) {
+      this.isPlaying = false;
+      this.isPaused  = true;
+    }
+    this._calls.pause++;
+    return this;
+  }
+
+  resume() {
+    if (this.isPaused) {
+      this.isPaused  = false;
+      this.isPlaying = true;
+    }
+    this._calls.resume++;
+    return this;
+  }
+
+  setVolume(value) {
+    this.volume = value;
+    return this;
+  }
+
+  destroy() {
+    this.isPlaying = false;
+    this._calls.destroy++;
+  }
+}
+
+/**
+ * MockSoundManager — Mimics Phaser.Sound.BaseSoundManager.
+ * Keeps a registry of created sounds so tests can inspect them.
+ */
+export class MockSoundManager {
+  constructor() {
+    this._sounds  = new Map();  // key → MockSound[]
+    this._missing = new Set();  // keys that should simulate "missing" assets
+  }
+
+  /**
+   * Mark an audio key as unavailable (simulate missing asset).
+   * Calls to add() with this key will return null.
+   */
+  markMissing(key) {
+    this._missing.add(key);
+  }
+
+  add(key) {
+    if (this._missing.has(key)) return null;
+    const sound = new MockSound(key);
+    if (!this._sounds.has(key)) this._sounds.set(key, []);
+    this._sounds.get(key).push(sound);
+    return sound;
+  }
+
+  /** Get the most-recently created MockSound for a given key. */
+  getLastSound(key) {
+    const list = this._sounds.get(key);
+    return list ? list[list.length - 1] : null;
+  }
+
+  /** Get all MockSound instances created for a key. */
+  getAllSounds(key) {
+    return this._sounds.get(key) || [];
+  }
+
+  unlock() {}
+}
+
+
+/**
  * MockRegistry — Mimics Phaser.Data.DataManager
  * Stores data in a plain JS Map and emits changedata-{key} events on set.
  */
@@ -97,9 +198,7 @@ export class MockScene {
       audio: () => {},
       tilemapTiledJSON: () => {},
     };
-    this.sound = {
-      add: () => ({ play: () => {}, stop: () => {}, destroy: () => {} }),
-    };
+    this.sound = new MockSoundManager();
     this.input = {
       keyboard: {
         createCursorKeys: () => ({
