@@ -1,5 +1,8 @@
 # Task 022: Save/Load & Game Persistence
 
+**GitHub Issue:** [#32 - Task 022: Save/Load & Game Persistence](https://github.com/dmeseguerw/spec2cloud_game/issues/32)
+**GitHub PR:** [#40 - [WIP] Implement save/load system with game persistence](https://github.com/dmeseguerw/spec2cloud_game/pull/40)
+
 ## Description
 Implement the full save/load system with 3 save slots, auto-save, manual save, save export/import (backup), and game-over/restart handling. While the StateManager foundation exists in Task 003, this task integrates it into the full gameplay flow — auto-save triggers, save confirmation UI, load game flow, and edge cases like corrupted saves.
 

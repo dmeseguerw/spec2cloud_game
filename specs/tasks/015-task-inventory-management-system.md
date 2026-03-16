@@ -1,5 +1,8 @@
 # Task 015: Inventory Management System
 
+**GitHub Issue:** [#33 - Task 015: Inventory Management System](https://github.com/dmeseguerw/spec2cloud_game/issues/33)
+**GitHub PR:** [#37 - [WIP] Implement inventory management system for items](https://github.com/dmeseguerw/spec2cloud_game/pull/37)
+
 ## Description
 Implement the inventory system for managing items the player carries — groceries, health items, transport items, documents, and collectibles. This includes the inventory data model, the inventory UI screen, item usage/consumption, and food spoilage mechanics. This task covers the "item" half of the economy system (monetary transactions are in Task 016).
 

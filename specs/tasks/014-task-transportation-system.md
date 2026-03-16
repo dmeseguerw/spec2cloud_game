@@ -1,5 +1,8 @@
 # Task 014: Transportation System
 
+**GitHub Issue:** [#34 - Task 014: Transportation System](https://github.com/dmeseguerw/spec2cloud_game/issues/34)
+**GitHub PR:** [#36 - [WIP] Add transportation system with walking, biking, and metro/bus modes](https://github.com/dmeseguerw/spec2cloud_game/pull/36)
+
 ## Description
 Implement the three transportation modes (walking, biking, metro/bus) with their distinct mechanics, costs, risks, and XP implications. Biking is the primary mode with skill-based mechanics (signals, lights, parking). Metro requires check-in/out with fare calculation. Walking is safe but slow. Transportation is a core daily activity and major source of XP gain and loss.
 

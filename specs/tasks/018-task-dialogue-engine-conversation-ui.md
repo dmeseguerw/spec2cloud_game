@@ -1,5 +1,8 @@
 # Task 018: Dialogue Engine & Conversation UI
 
+**GitHub Issue:** [#31 - Task 018: Dialogue Engine & Conversation UI](https://github.com/dmeseguerw/spec2cloud_game/issues/31)
+**GitHub PR:** [#38 - [WIP] Implement branching dialogue system for NPC conversations](https://github.com/dmeseguerw/spec2cloud_game/pull/38)
+
 ## Description
 Implement the branching dialogue system that drives NPC conversations. This includes the dialogue data format, the dialogue runner engine, the conversation UI (DialogueScene), response selection, language skill gating, typewriter text effect, and dialogue-triggered outcomes (XP, relationship changes, item gifts, encyclopedia unlocks).
 
