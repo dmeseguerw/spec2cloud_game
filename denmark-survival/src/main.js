@@ -35,6 +35,7 @@ import { InventoryScene }         from './scenes/InventoryScene.js';
 import { DaySummaryScene }        from './scenes/DaySummaryScene.js';
 import { SettingsScene }          from './scenes/SettingsScene.js';
 import { PauseScene }             from './scenes/PauseScene.js';
+import { EncyclopediaScene }      from './scenes/EncyclopediaScene.js';
 
 // ---------------------------------------------------------------------------
 // Phaser game configuration
@@ -90,6 +91,7 @@ const phaserConfig = {
     DaySummaryScene,
     SettingsScene,
     PauseScene,
+    EncyclopediaScene,
   ],
 };
 

@@ -23,6 +23,7 @@ export default defineConfig({
         'src/scenes/DaySummaryScene.js',
         'src/scenes/SettingsScene.js',
         'src/scenes/PauseScene.js',
+        'src/scenes/EncyclopediaScene.js',
       ],
       thresholds: {
         lines: 85,

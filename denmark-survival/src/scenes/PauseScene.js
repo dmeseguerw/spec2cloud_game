@@ -45,7 +45,7 @@ export class PauseScene extends BaseScene {
 
     // Panel background
     const panelW = 340;
-    const panelH = 440;
+    const panelH = 510;
     this.add.rectangle(width / 2, height / 2, panelW, panelH, 0x0d1a26, 0.97)
       .setDepth(1);
 
@@ -78,12 +78,13 @@ export class PauseScene extends BaseScene {
     const bh     = 50;
 
     const entries = [
-      { key: 'resume',   label: 'Resume',    cb: () => this._onResume()   },
-      { key: 'settings', label: 'Settings',  cb: () => this._onSettings() },
-      { key: 'save',     label: 'Save Game', cb: () => this._onSaveGame() },
-      { key: 'load',     label: 'Load Game', cb: () => this._onLoadGame() },
-      { key: 'menu',     label: 'Main Menu', cb: () => this._onMainMenu() },
-      { key: 'quit',     label: 'Quit',      cb: () => this._onQuit()     },
+      { key: 'resume',       label: 'Resume',       cb: () => this._onResume()       },
+      { key: 'encyclopedia', label: 'Encyclopedia', cb: () => this._onEncyclopedia() },
+      { key: 'settings',     label: 'Settings',     cb: () => this._onSettings()     },
+      { key: 'save',         label: 'Save Game',    cb: () => this._onSaveGame()     },
+      { key: 'load',         label: 'Load Game',    cb: () => this._onLoadGame()     },
+      { key: 'menu',         label: 'Main Menu',    cb: () => this._onMainMenu()     },
+      { key: 'quit',         label: 'Quit',         cb: () => this._onQuit()         },
     ];
 
     entries.forEach((entry, i) => {
@@ -100,6 +101,10 @@ export class PauseScene extends BaseScene {
 
   _onResume() {
     this.closeOverlay();
+  }
+
+  _onEncyclopedia() {
+    this.openOverlay('EncyclopediaScene');
   }
 
   _onSettings() {
