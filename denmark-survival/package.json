@@ -6,9 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "npx http-server -p 8080 -c-1",
-    "test": "node tests/structure.test.js && node tests/engine.test.js"
+    "test": "node tests/structure.test.js && node tests/engine.test.js && npx vitest run",
+    "test:watch": "npx vitest",
+    "test:coverage": "npx vitest run --coverage"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "vitest": "^4.1.0"
   }
 }

@@ -79,3 +79,33 @@ When adding new assets:
 1. Confirm the license allows use in a commercial or open-source game.
 2. Add an entry to the appropriate table above.
 3. Keep the original license file / readme if required by CC-BY.
+
+---
+
+## Planned Asset Sources
+
+The following sources will be used for game assets as development progresses:
+
+### Sprites & Tilesets
+| Asset | Source | License | Author |
+|-------|--------|---------|--------|
+| Character sprites | [Kenney.nl](https://kenney.nl) | CC0 1.0 | Kenney |
+| City tileset | [OpenGameArt.org](https://opengameart.org) | CC0 / CC-BY | Various |
+| Interior tileset | [LPC (Liberated Pixel Cup)](https://lpc.opengameart.org) | CC-BY-SA 3.0 / GPL 3.0 | LPC Contributors |
+| Nature tileset | [Kenney.nl](https://kenney.nl) | CC0 1.0 | Kenney |
+
+### Audio
+| Asset | Source | License | Author |
+|-------|--------|---------|--------|
+| Background music | [Freesound.org](https://freesound.org) | CC0 / CC-BY | Various |
+| UI sound effects | [Kenney.nl](https://kenney.nl) | CC0 1.0 | Kenney |
+| Footstep sounds | [Freesound.org](https://freesound.org) | CC0 | Various |
+
+### Fonts
+| Asset | Source | License | Author |
+|-------|--------|---------|--------|
+| Inter | [Google Fonts](https://fonts.google.com/specimen/Inter) | OFL 1.1 | Rasmus Andersson |
+| Press Start 2P | [Google Fonts](https://fonts.google.com/specimen/Press+Start+2P) | OFL 1.1 | CodeMan38 |
+
+> **Note:** All placeholder assets are programmatically generated colored rectangles.
+> They will be replaced with properly licensed assets from the sources above.
