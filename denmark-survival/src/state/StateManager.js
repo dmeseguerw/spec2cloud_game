@@ -141,14 +141,18 @@ export function loadGame(registry, slot, storage = globalThis.localStorage) {
   const raw = storage.getItem(`${SAVE_PREFIX}${slot}`);
   if (!raw) return false;
 
-  const data = JSON.parse(raw);
-  for (const key of ALL_KEYS) {
-    if (key in data) {
-      registry.set(key, data[key]);
+  try {
+    const data = JSON.parse(raw);
+    for (const key of ALL_KEYS) {
+      if (key in data) {
+        registry.set(key, data[key]);
+      }
     }
+    registry.events.emit(GAME_LOADED, slot);
+    return true;
+  } catch {
+    return false;
   }
-  registry.events.emit(GAME_LOADED, slot);
-  return true;
 }
 
 /**
@@ -180,14 +184,18 @@ export function getSaveMetadata(slot, storage = globalThis.localStorage) {
   const raw = storage.getItem(`${SAVE_PREFIX}${slot}`);
   if (!raw) return null;
 
-  const data = JSON.parse(raw);
-  return {
-    name: data[RK.PLAYER_NAME] || 'Unknown',
-    level: data[RK.PLAYER_LEVEL] || 1,
-    day: data[RK.CURRENT_DAY] || 1,
-    playtime: data[RK.TOTAL_PLAYTIME] || 0,
-    savedAt: data._savedAt || 0,
-  };
+  try {
+    const data = JSON.parse(raw);
+    return {
+      name: data[RK.PLAYER_NAME] || 'Unknown',
+      level: data[RK.PLAYER_LEVEL] || 1,
+      day: data[RK.CURRENT_DAY] || 1,
+      playtime: data[RK.TOTAL_PLAYTIME] || 0,
+      savedAt: data._savedAt || 0,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**

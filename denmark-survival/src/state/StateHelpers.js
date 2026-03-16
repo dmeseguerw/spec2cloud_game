@@ -16,6 +16,7 @@ import { XP_THRESHOLDS, MAX_LEVEL } from '../config.js';
  * @returns {{ newXP: number, leveledUp: boolean, newLevel: number }}
  */
 export function addXP(registry, amount, source = 'unknown') {
+  if (amount < 0) return addXP(registry, 0, source); // Guard against negative values
   const currentXP = registry.get(RK.PLAYER_XP) || 0;
   const currentLevel = registry.get(RK.PLAYER_LEVEL) || 1;
   const newXP = currentXP + amount;
@@ -99,14 +100,15 @@ export function addItem(registry, item) {
   const existing = inventory.find(i => i.id === item.id);
 
   if (existing) {
-    existing.quantity = (existing.quantity || 1) + (item.quantity || 1);
+    const idx = inventory.indexOf(existing);
+    inventory[idx] = { ...existing, quantity: (existing.quantity || 1) + (item.quantity || 1) };
   } else {
     inventory.push({
       id: item.id,
       name: item.name,
       quantity: item.quantity || 1,
       category: item.category || 'misc',
-      spoilsAt: item.spoilsAt || null,
+      spoilsAt: item.spoilsAt ?? null,
     });
   }
 
@@ -147,6 +149,7 @@ export function removeItem(registry, itemId, quantity = 1) {
  * @returns {number} New balance
  */
 export function addMoney(registry, amount) {
+  if (amount < 0) return registry.get(RK.PLAYER_MONEY) || 0; // Use spendMoney() for deductions
   const current = registry.get(RK.PLAYER_MONEY) || 0;
   const newBalance = current + amount;
   registry.set(RK.PLAYER_MONEY, newBalance);
