@@ -1,19 +1,34 @@
 /**
  * src/scenes/DialogueScene.js
- * NPC conversation placeholder scene.
+ * NPC conversation overlay scene.
  */
 
-export class DialogueScene extends Phaser.Scene {
+import { BaseScene } from './BaseScene.js';
+
+export class DialogueScene extends BaseScene {
   constructor() {
     super({ key: 'DialogueScene' });
   }
 
+  init(data) {
+    super.init(data);
+  }
+
   create() {
+    // Semi-transparent background for overlay
+    if (this._isOverlay) {
+      this.createOverlayBackground();
+    }
+
     const { width, height } = this.scale;
     this.add.text(width / 2, height / 2, 'DialogueScene', {
       fontFamily: 'Arial',
       fontSize:   '32px',
       color:      '#e8d5b7',
     }).setOrigin(0.5);
+  }
+
+  shutdown() {
+    super.shutdown();
   }
 }

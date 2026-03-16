@@ -6,6 +6,7 @@
  */
 
 import * as AK from '../constants/AssetKeys.js';
+import { fadeToScene, DEFAULT_FADE_DURATION } from './SceneTransition.js';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -70,7 +71,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('MenuScene');
+    fadeToScene(this, 'MenuScene');
   }
 
   // ---------------------------------------------------------------------------

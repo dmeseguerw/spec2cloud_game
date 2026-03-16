@@ -1,11 +1,17 @@
 /**
  * src/scenes/UIScene.js
- * HUD overlay placeholder scene.
+ * HUD overlay placeholder scene — runs in parallel with GameScene.
  */
 
-export class UIScene extends Phaser.Scene {
+import { BaseScene } from './BaseScene.js';
+
+export class UIScene extends BaseScene {
   constructor() {
     super({ key: 'UIScene' });
+  }
+
+  init(data) {
+    super.init(data);
   }
 
   create() {
@@ -15,5 +21,13 @@ export class UIScene extends Phaser.Scene {
       fontSize:   '32px',
       color:      '#e8d5b7',
     }).setOrigin(0.5);
+  }
+
+  update(time, delta) {
+    // UI update loop — override in future tasks
+  }
+
+  shutdown() {
+    super.shutdown();
   }
 }

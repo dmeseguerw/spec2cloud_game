@@ -58,6 +58,16 @@ function buildScene() {
     on: vi.fn().mockImplementation((event, cb) => { loadCallbacks[event] = cb; }),
   };
   scene.scene    = { start: vi.fn() };
+  scene.cameras  = {
+    main: {
+      fadeOut: vi.fn().mockImplementation((_duration, _r, _g, _b, callback) => {
+        if (callback) callback(scene.cameras.main, 1);
+      }),
+      fadeIn: vi.fn().mockImplementation((_duration, _r, _g, _b, callback) => {
+        if (callback) callback(scene.cameras.main, 1);
+      }),
+    },
+  };
 
   return { scene, textObjects, rectObjects, loadCallbacks, mockGraphics };
 }
@@ -77,16 +87,18 @@ describe('BootScene', () => {
   // ── create() ─────────────────────────────────────────────────────────────
 
   describe('create()', () => {
-    it('transitions to MenuScene', () => {
+    it('transitions to MenuScene via fade', () => {
       const { scene } = buildScene();
       scene.create();
-      expect(scene.scene.start).toHaveBeenCalledWith('MenuScene');
+      expect(scene.cameras.main.fadeOut).toHaveBeenCalled();
+      // The fade callback triggers scene.start('MenuScene')
+      expect(scene.scene.start).toHaveBeenCalledWith('MenuScene', {});
     });
 
-    it('only calls scene.start once', () => {
+    it('only calls fadeOut once', () => {
       const { scene } = buildScene();
       scene.create();
-      expect(scene.scene.start).toHaveBeenCalledTimes(1);
+      expect(scene.cameras.main.fadeOut).toHaveBeenCalledTimes(1);
     });
   });
 
