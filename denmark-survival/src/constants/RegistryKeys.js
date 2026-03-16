@@ -48,6 +48,8 @@ export const ENCOUNTER_HISTORY = 'encounter_history';
 export const TIME_OF_DAY = 'time_of_day';
 export const SEASON = 'season';
 export const DAY_IN_SEASON = 'day_in_season';
+export const ACTIVITY_SLOTS_REMAINING = 'activity_slots_remaining';
+export const MANDATORY_ACTIVITIES = 'mandatory_activities';
 
 // Financial
 export const PENDING_BILLS = 'pending_bills';
