@@ -1,5 +1,8 @@
 # Task 007: UI Framework & HUD System
 
+**GitHub Issue:** [#16 - Task 007: UI Framework & HUD System](https://github.com/dmeseguerw/spec2cloud_game/issues/16)
+**GitHub PR:** [#17 - [WIP] Implement UI framework for HUD system](https://github.com/dmeseguerw/spec2cloud_game/pull/17)
+
 ## Description
 Implement the UI framework that all game screens use for heads-up display, notifications, menus, and interactive elements. This includes the persistent UIScene overlay (health, XP, money, time), the notification/toast system, and reusable UI component patterns (buttons, panels, progress bars) using the hybrid Phaser + HTML/DOM approach defined in ADR 0005.
 

@@ -1,5 +1,8 @@
 # Task 008: Player Entity & World Movement
 
+**GitHub Issue:** [#15 - Task 008: Player Entity & World Movement](https://github.com/dmeseguerw/spec2cloud_game/issues/15)
+**GitHub PR:** [#18 - [WIP] Implement player entity and world movement features](https://github.com/dmeseguerw/spec2cloud_game/pull/18)
+
 ## Description
 Implement the player character entity, 8-directional top-down movement, and the base GameScene world that the player navigates. This includes the player sprite with walk animations, collision with world boundaries and objects, camera following, and the foundation tilemap rendering for Copenhagen environments. This task creates the "walking around" core that all location-based features depend on.
 
