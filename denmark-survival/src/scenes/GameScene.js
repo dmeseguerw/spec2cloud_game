@@ -16,7 +16,10 @@
 import { BaseScene } from './BaseScene.js';
 import { Player } from '../entities/Player.js';
 import { InputManager } from '../systems/InputManager.js';
-import { TILEMAP_TEST, TILESET_CITY } from '../constants/AssetKeys.js';
+import {
+  TILEMAP_TEST, TILESET_CITY,
+  SPRITE_NPC_LARS, SPRITE_INDICATOR_EXCLAMATION,
+} from '../constants/AssetKeys.js';
 import {
   PLAYER_X, PLAYER_Y, PLAYER_SCENE, PLAYER_LOCATION,
 } from '../constants/RegistryKeys.js';
@@ -27,6 +30,9 @@ const DEFAULT_SPAWN_Y = 300;
 
 /** Distance (px) within which an interactable object is considered "nearby". */
 const INTERACT_RANGE = 64;
+
+/** Vertical offset (px) above the NPC sprite for the interaction indicator. */
+const INDICATOR_VERTICAL_OFFSET = -32;
 
 export class GameScene extends BaseScene {
   constructor() {
@@ -281,9 +287,9 @@ export class GameScene extends BaseScene {
    * @returns {object} The registered interactable entry.
    */
   addInteractable({ name, type = 'talk', x, y, callback = () => {} }) {
-    const sprite = this.add.sprite(x, y, 'sprite_npc_lars');
+    const sprite = this.add.sprite(x, y, SPRITE_NPC_LARS);
 
-    const indicator = this.add.sprite(x, y - 32, 'sprite_indicator_exclamation');
+    const indicator = this.add.sprite(x, y + INDICATOR_VERTICAL_OFFSET, SPRITE_INDICATOR_EXCLAMATION);
     indicator.setVisible(false);
 
     const entry = { name, type, x, y, sprite, indicator, callback };

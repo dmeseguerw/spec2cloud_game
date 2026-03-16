@@ -68,9 +68,10 @@ export class Player {
    * Call this every frame from the scene's update().
    *
    * @param {{ left: boolean, right: boolean, up: boolean, down: boolean }} input
-   *   Normalised directional booleans from InputManager.
+   *   Normalized directional booleans from InputManager.
+   * @param {number} [delta=16.67] - Time since last frame in milliseconds (from scene update).
    */
-  update(input) {
+  update(input, delta = 1000 / 60) {
     const { left, right, up, down } = input;
 
     let vx = 0;
@@ -81,7 +82,7 @@ export class Player {
     if (up)    vy -= 1;
     if (down)  vy += 1;
 
-    // Diagonal normalisation — maintain constant speed in all directions.
+    // Diagonal normalization — maintain constant speed in all directions.
     if (vx !== 0 && vy !== 0) {
       const INV_SQRT2 = 0.7071067811865476;
       vx *= INV_SQRT2;
@@ -97,9 +98,9 @@ export class Player {
     if (this.sprite.body && typeof this.sprite.body.setVelocity === 'function') {
       this.sprite.body.setVelocity(finalVx, finalVy);
     } else {
-      // No physics body — update position directly (test / fallback mode).
-      this.sprite.x += finalVx / 60;
-      this.sprite.y += finalVy / 60;
+      // No physics body — update position using delta time (test / fallback mode).
+      this.sprite.x += (finalVx * delta) / 1000;
+      this.sprite.y += (finalVy * delta) / 1000;
     }
 
     // Update facing direction from input.

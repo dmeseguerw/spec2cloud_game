@@ -131,7 +131,7 @@ describe('Player — cardinal movement speed', () => {
   });
 });
 
-describe('Player — diagonal speed normalisation', () => {
+describe('Player — diagonal speed normalization', () => {
   const EXPECTED = PLAYER_SPEED * Math.SQRT1_2;
 
   it('down-right diagonal equals cardinal speed in magnitude', () => {
@@ -384,8 +384,11 @@ describe('Player — fallback (no physics)', () => {
     };
     const player = new Player(scene, 50, 75);
     const origX = player.sprite.x;
-    player.update({ left: false, right: true, up: false, down: false });
+    // Pass a known delta (e.g. 100ms) so movement is predictable.
+    player.update({ left: false, right: true, up: false, down: false }, 100);
     // Position should have changed (moved right).
     expect(player.sprite.x).toBeGreaterThan(origX);
+    // Expected: PLAYER_SPEED px/sec × 100ms / 1000ms = 10px
+    expect(player.sprite.x).toBeCloseTo(origX + PLAYER_SPEED * 100 / 1000);
   });
 });
