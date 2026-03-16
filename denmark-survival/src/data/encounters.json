@@ -1,0 +1,2001 @@
+[
+  {
+    "id": "helpful_bike_stranger",
+    "category": "helpful",
+    "title": "A Helping Hand",
+    "description": "A friendly local notices your bike chain has slipped. They stop and offer to help fix it before you even realize there's a problem.",
+    "icon": "icon_bike",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20,
+      "transportMode": "bike"
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Accept their help gratefully",
+        "outcome": {
+          "xp": 10,
+          "relationship": { "npcId": "freja", "delta": 5 },
+          "encyclopedia": "culture_helpfulness"
+        },
+        "resultText": "They fix your chain in minutes and wave you off with a smile. How Danish of them!",
+        "culturalTip": "💡 Danes often help strangers with practical matters without expecting anything in return."
+      },
+      {
+        "text": "Try to fix it yourself first",
+        "skillCheck": { "skill": "cycling", "level": 2 },
+        "outcome": {
+          "xp": 15,
+          "skill": { "skillKey": "cycling", "delta": 5 }
+        },
+        "resultText": "You manage it yourself. The local nods approvingly — self-reliance is respected here.",
+        "culturalTip": "💡 Cycling is practically a life skill in Denmark. Most Danes learn basic bike maintenance early."
+      }
+    ]
+  },
+  {
+    "id": "helpful_language_class",
+    "category": "helpful",
+    "title": "Free Danish Lessons",
+    "description": "A notice board at the community centre advertises free Danish language classes starting this week. A volunteer coordinator is standing nearby handing out flyers.",
+    "icon": "icon_book",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 10
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Sign up immediately",
+        "outcome": {
+          "xp": 20,
+          "skill": { "skillKey": "language", "delta": 10 },
+          "flag": { "key": "enrolled_language_class", "value": true }
+        },
+        "resultText": "You sign up! The coordinator beams and hands you a schedule. Your Danish journey is about to accelerate.",
+        "culturalTip": "💡 Denmark offers free or subsidised Danish classes (Danskuddannelse) to immigrants. Take advantage!"
+      },
+      {
+        "text": "Take a flyer but commit later",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "You pocket the flyer. Maybe next week. The opportunity remains open.",
+        "culturalTip": "💡 Most municipalities require immigrants to attend language courses. It's both a right and an obligation."
+      }
+    ]
+  },
+  {
+    "id": "helpful_umbrella_share",
+    "category": "helpful",
+    "title": "Shared Shelter",
+    "description": "A sudden downpour catches you unprepared. A woman at the bus stop smiles and gestures for you to share her umbrella.",
+    "icon": "icon_umbrella",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Rainy"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Join her under the umbrella",
+        "outcome": {
+          "xp": 10,
+          "relationship": { "npcId": "mette", "delta": 8 },
+          "encyclopedia": "culture_janteloven"
+        },
+        "resultText": "You chat while waiting for the bus. She turns out to be a librarian with tips on settling in.",
+        "culturalTip": "💡 Despite the reserved reputation, Danes can be very warm in small moments of shared adversity."
+      },
+      {
+        "text": "Politely decline and dash for cover",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "You make it to a shop awning, soaked but smiling. At least the rain is refreshing.",
+        "culturalTip": "💡 Denmark averages about 170 rainy days per year. An umbrella is a year-round investment."
+      }
+    ]
+  },
+  {
+    "id": "helpful_library_card",
+    "category": "helpful",
+    "title": "Gateway to Knowledge",
+    "description": "A librarian notices you looking overwhelmed by the Danish interface on the public computer. She offers to help you sign up for a library card.",
+    "icon": "icon_library",
+    "conditions": {
+      "locations": ["library", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 15
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Accept her help and get a card",
+        "outcome": {
+          "xp": 25,
+          "skill": { "skillKey": "bureaucracy", "delta": 8 },
+          "encyclopedia": "institution_library",
+          "flag": { "key": "has_library_card", "value": true }
+        },
+        "resultText": "With your library card you can borrow books, use computers, and attend events for free. A true treasure.",
+        "culturalTip": "💡 Danish public libraries (Folkebiblioteket) offer free access to books, films, music, and even tools."
+      },
+      {
+        "text": "Try to navigate the system yourself",
+        "skillCheck": { "skill": "language", "level": 2 },
+        "outcome": {
+          "xp": 20,
+          "skill": { "skillKey": "language", "delta": 8 },
+          "flag": { "key": "has_library_card", "value": true }
+        },
+        "resultText": "You manage to navigate the Danish forms yourself. The librarian gives you an impressed nod.",
+        "culturalTip": "💡 Libraries in Denmark often provide settlement guidance and host integration events."
+      }
+    ]
+  },
+  {
+    "id": "helpful_job_lead",
+    "category": "helpful",
+    "title": "A Tip from a Stranger",
+    "description": "You overhear two people at a café discussing job openings in your field. One of them notices your interest and introduces themselves.",
+    "icon": "icon_briefcase",
+    "conditions": {
+      "locations": ["cafe", "city_center", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 3,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Join the conversation",
+        "skillCheck": { "skill": "language", "level": 2 },
+        "outcome": {
+          "xp": 30,
+          "money": 0,
+          "relationship": { "npcId": "lars", "delta": 10 },
+          "flag": { "key": "received_job_lead", "value": true }
+        },
+        "resultText": "Your Danish surprises them. They share contacts and suggest applying this week. Networking Danish-style!",
+        "culturalTip": "💡 Much of the Danish job market runs on informal networks. Coffee meetings are a normal part of job hunting."
+      },
+      {
+        "text": "Listen politely but don't engage",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "You catch snippets of useful information but miss the networking opportunity.",
+        "culturalTip": "💡 Even a brief introduction can open doors in Denmark's relatively flat, egalitarian workplace culture."
+      }
+    ]
+  },
+  {
+    "id": "helpful_discount_tip",
+    "category": "helpful",
+    "title": "Insider Knowledge",
+    "description": "A friendly cashier at the grocery store points out a yellow discount sticker on items that expire today — up to 50% off.",
+    "icon": "icon_coin",
+    "conditions": {
+      "locations": ["grocery_store", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Load up on discounted items",
+        "outcome": {
+          "xp": 10,
+          "money": 30,
+          "encyclopedia": "economy_danish_shopping",
+          "flag": { "key": "knows_yellow_sticker", "value": true }
+        },
+        "resultText": "You save 30 DKK and get a week's worth of meals. The yellow sticker is your new best friend.",
+        "culturalTip": "💡 Danskerne (Danes) are savvy shoppers. Yellow 'tilbud' (offer) stickers near closing time are golden."
+      },
+      {
+        "text": "Pick just one or two items",
+        "outcome": {
+          "xp": 5,
+          "money": 15
+        },
+        "resultText": "You grab a couple of bargains and head home with extra change in your pocket.",
+        "culturalTip": "💡 Food waste is a serious concern in Denmark. Discounted near-expiry food is a win for your wallet and the planet."
+      }
+    ]
+  },
+  {
+    "id": "helpful_metro_tip",
+    "category": "helpful",
+    "title": "Savvy Commuter Advice",
+    "description": "A commuter sees you fumbling with the metro ticket machine and explains that a monthly pass is cheaper than daily tickets if you ride more than 10 times.",
+    "icon": "icon_metro",
+    "conditions": {
+      "locations": ["metro", "norreport", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20,
+      "transportMode": "metro"
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Ask more about the pass options",
+        "outcome": {
+          "xp": 15,
+          "encyclopedia": "transport_metro_system",
+          "flag": { "key": "knows_monthly_pass", "value": true }
+        },
+        "resultText": "You learn about zones, monthly passes, and the Rejsekort. Your commute is about to get cheaper.",
+        "culturalTip": "💡 The Rejsekort is Denmark's contactless smart card for all public transport, offering automatic discounts."
+      },
+      {
+        "text": "Thank them briefly and continue",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "You note the tip mentally. The monthly pass question stays in the back of your mind.",
+        "culturalTip": "💡 Copenhagen's metro runs 24/7, making it one of the most convenient city transit systems in the world."
+      }
+    ]
+  },
+  {
+    "id": "helpful_danish_recipe",
+    "category": "helpful",
+    "title": "A Recipe for Integration",
+    "description": "Your neighbour smells your cooking and knocks to ask what you're making. The conversation turns to Danish cuisine and they offer to teach you their grandmother's recipe for smørrebrød.",
+    "icon": "icon_food",
+    "conditions": {
+      "locations": ["home", "apartment", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Accept enthusiastically",
+        "outcome": {
+          "xp": 20,
+          "skill": { "skillKey": "cultural", "delta": 8 },
+          "encyclopedia": "food_smorrebrod",
+          "flag": { "key": "learned_smorrebrod", "value": true }
+        },
+        "resultText": "You spend a delightful hour learning about Danish open-faced sandwiches. Culture through cuisine!",
+        "culturalTip": "💡 Smørrebrød (open-faced rye bread sandwiches) is a cornerstone of Danish food culture and social life."
+      },
+      {
+        "text": "Politely decline for now",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "Your neighbour understands and leaves a handwritten recipe card. How thoughtful.",
+        "culturalTip": "💡 Rye bread (rugbrød) is eaten daily by most Danes. It's dense, nutritious, and an acquired taste."
+      }
+    ]
+  },
+  {
+    "id": "helpful_cultural_event",
+    "category": "helpful",
+    "title": "Festival Invitation",
+    "description": "A colleague at work mentions a free cultural festival in the park this weekend. They invite you to join their group.",
+    "icon": "icon_festival",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Sunny", "Cloudy"],
+      "seasons": ["Summer", "Spring"],
+      "timeOfDay": ["afternoon"],
+      "minLevel": 2,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Accept and join them",
+        "outcome": {
+          "xp": 25,
+          "skill": { "skillKey": "cultural", "delta": 10 },
+          "relationship": { "npcId": "lars", "delta": 10 }
+        },
+        "resultText": "The festival is wonderful — music, hygge, and new friends. You feel more at home in Denmark.",
+        "culturalTip": "💡 Danes are festival lovers. From Roskilde to local neighbourhood fests, summer is full of free events."
+      },
+      {
+        "text": "Decline but ask about future events",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "cultural", "delta": 3 }
+        },
+        "resultText": "They share a calendar of upcoming events. Baby steps toward social integration.",
+        "culturalTip": "💡 Cultural participation is an important part of integration recognised by Danish authorities."
+      }
+    ]
+  },
+  {
+    "id": "helpful_free_bike_repair",
+    "category": "helpful",
+    "title": "Neighbourhood Workshop",
+    "description": "You spot a sign for a free community bike repair workshop in the neighbourhood. Volunteers help fix bikes every Saturday morning.",
+    "icon": "icon_tools",
+    "conditions": {
+      "locations": ["norrebro", "frederiksberg", "any"],
+      "weather": ["any"],
+      "seasons": ["Spring", "Summer", "Fall"],
+      "timeOfDay": ["morning"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Bring your bike in for maintenance",
+        "outcome": {
+          "xp": 15,
+          "skill": { "skillKey": "cycling", "delta": 5 },
+          "encyclopedia": "culture_cycling",
+          "flag": { "key": "bike_serviced", "value": true }
+        },
+        "resultText": "The volunteers tune up your bike perfectly. They also teach you how to do it yourself next time.",
+        "culturalTip": "💡 Community repair cafés are common in Denmark, reflecting the culture of sustainability and self-reliance."
+      },
+      {
+        "text": "Just observe and learn",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "cycling", "delta": 3 }
+        },
+        "resultText": "You pick up some useful tips by watching the volunteers work.",
+        "culturalTip": "💡 Over 62% of Danes cycle to work or school. Keeping your bike maintained is essential."
+      }
+    ]
+  },
+  {
+    "id": "helpful_npc_intro",
+    "category": "helpful",
+    "title": "A New Connection",
+    "description": "Lars introduces you to his friend Thomas, a community organiser who knows everyone in the neighbourhood. He could be a valuable contact.",
+    "icon": "icon_people",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 2,
+      "maxLevel": 20,
+      "requiredFlag": { "key": "knows_lars", "value": true }
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Make a great first impression",
+        "skillCheck": { "skill": "cultural", "level": 2 },
+        "outcome": {
+          "xp": 30,
+          "relationship": { "npcId": "thomas", "delta": 20 },
+          "flag": { "key": "met_thomas", "value": true }
+        },
+        "resultText": "Thomas is immediately warm and says you should come to the next neighbourhood meeting.",
+        "culturalTip": "💡 In Denmark, community involvement (foreningsliv) is central to social life. Joining groups opens many doors."
+      },
+      {
+        "text": "Keep it brief but friendly",
+        "outcome": {
+          "xp": 15,
+          "relationship": { "npcId": "thomas", "delta": 10 },
+          "flag": { "key": "met_thomas", "value": true }
+        },
+        "resultText": "You exchange numbers. Thomas seems like someone worth knowing better.",
+        "culturalTip": "💡 Danes may seem reserved at first but become very loyal once they consider you part of their circle."
+      }
+    ]
+  },
+  {
+    "id": "helpful_bureaucracy_tip",
+    "category": "helpful",
+    "title": "Navigating the System",
+    "description": "An expat at the community centre shares a document checklist they wish they'd had when first arrived. It covers CPR numbers, Nem ID, and bank accounts.",
+    "icon": "icon_document",
+    "conditions": {
+      "locations": ["community_centre", "library", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 8
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Sit down and go through the list together",
+        "outcome": {
+          "xp": 25,
+          "skill": { "skillKey": "bureaucracy", "delta": 15 },
+          "encyclopedia": "institution_borgerservice",
+          "flag": { "key": "has_bureaucracy_checklist", "value": true }
+        },
+        "resultText": "An hour later you have a clear roadmap for your first month of Danish bureaucracy. Invaluable!",
+        "culturalTip": "💡 Getting your CPR number (civil registration) is the first crucial step — almost nothing works without it."
+      },
+      {
+        "text": "Take the document for later",
+        "outcome": {
+          "xp": 10,
+          "skill": { "skillKey": "bureaucracy", "delta": 5 }
+        },
+        "resultText": "You tuck the list away. Even a quick scan reveals several things you hadn't considered.",
+        "culturalTip": "💡 NemID/MitID is Denmark's digital signature system, required for online banking, government forms, and more."
+      }
+    ]
+  },
+  {
+    "id": "helpful_sunny_park",
+    "category": "helpful",
+    "title": "Picnic Invitation",
+    "description": "A group of mixed nationalities are having a picnic in the park and wave you over. There's food, music, and laughter.",
+    "icon": "icon_park",
+    "conditions": {
+      "locations": ["park", "any"],
+      "weather": ["Sunny"],
+      "seasons": ["Summer", "Spring"],
+      "timeOfDay": ["afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Join the picnic",
+        "outcome": {
+          "xp": 20,
+          "skill": { "skillKey": "cultural", "delta": 8 },
+          "relationship": { "npcId": "freja", "delta": 8 }
+        },
+        "resultText": "The afternoon flies by in a blur of conversation, food, and sunshine. Copenhagen at its best.",
+        "culturalTip": "💡 Danes love outdoor socialising in summer. Parks fill up at the first ray of sunshine."
+      },
+      {
+        "text": "Wave back but keep walking",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "You enjoy the lively atmosphere as you pass by. Next time, maybe.",
+        "culturalTip": "💡 The Danish concept of 'hygge' (cosiness and warmth) thrives in outdoor gatherings like these."
+      }
+    ]
+  },
+  {
+    "id": "helpful_winter_warming",
+    "category": "helpful",
+    "title": "Gløgg and Goodwill",
+    "description": "A neighbourhood stall is giving out free cups of warm gløgg (mulled wine) on this cold winter day. The vendor is cheerful and chatty.",
+    "icon": "icon_drink",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Snowy", "Windy", "Cloudy"],
+      "seasons": ["Winter"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Accept a cup and chat",
+        "outcome": {
+          "xp": 15,
+          "skill": { "skillKey": "cultural", "delta": 6 },
+          "encyclopedia": "culture_julehygge"
+        },
+        "resultText": "The warm gløgg and good conversation lift your spirits on a dark December day. Pure hygge.",
+        "culturalTip": "💡 Gløgg (Danish mulled wine) is a winter staple. Danish Christmas (Jul) is characterised by warmth and togetherness."
+      },
+      {
+        "text": "Take a cup to go",
+        "outcome": {
+          "xp": 8
+        },
+        "resultText": "You wrap your hands around the warm cup and walk on. A small but appreciated kindness.",
+        "culturalTip": "💡 Danes cope with dark winters through 'lystækning' (candles) and cosy social gatherings — hygge in action."
+      }
+    ]
+  },
+  {
+    "id": "helpful_colleague_lunch",
+    "category": "helpful",
+    "title": "Frokost Invitation",
+    "description": "A colleague invites you to join the team for the traditional Danish lunch (frokost). It's a daily ritual you've been missing out on.",
+    "icon": "icon_food",
+    "conditions": {
+      "locations": ["work", "office", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["afternoon"],
+      "minLevel": 2,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Join enthusiastically",
+        "outcome": {
+          "xp": 20,
+          "skill": { "skillKey": "cultural", "delta": 8 },
+          "relationship": { "npcId": "lars", "delta": 12 },
+          "encyclopedia": "culture_frokost"
+        },
+        "resultText": "The team lunch is warm and informal. You learn more in an hour than in weeks of observation.",
+        "culturalTip": "💡 The Danish frokost (lunch) is a social institution. Being invited means you're being included in the team."
+      },
+      {
+        "text": "Join briefly then excuse yourself",
+        "outcome": {
+          "xp": 10,
+          "skill": { "skillKey": "cultural", "delta": 3 }
+        },
+        "resultText": "Even a brief appearance is appreciated. You're slowly becoming part of the team.",
+        "culturalTip": "💡 Danish work culture values participation in shared rituals. Opting out regularly can signal you're not integrated."
+      }
+    ]
+  },
+  {
+    "id": "neutral_street_musician",
+    "category": "neutral",
+    "title": "Street Serenade",
+    "description": "A street musician is playing a beautiful folk melody near the pedestrian zone. Passersby slow down to listen.",
+    "icon": "icon_music",
+    "conditions": {
+      "locations": ["city_center", "stroget", "any"],
+      "weather": ["Sunny", "Cloudy"],
+      "seasons": ["Spring", "Summer", "Fall"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Stop and listen for a while",
+        "outcome": {
+          "xp": 8,
+          "encyclopedia": "culture_folk_music"
+        },
+        "resultText": "The music transports you. You recognize a melody you've heard before. Copenhagen has a soundtrack.",
+        "culturalTip": "💡 Danish folk music (spillemandsmusik) has deep roots. Street performance is protected and celebrated."
+      },
+      {
+        "text": "Drop a coin and walk on",
+        "outcome": {
+          "xp": 5,
+          "money": -5
+        },
+        "resultText": "A small gesture for a moment of beauty. The musician nods gratefully.",
+        "culturalTip": "💡 Street musicians in Copenhagen must have a permit. Many are trained professionals."
+      }
+    ]
+  },
+  {
+    "id": "neutral_weather_chat",
+    "category": "neutral",
+    "title": "Danish Weather Talk",
+    "description": "At the bus stop, an older man strikes up a conversation about the unpredictable Danish weather. He seems to enjoy the complaint as much as the weather itself.",
+    "icon": "icon_cloud",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Engage in the conversation",
+        "skillCheck": { "skill": "language", "level": 1 },
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "language", "delta": 3 }
+        },
+        "resultText": "You stumble through the conversation but he appreciates the effort. Small talk is its own skill.",
+        "culturalTip": "💡 The Danish word 'vejr' (weather) is the most popular small-talk topic. Master it and you can talk to anyone."
+      },
+      {
+        "text": "Smile and nod politely",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "The man rambles happily. You understand about 30% but the warmth of the exchange is real.",
+        "culturalTip": "💡 Denmark gets only about 1700 sunshine hours per year — less than Southern Europe — so weather is always topical."
+      }
+    ]
+  },
+  {
+    "id": "neutral_lost_tourist",
+    "category": "neutral",
+    "title": "Lost Tourist",
+    "description": "A confused tourist approaches with a map and a bewildered expression, asking for directions to Nyhavn in broken English.",
+    "icon": "icon_map",
+    "conditions": {
+      "locations": ["city_center", "any"],
+      "weather": ["any"],
+      "seasons": ["Summer", "Spring"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Help them find their way",
+        "outcome": {
+          "xp": 10,
+          "encyclopedia": "culture_nyhavn"
+        },
+        "resultText": "You point them toward Nyhavn and feel a small surge of pride. You know your city now.",
+        "culturalTip": "💡 Nyhavn (New Harbour) is Copenhagen's iconic 17th-century waterfront. Hans Christian Andersen lived there."
+      },
+      {
+        "text": "Apologise and say you're new too",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "You share a moment of lost-in-translation solidarity. They pull out Google Maps. Crisis averted.",
+        "culturalTip": "💡 Copenhagen welcomes over 3 million tourists per year. Your city is a global destination."
+      }
+    ]
+  },
+  {
+    "id": "neutral_autumn_leaves",
+    "category": "neutral",
+    "title": "Autumn Colours",
+    "description": "The park is ablaze with autumn colours. Children are kicking through leaf piles. A photographer is capturing the scene.",
+    "icon": "icon_leaf",
+    "conditions": {
+      "locations": ["park", "any"],
+      "weather": ["Sunny", "Cloudy"],
+      "seasons": ["Fall"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Pause to enjoy the scenery",
+        "outcome": {
+          "xp": 8,
+          "encyclopedia": "culture_autumn_denmark"
+        },
+        "resultText": "The colours and cool air invigorate you. Denmark in autumn has a melancholy beauty all its own.",
+        "culturalTip": "💡 Autumn in Denmark is celebrated for cosy (hygge) evenings, harvest markets, and dramatic skies."
+      },
+      {
+        "text": "Walk through quickly",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "You catch glimpses of golden trees as you pass. Even in a hurry, beauty finds you.",
+        "culturalTip": "💡 Danes are great walkers — even in cold weather — and urban parks are central to city life."
+      }
+    ]
+  },
+  {
+    "id": "neutral_canal_view",
+    "category": "neutral",
+    "title": "By the Canal",
+    "description": "You find yourself by one of Copenhagen's beautiful canals. Boats rock gently. An old man feeds ducks from a bench.",
+    "icon": "icon_water",
+    "conditions": {
+      "locations": ["harbor", "canal", "nyhavn", "any"],
+      "weather": ["Sunny", "Cloudy"],
+      "seasons": ["Spring", "Summer", "Fall"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Sit and observe the scene",
+        "outcome": {
+          "xp": 8,
+          "encyclopedia": "geography_canals"
+        },
+        "resultText": "The gentle sound of water and distant city hum creates a moment of perfect calm.",
+        "culturalTip": "💡 Copenhagen has over 60 km of canals. The harbour is clean enough to swim in during summer."
+      },
+      {
+        "text": "Take a few photos and continue",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "You capture the scene on your phone. This city has a way of surprising you with beauty.",
+        "culturalTip": "💡 Nyhavn and the canals are among the most photographed spots in all of Scandinavia."
+      }
+    ]
+  },
+  {
+    "id": "neutral_metro_crowded",
+    "category": "neutral",
+    "title": "Rush Hour",
+    "description": "The metro is packed during rush hour. People are quiet, respectful of personal space, looking at their phones. The Danish way.",
+    "icon": "icon_metro",
+    "conditions": {
+      "locations": ["metro", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20,
+      "transportMode": "metro"
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Observe the social dynamics",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "cultural", "delta": 4 },
+          "encyclopedia": "culture_public_behaviour"
+        },
+        "resultText": "You notice how everyone maintains space and quiet — a shared unspoken agreement. Fascinating.",
+        "culturalTip": "💡 Danes are quiet on public transport. Making eye contact or speaking loudly can feel intrusive to locals."
+      },
+      {
+        "text": "Listen to music and zone out",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "You arrive at your stop refreshed. Sometimes a commute is just a commute.",
+        "culturalTip": "💡 Copenhagen's metro is driverless and runs every 3-4 minutes during peak hours."
+      }
+    ]
+  },
+  {
+    "id": "neutral_dog_encounter",
+    "category": "neutral",
+    "title": "Furry Ambassador",
+    "description": "A large, friendly dog bounds over to you in the park, tail wagging furiously. The owner calls out 'Han bider ikke!' (He doesn't bite!)",
+    "icon": "icon_dog",
+    "conditions": {
+      "locations": ["park", "any"],
+      "weather": ["Sunny", "Cloudy"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Pet the dog and chat with the owner",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "language", "delta": 3 }
+        },
+        "resultText": "A brief, warm interaction. Dog owners are an easy social bridge in any city.",
+        "culturalTip": "💡 Danes are very fond of their dogs. Copenhagen is considered one of the most dog-friendly cities in Europe."
+      },
+      {
+        "text": "Smile but keep your distance",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "The owner calls the dog back. No harm done — it was a happy moment regardless.",
+        "culturalTip": "💡 Most Danish parks are dog-friendly. You'll often see dogs unleashed in designated areas."
+      }
+    ]
+  },
+  {
+    "id": "neutral_summer_festival",
+    "category": "neutral",
+    "title": "Festival Atmosphere",
+    "description": "The neighbourhood is buzzing. A summer street festival has closed a road nearby — there's music, food stalls, and people everywhere.",
+    "icon": "icon_festival",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Sunny"],
+      "seasons": ["Summer"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Wander through the festival",
+        "outcome": {
+          "xp": 12,
+          "skill": { "skillKey": "cultural", "delta": 5 },
+          "encyclopedia": "culture_festivals"
+        },
+        "resultText": "The energy is infectious. Street food, live music, and strangers becoming temporary friends.",
+        "culturalTip": "💡 Denmark has over 100 music and culture festivals each summer. Participation is seen as a civic duty of joy."
+      },
+      {
+        "text": "Watch from the sidelines",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "The colour and noise wash over you pleasantly. You can still feel the atmosphere without diving in.",
+        "culturalTip": "💡 The Roskilde Festival is one of Europe's largest music events, attracting 130,000 visitors annually."
+      }
+    ]
+  },
+  {
+    "id": "neutral_construction_detour",
+    "category": "neutral",
+    "title": "City Under Construction",
+    "description": "A bike path is blocked by construction. Workers in orange vests direct you around. The city is always being improved.",
+    "icon": "icon_construction",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["Spring", "Summer", "Fall"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Follow the detour signs carefully",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "The detour takes you through a street you've never seen. Every obstacle hides a discovery.",
+        "culturalTip": "💡 Copenhagen has invested billions in expanding cycling infrastructure. Temporary disruptions are a sign of progress."
+      },
+      {
+        "text": "Ask a worker for the quickest route",
+        "skillCheck": { "skill": "language", "level": 1 },
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "language", "delta": 3 }
+        },
+        "resultText": "The worker gives you a shortcut with hand signals and a smile. Mission accomplished.",
+        "culturalTip": "💡 Danish construction workers are among the best-paid and most regulated in Europe, thanks to strong unions."
+      }
+    ]
+  },
+  {
+    "id": "neutral_overheard_danish",
+    "category": "neutral",
+    "title": "Eavesdropping for Education",
+    "description": "You overhear an animated conversation between two elderly women at a café. You understand more than you expected.",
+    "icon": "icon_speech",
+    "conditions": {
+      "locations": ["cafe", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 2,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Listen carefully and try to understand",
+        "outcome": {
+          "xp": 10,
+          "skill": { "skillKey": "language", "delta": 5 }
+        },
+        "resultText": "You catch the gist: gardening gossip and TV recommendations. Progress is progress!",
+        "culturalTip": "💡 Passive listening to natural conversation is one of the most effective ways to improve language comprehension."
+      },
+      {
+        "text": "Tune out and focus on your coffee",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "The rhythm of Danish washes over you gently. Even passive exposure helps.",
+        "culturalTip": "💡 Danish uses a 'stød' — a unique glottal stop — that doesn't exist in many other languages. It takes time."
+      }
+    ]
+  },
+  {
+    "id": "neutral_spring_flowers",
+    "category": "neutral",
+    "title": "First Flowers of Spring",
+    "description": "The first crocuses of spring are peeking through the soil in the park. An elderly gardener is tending to a flower bed with evident pride.",
+    "icon": "icon_flower",
+    "conditions": {
+      "locations": ["park", "any"],
+      "weather": ["Sunny", "Cloudy"],
+      "seasons": ["Spring"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Comment on the beautiful flowers",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "language", "delta": 3 }
+        },
+        "resultText": "The gardener lights up. You exchange a few halting words about spring. Joy needs no translation.",
+        "culturalTip": "💡 The Danish love of gardening is legendary. Community allotment gardens (kolonihaver) are cherished across the country."
+      },
+      {
+        "text": "Simply enjoy the sight",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "After a long winter, those tiny flowers feel like a victory. Spring always returns.",
+        "culturalTip": "💡 After months of darkness, the first days of spring are genuinely celebrated in Denmark — often called 'Forårsfornemmelse'."
+      }
+    ]
+  },
+  {
+    "id": "neutral_bike_bell",
+    "category": "neutral",
+    "title": "The Bell Warning",
+    "description": "You accidentally drift into the wrong bike lane. A cyclist behind you rings their bell urgently.",
+    "icon": "icon_bike",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20,
+      "transportMode": "bike"
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Apologise and correct course immediately",
+        "outcome": {
+          "xp": 5,
+          "skill": { "skillKey": "cycling", "delta": 3 }
+        },
+        "resultText": "You wave apologetically. The cyclist nods and speeds past. Lesson learned.",
+        "culturalTip": "💡 Bike lane etiquette in Copenhagen is serious. Stay right, signal turns, and never stop in the lane."
+      },
+      {
+        "text": "Look confused and pull over",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "You watch the lanes carefully before rejoining. Traffic flows around you patiently.",
+        "culturalTip": "💡 Copenhagen has a strict hierarchy: pedestrians walk, cyclists cycle in their lane, and cars yield to both."
+      }
+    ]
+  },
+  {
+    "id": "neutral_graffiti_art",
+    "category": "neutral",
+    "title": "Urban Canvas",
+    "description": "An entire building wall has been transformed into a stunning mural. A small group of people photograph it.",
+    "icon": "icon_art",
+    "conditions": {
+      "locations": ["norrebro", "vesterbro", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Stop to appreciate the art",
+        "outcome": {
+          "xp": 8,
+          "encyclopedia": "culture_street_art"
+        },
+        "resultText": "The mural depicts Danish folk tales. The city speaks in many languages.",
+        "culturalTip": "💡 Nørrebro and Vesterbro are Copenhagen's most vibrant neighbourhoods for street art and alternative culture."
+      },
+      {
+        "text": "Walk past with a quick glance",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "The colours catch your eye briefly. The city is its own gallery.",
+        "culturalTip": "💡 Copenhagen has designated legal graffiti walls where artists can freely express themselves."
+      }
+    ]
+  },
+  {
+    "id": "neutral_winter_darkness",
+    "category": "neutral",
+    "title": "The Long Dark",
+    "description": "It's 4pm and already dark. You find yourself affected by the short days more than you expected. Others seem to cope with candles and warm lights.",
+    "icon": "icon_candle",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Cloudy", "Foggy"],
+      "seasons": ["Winter"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 2,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Lean into the hygge — light some candles",
+        "outcome": {
+          "xp": 10,
+          "skill": { "skillKey": "cultural", "delta": 6 },
+          "encyclopedia": "culture_hygge"
+        },
+        "resultText": "Warm light, a hot drink, and soft music. You understand hygge now — it's a survival mechanism.",
+        "culturalTip": "💡 Denmark uses more candles per capita than any other country in the world. It's a literal coping mechanism."
+      },
+      {
+        "text": "Push through with extra vitamin D",
+        "outcome": {
+          "xp": 5,
+          "item": { "itemId": "vitamin_d", "action": "take" }
+        },
+        "resultText": "Practical and effective. Winter has biological strategies and psychological ones — you're learning both.",
+        "culturalTip": "💡 Vitamin D deficiency affects many people in Scandinavia. Supplementation is common and recommended."
+      }
+    ]
+  },
+  {
+    "id": "neutral_market_browse",
+    "category": "neutral",
+    "title": "Weekend Market",
+    "description": "A weekend market has appeared in the square — organic produce, crafts, and the smell of freshly baked bread.",
+    "icon": "icon_market",
+    "conditions": {
+      "locations": ["city_center", "norrebro", "any"],
+      "weather": ["Sunny", "Cloudy"],
+      "seasons": ["Spring", "Summer", "Fall"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Browse the stalls and buy something",
+        "outcome": {
+          "xp": 10,
+          "money": -25,
+          "encyclopedia": "culture_markets"
+        },
+        "resultText": "You pick up fresh vegetables and a jar of local honey. Worth every krone.",
+        "culturalTip": "💡 Organic food markets (Økomarked) are very popular in Denmark, which has the world's highest per capita organic food consumption."
+      },
+      {
+        "text": "Just browse without buying",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "Window shopping is also participation. You make note of the next market day.",
+        "culturalTip": "💡 Saturday markets are a weekend ritual for many Danish families. Early morning is best for quality produce."
+      }
+    ]
+  },
+  {
+    "id": "neutral_danish_news",
+    "category": "neutral",
+    "title": "Headlines in Danish",
+    "description": "A free newspaper on the bench has headlines you half-understand. Something about a political debate and something about football.",
+    "icon": "icon_newspaper",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Try to read the article",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "language", "delta": 4 }
+        },
+        "resultText": "You understand more than yesterday. The struggle with the language is real but progress is measurable.",
+        "culturalTip": "💡 'MetroXpress' and 'Urban' are Denmark's major free daily papers. Great for language practice commuting."
+      },
+      {
+        "text": "Scan the headlines and put it down",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "Something about taxes and something about handball. Close enough.",
+        "culturalTip": "💡 Denmark is consistently rated among the world's top countries for press freedom."
+      }
+    ]
+  },
+  {
+    "id": "neutral_queue_waiting",
+    "category": "neutral",
+    "title": "The Danish Queue",
+    "description": "There's a long, orderly queue outside a government office. Everyone waits patiently with their number ticket.",
+    "icon": "icon_queue",
+    "conditions": {
+      "locations": ["borgerservice", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Wait patiently and observe",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "cultural", "delta": 3 }
+        },
+        "resultText": "Forty minutes later you're seen. The efficiency is impressive once it's your turn.",
+        "culturalTip": "💡 Danes take queuing very seriously. Jumping the queue is a social taboo of the highest order."
+      },
+      {
+        "text": "Use the app to book an appointment instead",
+        "skillCheck": { "skill": "bureaucracy", "level": 2 },
+        "outcome": {
+          "xp": 12,
+          "skill": { "skillKey": "bureaucracy", "delta": 5 }
+        },
+        "resultText": "You book an appointment for tomorrow and walk away. Digital Denmark rewards the prepared.",
+        "culturalTip": "💡 Most Danish government services have an online booking option. Borger.dk is the central government portal."
+      }
+    ]
+  },
+  {
+    "id": "neutral_park_observation",
+    "category": "neutral",
+    "title": "Park Life",
+    "description": "The local park is alive with activity — families, joggers, cyclists, and chess players. Life in Copenhagen moves through green spaces.",
+    "icon": "icon_park",
+    "conditions": {
+      "locations": ["park", "any"],
+      "weather": ["Sunny", "Cloudy"],
+      "seasons": ["Spring", "Summer"],
+      "timeOfDay": ["afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Find a bench and watch the world go by",
+        "outcome": {
+          "xp": 6,
+          "encyclopedia": "culture_park_life"
+        },
+        "resultText": "An hour passes like minutes. This park is a microcosm of Danish society.",
+        "culturalTip": "💡 Fælledparken in Copenhagen is the largest park and hosts everything from concerts to football to casual picnics."
+      },
+      {
+        "text": "Join a game of frisbee nearby",
+        "outcome": {
+          "xp": 12,
+          "skill": { "skillKey": "cultural", "delta": 4 }
+        },
+        "resultText": "The group welcomes you without hesitation. Sport is a universal language.",
+        "culturalTip": "💡 Danes have a strong tradition of organised sports clubs (idrætsforeninger) but also love informal outdoor play."
+      }
+    ]
+  },
+  {
+    "id": "challenge_rain_no_jacket",
+    "category": "challenge",
+    "title": "Caught in the Rain",
+    "description": "A sudden downpour catches you completely unprepared — no jacket, no umbrella. You're getting soaked.",
+    "icon": "icon_rain",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Rainy"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Make a run for the nearest shop",
+        "outcome": {
+          "xp": 5,
+          "money": -80,
+          "item": { "itemId": "umbrella", "action": "give" }
+        },
+        "resultText": "You buy a cheap umbrella. Never again without one in Copenhagen.",
+        "culturalTip": "💡 Always carry a light jacket in Copenhagen — the weather changes quickly. Locals say there's no bad weather, only bad clothing."
+      },
+      {
+        "text": "Duck into a café and wait it out",
+        "outcome": {
+          "xp": 8,
+          "money": -35,
+          "skill": { "skillKey": "cultural", "delta": 3 }
+        },
+        "resultText": "Forced café break turns into a pleasant hour. The rain stops eventually.",
+        "culturalTip": "💡 Danish cafés are warm, cosy refuges. 'Kaffetæring' (needing coffee) is an accepted reason to be anywhere."
+      }
+    ]
+  },
+  {
+    "id": "challenge_wrong_platform",
+    "category": "challenge",
+    "title": "Wrong Direction",
+    "description": "You board the metro and realise after two stops that you're heading the wrong way. The map looked the same both ways!",
+    "icon": "icon_metro",
+    "conditions": {
+      "locations": ["metro", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 10,
+      "transportMode": "metro"
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Get off at the next stop and cross over",
+        "outcome": {
+          "xp": 8,
+          "encyclopedia": "transport_metro_lines"
+        },
+        "resultText": "You figure it out and arrive only slightly late. Every mistake teaches the city.",
+        "culturalTip": "💡 Copenhagen's metro has two main lines (M1 and M2) plus newer additions. Study the map carefully."
+      },
+      {
+        "text": "Ask a fellow passenger for help",
+        "skillCheck": { "skill": "language", "level": 1 },
+        "outcome": {
+          "xp": 12,
+          "skill": { "skillKey": "language", "delta": 5 }
+        },
+        "resultText": "The passenger switches to English immediately and guides you. Danish directness is actually very helpful.",
+        "culturalTip": "💡 Danes are among the world's best English speakers. Asking for help will almost always work."
+      }
+    ]
+  },
+  {
+    "id": "challenge_language_barrier",
+    "category": "challenge",
+    "title": "Lost in Translation",
+    "description": "A government official is explaining something important to you entirely in Danish, despite your confused expression. They don't seem to notice.",
+    "icon": "icon_speech",
+    "conditions": {
+      "locations": ["borgerservice", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 15
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Politely ask if they speak English",
+        "outcome": {
+          "xp": 10,
+          "skill": { "skillKey": "language", "delta": 5 },
+          "skill": { "skillKey": "bureaucracy", "delta": 3 }
+        },
+        "resultText": "They switch to perfect English immediately. You feel relief and slight embarrassment in equal measure.",
+        "culturalTip": "💡 Almost all Danish officials speak excellent English. Don't be afraid to ask — it's not impolite."
+      },
+      {
+        "text": "Nod along and figure it out later",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "You catch about half of it but miss something important. You'll need to follow up.",
+        "culturalTip": "💡 Danish bureaucracy runs on specific documents and deadlines. When in doubt, always ask for clarification."
+      }
+    ]
+  },
+  {
+    "id": "challenge_bike_flat",
+    "category": "challenge",
+    "title": "Flat Tyre Misfortune",
+    "description": "Your bike tyre hisses and goes flat halfway to your destination. You're going to be late.",
+    "icon": "icon_bike",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20,
+      "transportMode": "bike"
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Fix it yourself with your repair kit",
+        "skillCheck": { "skill": "cycling", "level": 3 },
+        "outcome": {
+          "xp": 20,
+          "skill": { "skillKey": "cycling", "delta": 8 }
+        },
+        "resultText": "Fifteen minutes later you're back on the road. That cycling skill is paying off!",
+        "culturalTip": "💡 Most Danish cyclists carry a basic repair kit. Punctures are common on city streets."
+      },
+      {
+        "text": "Lock up the bike and take the bus",
+        "outcome": {
+          "xp": 5,
+          "money": -25
+        },
+        "resultText": "You arrive late but unruffled. The bike can wait until after work.",
+        "culturalTip": "💡 Copenhagen has an integrated transport system — switching between bike, bus and metro is seamless."
+      }
+    ]
+  },
+  {
+    "id": "challenge_bureaucracy_form",
+    "category": "challenge",
+    "title": "The Mysterious Form",
+    "description": "You've received an official-looking letter in Danish. It contains a form you must complete and return within 14 days. The consequences of not doing so are unclear.",
+    "icon": "icon_document",
+    "conditions": {
+      "locations": ["home", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 2,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Translate it yourself and fill it in",
+        "skillCheck": { "skill": "language", "level": 3 },
+        "outcome": {
+          "xp": 25,
+          "skill": { "skillKey": "bureaucracy", "delta": 10 }
+        },
+        "resultText": "It was a routine address registration update. Your growing Danish skills saved the day.",
+        "culturalTip": "💡 Denmark relies heavily on digital post (e-Boks). All official correspondence goes there. Register early!"
+      },
+      {
+        "text": "Ask a Danish-speaking friend to help",
+        "outcome": {
+          "xp": 15,
+          "skill": { "skillKey": "bureaucracy", "delta": 5 },
+          "relationship": { "npcId": "lars", "delta": 5 }
+        },
+        "resultText": "Lars helps you decode it in minutes. It was a census form — filled in correctly now.",
+        "culturalTip": "💡 e-Boks.dk is the secure digital mailbox used by all Danish authorities. You must register when you get your CPR number."
+      }
+    ]
+  },
+  {
+    "id": "challenge_rude_neighbour",
+    "category": "challenge",
+    "title": "A Difficult Neighbour",
+    "description": "Your neighbour knocks angrily on your door, saying your music is too loud at 9pm. They seem very upset.",
+    "icon": "icon_conflict",
+    "conditions": {
+      "locations": ["home", "apartment", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Apologise sincerely and turn it down",
+        "outcome": {
+          "xp": 10,
+          "skill": { "skillKey": "cultural", "delta": 8 },
+          "encyclopedia": "culture_noise_rules"
+        },
+        "resultText": "They soften slightly. You learn that 10pm is the hard cut-off for noise in Danish apartments.",
+        "culturalTip": "💡 Most Danish apartment rules (husordensregler) prohibit loud noise after 10pm. Respect this — it's taken seriously."
+      },
+      {
+        "text": "Politely defend your position",
+        "skillCheck": { "skill": "language", "level": 2 },
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "language", "delta": 5 }
+        },
+        "resultText": "You stand your ground respectfully. The neighbour is surprised but somewhat pacified. Conflict in Danish!",
+        "culturalTip": "💡 Direct communication is valued in Denmark. Explaining your side calmly is always appropriate."
+      }
+    ]
+  },
+  {
+    "id": "challenge_missed_metro",
+    "category": "challenge",
+    "title": "Last Metro Gone",
+    "description": "You've missed the last S-tog of the night. Your phone is almost dead and you're far from home.",
+    "icon": "icon_metro",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Call a taxi — worth the expense",
+        "outcome": {
+          "xp": 5,
+          "money": -150
+        },
+        "resultText": "Expensive but safe. Note to self: the Cityringen metro runs 24/7 — use it next time.",
+        "culturalTip": "💡 Copenhagen's Cityringen metro line runs 24/7. S-tog and buses have limited night service but Night Buses (N) run at weekends."
+      },
+      {
+        "text": "Cycle home — it's not that far",
+        "skillCheck": { "skill": "cycling", "level": 2 },
+        "outcome": {
+          "xp": 15,
+          "skill": { "skillKey": "cycling", "delta": 5 }
+        },
+        "resultText": "Night cycling in Copenhagen is safe and actually beautiful. You arrive home invigorated.",
+        "culturalTip": "💡 Copenhagen is ranked one of the safest cities in the world for night cycling. Well-lit paths are everywhere."
+      }
+    ]
+  },
+  {
+    "id": "challenge_tax_form",
+    "category": "challenge",
+    "title": "Tax Season",
+    "description": "It's April and you've received your annual tax assessment (årsopgørelse) from SKAT. The numbers don't look right.",
+    "icon": "icon_document",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["Spring"],
+      "timeOfDay": ["any"],
+      "minLevel": 4,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Navigate the SKAT website yourself",
+        "skillCheck": { "skill": "bureaucracy", "level": 3 },
+        "outcome": {
+          "xp": 30,
+          "skill": { "skillKey": "bureaucracy", "delta": 12 },
+          "money": 500,
+          "encyclopedia": "institution_skat"
+        },
+        "resultText": "You correct an error in your deductions and get a refund! Mastering bureaucracy has financial rewards.",
+        "culturalTip": "💡 Most Danish employees get a tax refund in April. The system is pre-filled — you just need to check and approve."
+      },
+      {
+        "text": "Ask a professional to review it",
+        "outcome": {
+          "xp": 15,
+          "skill": { "skillKey": "bureaucracy", "delta": 5 },
+          "money": -300
+        },
+        "resultText": "A small fee, but peace of mind. Your taxes are correct and submitted on time.",
+        "culturalTip": "💡 Denmark has one of the world's most efficient tax systems. SKAT (the tax authority) is surprisingly user-friendly online."
+      }
+    ]
+  },
+  {
+    "id": "challenge_social_faux_pas",
+    "category": "challenge",
+    "title": "Cultural Miscalculation",
+    "description": "You arrive at a dinner party 15 minutes early — in your home culture, being early is polite. Your Danish hosts look uncomfortable.",
+    "icon": "icon_conflict",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Apologise and offer to help set up",
+        "outcome": {
+          "xp": 15,
+          "skill": { "skillKey": "cultural", "delta": 10 },
+          "encyclopedia": "culture_punctuality"
+        },
+        "resultText": "The hosts relax and actually appreciate the help. You learn a crucial cultural lesson.",
+        "culturalTip": "💡 In Denmark, punctuality means arriving exactly on time — not early. Being 15 minutes early is as awkward as being late."
+      },
+      {
+        "text": "Pretend you were just checking the address",
+        "outcome": {
+          "xp": 5,
+          "skill": { "skillKey": "cultural", "delta": 3 }
+        },
+        "resultText": "A white lie saves the moment. You walk around the block for 15 minutes before ringing the bell.",
+        "culturalTip": "💡 Danish social invitations come with implicit rules. 'Come for dinner at 7' means arrive at exactly 7:00."
+      }
+    ]
+  },
+  {
+    "id": "challenge_lost_wallet",
+    "category": "challenge",
+    "title": "Missing Wallet Panic",
+    "description": "You reach for your wallet and it's not there. Did you leave it at home? Drop it? Have you been pickpocketed?",
+    "icon": "icon_coin",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Retrace your steps systematically",
+        "outcome": {
+          "xp": 10
+        },
+        "resultText": "Found it! It slipped under the café seat. Heart rate normalising.",
+        "culturalTip": "💡 Denmark is one of the world's safest countries. Wallets are frequently returned intact — theft is genuinely rare."
+      },
+      {
+        "text": "Report it to police just in case",
+        "outcome": {
+          "xp": 12,
+          "skill": { "skillKey": "bureaucracy", "delta": 5 },
+          "encyclopedia": "institution_police"
+        },
+        "resultText": "The police are professional and helpful. Two hours later someone calls — they found it at the library.",
+        "culturalTip": "💡 Danes return found valuables. A wallet left on a park bench in Copenhagen has a very good chance of being returned."
+      }
+    ]
+  },
+  {
+    "id": "challenge_integration_test",
+    "category": "challenge",
+    "title": "Danish Prøve",
+    "description": "You receive notice that you must take a Danish language test (Prøve i Dansk) as part of your integration programme within 30 days.",
+    "icon": "icon_document",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 5,
+      "maxLevel": 20
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Commit to intensive preparation",
+        "skillCheck": { "skill": "language", "level": 3 },
+        "outcome": {
+          "xp": 50,
+          "skill": { "skillKey": "language", "delta": 20 },
+          "flag": { "key": "passed_danish_test", "value": true }
+        },
+        "resultText": "You pass with distinction! The certificate opens new doors for permanent residency and better jobs.",
+        "culturalTip": "💡 Prøve i Dansk (PD) has three levels. PD3 is required for permanent residency applications in Denmark."
+      },
+      {
+        "text": "Study what you can in the time available",
+        "outcome": {
+          "xp": 25,
+          "skill": { "skillKey": "language", "delta": 10 },
+          "flag": { "key": "attempted_danish_test", "value": true }
+        },
+        "resultText": "You pass at the basic level. It counts, and you can retake it. Every step counts.",
+        "culturalTip": "💡 Free Danish lessons (Danskuddannelse) are required for most immigrants and are provided by municipalities."
+      }
+    ]
+  },
+  {
+    "id": "challenge_grocery_shortage",
+    "category": "challenge",
+    "title": "Bare Shelves",
+    "description": "The grocery store is sold out of everything you needed for dinner. A local holiday you weren't aware of closed most shops for a day.",
+    "icon": "icon_food",
+    "conditions": {
+      "locations": ["grocery_store", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Find a kiosk open late",
+        "outcome": {
+          "xp": 5,
+          "money": -60,
+          "encyclopedia": "culture_danish_holidays"
+        },
+        "resultText": "The kiosk prices sting but you eat. You add Danish holidays to your calendar immediately.",
+        "culturalTip": "💡 Denmark has many public holidays (helligdage). Most shops close entirely — learn the calendar early."
+      },
+      {
+        "text": "Make do with what's at home",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "cultural", "delta": 4 }
+        },
+        "resultText": "Creative cooking from pantry staples. Sometimes constraints breed culinary invention.",
+        "culturalTip": "💡 7-Eleven and DSB kiosks (train station shops) are among the few places open on Danish public holidays."
+      }
+    ]
+  },
+  {
+    "id": "major_permanent_residence",
+    "category": "major",
+    "title": "The Five-Year Milestone",
+    "description": "A letter from Udlændingestyrelsen (the Immigration Service) details the requirements for permanent residency. After five years, you might qualify. This changes everything.",
+    "icon": "icon_document",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["any"],
+      "minLevel": 8,
+      "maxLevel": 20
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Start the application process now",
+        "skillCheck": { "skill": "bureaucracy", "level": 4 },
+        "outcome": {
+          "xp": 100,
+          "skill": { "skillKey": "bureaucracy", "delta": 15 },
+          "encyclopedia": "institution_immigration",
+          "flag": { "key": "started_pr_application", "value": true }
+        },
+        "resultText": "The process is complex but you've come so far. This is what all the preparation was for.",
+        "culturalTip": "💡 Permanent residency in Denmark requires 5+ years of residence, language skills, employment, and community ties."
+      },
+      {
+        "text": "Research the requirements thoroughly first",
+        "outcome": {
+          "xp": 50,
+          "skill": { "skillKey": "bureaucracy", "delta": 8 },
+          "encyclopedia": "institution_immigration",
+          "flag": { "key": "researched_pr_requirements", "value": true }
+        },
+        "resultText": "Knowledge is preparation. You now have a clear roadmap to the permanent residency milestone.",
+        "culturalTip": "💡 The Danish integration tests include points for employment, language, active citizenship, and self-sufficiency."
+      }
+    ]
+  },
+  {
+    "id": "major_cultural_breakthrough",
+    "category": "major",
+    "title": "Something Clicked",
+    "description": "After months in Denmark, you wake up one morning and realise that something has fundamentally shifted. You dreamed in Danish. The city feels like home.",
+    "icon": "icon_star",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning"],
+      "minLevel": 10,
+      "maxLevel": 20,
+      "requiredFlag": { "key": "passed_danish_test", "value": true }
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Embrace the feeling",
+        "outcome": {
+          "xp": 150,
+          "skill": { "skillKey": "cultural", "delta": 20 },
+          "skill": { "skillKey": "language", "delta": 15 },
+          "encyclopedia": "culture_belonging",
+          "flag": { "key": "cultural_breakthrough", "value": true }
+        },
+        "resultText": "You are not just surviving Denmark. You are living it. This is the real integration milestone.",
+        "culturalTip": "💡 Cultural integration is not just about paperwork. The moment Denmark feels like home is when you truly arrive."
+      },
+      {
+        "text": "Write in your journal about this moment",
+        "outcome": {
+          "xp": 80,
+          "skill": { "skillKey": "cultural", "delta": 10 },
+          "flag": { "key": "cultural_breakthrough", "value": true }
+        },
+        "resultText": "You document the feeling carefully. The journey will make for a remarkable story.",
+        "culturalTip": "💡 Many immigrants describe a specific moment when Denmark stopped being foreign. Treasure yours."
+      }
+    ]
+  },
+  {
+    "id": "major_community_leader",
+    "category": "major",
+    "title": "Asked to Lead",
+    "description": "Thomas approaches you with an unexpected proposal: help organise the neighbourhood integration committee. People trust you now. This is a turning point.",
+    "icon": "icon_people",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 12,
+      "maxLevel": 20,
+      "requiredFlag": { "key": "met_thomas", "value": true }
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Accept and commit fully",
+        "outcome": {
+          "xp": 200,
+          "skill": { "skillKey": "cultural", "delta": 20 },
+          "skill": { "skillKey": "language", "delta": 10 },
+          "relationship": { "npcId": "thomas", "delta": 25 },
+          "encyclopedia": "culture_foreningsliv",
+          "flag": { "key": "is_community_leader", "value": true }
+        },
+        "resultText": "You step into the role. From immigrant to leader — this is the story Denmark makes possible.",
+        "culturalTip": "💡 Foreningsliv (association life) is central to Danish democracy. Volunteering gives you real belonging and civic rights."
+      },
+      {
+        "text": "Say you need time to think",
+        "outcome": {
+          "xp": 30,
+          "relationship": { "npcId": "thomas", "delta": 5 }
+        },
+        "resultText": "Thomas understands. He leaves the offer open. Some decisions deserve deliberation.",
+        "culturalTip": "💡 The Danish volunteer sector employs the equivalent of 50,000 full-time positions. Community involvement is deeply valued."
+      }
+    ]
+  },
+  {
+    "id": "neutral_hygge_evening",
+    "category": "neutral",
+    "title": "Hygge Embodied",
+    "description": "You pass a lit window — inside, friends sit around candles, laughing and talking. For a moment you see exactly what the word 'hygge' means.",
+    "icon": "icon_candle",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Cloudy", "Rainy", "Snowy"],
+      "seasons": ["Fall", "Winter"],
+      "timeOfDay": ["evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Pause and absorb the scene",
+        "outcome": {
+          "xp": 8,
+          "skill": { "skillKey": "cultural", "delta": 6 },
+          "encyclopedia": "culture_hygge"
+        },
+        "resultText": "Hygge isn't a concept — it's a feeling. You just felt it. You're closer to Denmark than you realise.",
+        "culturalTip": "💡 Hygge defies simple translation. It's warmth, togetherness, and contentment — a Danish philosophy of everyday life."
+      },
+      {
+        "text": "Feel the warmth and walk on",
+        "outcome": {
+          "xp": 4
+        },
+        "resultText": "The warmth stays with you on the walk home. Community is everywhere if you look.",
+        "culturalTip": "💡 Denmark consistently ranks as one of the happiest countries in the world, largely attributed to its culture of hygge."
+      }
+    ]
+  },
+  {
+    "id": "helpful_sun_vitamin_d",
+    "category": "helpful",
+    "title": "Soaking Up the Sun",
+    "description": "On a rare sunny day in November, colleagues are rushing outside to sit in the weak sunlight during their break. They insist you join.",
+    "icon": "icon_sun",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Sunny"],
+      "seasons": ["Fall", "Winter"],
+      "timeOfDay": ["afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Join them in the sun",
+        "outcome": {
+          "xp": 12,
+          "skill": { "skillKey": "cultural", "delta": 5 },
+          "relationship": { "npcId": "lars", "delta": 8 }
+        },
+        "resultText": "The fifteen minutes of pale November sunshine feels like gold. You understand the Danish sun worship now.",
+        "culturalTip": "💡 Danes abandon offices at any hint of sunshine in autumn. Even weak sun is actively sought and celebrated."
+      },
+      {
+        "text": "Stay at your desk but wave",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "Your colleagues wave back. You miss the warmth but finish your task. Sometimes duty calls.",
+        "culturalTip": "💡 Vitamin D deficiency is common in Nordic countries. Sun breaks are genuinely health-motivated, not just pleasant."
+      }
+    ]
+  },
+  {
+    "id": "challenge_winter_bike",
+    "category": "challenge",
+    "title": "Ice on the Path",
+    "description": "The bike path is icy and treacherous after last night's freeze. Other cyclists are navigating carefully. Do you dare?",
+    "icon": "icon_bike",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["Snowy", "Windy"],
+      "seasons": ["Winter"],
+      "timeOfDay": ["morning"],
+      "minLevel": 2,
+      "maxLevel": 20,
+      "transportMode": "bike"
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Cycle slowly and carefully",
+        "skillCheck": { "skill": "cycling", "level": 3 },
+        "outcome": {
+          "xp": 20,
+          "skill": { "skillKey": "cycling", "delta": 8 }
+        },
+        "resultText": "You make it without incident. Winter cycling is its own art form — now you're practising it.",
+        "culturalTip": "💡 Over 20% of Copenhageners cycle in winter. All-weather cycling is a point of civic pride."
+      },
+      {
+        "text": "Play it safe and take the bus",
+        "outcome": {
+          "xp": 5,
+          "money": -25
+        },
+        "resultText": "Smart choice. Winter cycling requires special tyres and experience. You live to ride another day.",
+        "culturalTip": "💡 Winter cycling in Copenhagen requires studded tyres, reflective gear, and confident lane positioning."
+      }
+    ]
+  },
+  {
+    "id": "neutral_open_house",
+    "category": "neutral",
+    "title": "Neighbourhood Open House",
+    "description": "A 'Åbent Hus' (Open House) sign is posted at the community centre. Free entry, free coffee, various local organisations showing their work.",
+    "icon": "icon_people",
+    "conditions": {
+      "locations": ["community_centre", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Pop in and see what's there",
+        "outcome": {
+          "xp": 12,
+          "skill": { "skillKey": "cultural", "delta": 6 },
+          "encyclopedia": "culture_community_centre"
+        },
+        "resultText": "You discover three new organisations to follow and get three new email subscriptions. Danish networking at its best.",
+        "culturalTip": "💡 Community centres (kulturhuse) offer everything from language cafés to yoga to political meetings — and it's usually free."
+      },
+      {
+        "text": "Keep walking — too busy today",
+        "outcome": {
+          "xp": 3
+        },
+        "resultText": "You note the centre's address. Maybe next time.",
+        "culturalTip": "💡 Getting involved in local community life is one of the fastest paths to social integration in Denmark."
+      }
+    ]
+  },
+  {
+    "id": "helpful_language_cafe",
+    "category": "helpful",
+    "title": "Sprogcafé",
+    "description": "A language café (sprogcafé) at the library pairs new residents with Danish speakers for weekly conversation practice. The coordinator spots you browsing and invites you.",
+    "icon": "icon_speech",
+    "conditions": {
+      "locations": ["library", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 15
+    },
+    "oneTime": true,
+    "options": [
+      {
+        "text": "Join the café starting this week",
+        "outcome": {
+          "xp": 20,
+          "skill": { "skillKey": "language", "delta": 12 },
+          "flag": { "key": "joins_language_cafe", "value": true }
+        },
+        "resultText": "Your Danish partner is patient and encouraging. An hour of real conversation is worth a week of classes.",
+        "culturalTip": "💡 Language cafés are free and run by volunteers in most Danish municipalities. They're social as much as educational."
+      },
+      {
+        "text": "Take the flyer for later",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "The flyer goes on the fridge. A good intention waiting to become reality.",
+        "culturalTip": "💡 Regular conversation practice is the single most important factor in language acquisition, say linguists."
+      }
+    ]
+  },
+  {
+    "id": "neutral_fodbold_fever",
+    "category": "neutral",
+    "title": "Fodbold Fever",
+    "description": "Denmark has just won an important football match and the city is buzzing. Strangers are high-fiving in the street.",
+    "icon": "icon_sport",
+    "conditions": {
+      "locations": ["any"],
+      "weather": ["any"],
+      "seasons": ["Summer", "Spring"],
+      "timeOfDay": ["afternoon", "evening"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Join in the celebrations",
+        "outcome": {
+          "xp": 10,
+          "skill": { "skillKey": "cultural", "delta": 5 }
+        },
+        "resultText": "You cheer with strangers and receive a Danish flag waved in your direction. Sport brings people together.",
+        "culturalTip": "💡 Denmark's 1992 European Championship win (Europamesterskabet) remains a defining national moment. Football is a religion here."
+      },
+      {
+        "text": "Smile and observe",
+        "outcome": {
+          "xp": 5
+        },
+        "resultText": "The collective joy is contagious even from the sidelines. Denmark has won something.",
+        "culturalTip": "💡 FC Copenhagen (FCK) and Brøndby IF are the biggest clubs. The rivalry is intense but friendly."
+      }
+    ]
+  }
+]
