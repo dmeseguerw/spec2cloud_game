@@ -27,6 +27,12 @@ export class InputManager {
     /** Timestamp of the last interact key press (for debouncing). */
     this._lastInteractTime = -Infinity;
 
+    /** Tracks previous-frame ESC state for edge-detection. */
+    this._escapeWasDown = false;
+
+    /** Tracks previous-frame inventory key state for edge-detection. */
+    this._inventoryWasDown = false;
+
     // Set up keyboard bindings.
     this._cursors     = null;
     this._wasdKeys    = null;
@@ -127,6 +133,35 @@ export class InputManager {
   isEscapeDown() {
     if (this._blocked) return false;
     return !!(this._keyEscape?.isDown);
+  }
+
+  /**
+   * Whether the escape key was just pressed this frame (rising-edge detection).
+   * Returns true only on the frame the key transitions from up → down.
+   * Updates internal state — call at most once per frame.
+   *
+   * @returns {boolean}
+   */
+  isEscapeJustPressed() {
+    if (this._blocked) return false;
+    const isDown = !!(this._keyEscape?.isDown);
+    const justPressed = isDown && !this._escapeWasDown;
+    this._escapeWasDown = isDown;
+    return justPressed;
+  }
+
+  /**
+   * Whether the inventory key (Tab) was just pressed this frame (rising-edge detection).
+   * Updates internal state — call at most once per frame.
+   *
+   * @returns {boolean}
+   */
+  isInventoryJustPressed() {
+    if (this._blocked) return false;
+    const isDown = !!(this._keyInventory?.isDown);
+    const justPressed = isDown && !this._inventoryWasDown;
+    this._inventoryWasDown = isDown;
+    return justPressed;
   }
 
   /**

@@ -51,6 +51,11 @@ export class DialogueScene extends BaseScene {
   create() {
     const { width, height } = this.scale;
 
+    // Generate placeholder blip audio buffers the first time dialogue opens.
+    // By this point the user has interacted with the game, so the AudioContext
+    // is active and we can synthesise simple tones.
+    this._ensurePlaceholderAudio();
+
     // Semi-transparent background
     if (this._isOverlay) {
       this.createOverlayBackground(0.7);
@@ -367,14 +372,63 @@ export class DialogueScene extends BaseScene {
 
   // ─── Audio ──────────────────────────────────────────────────────────────────
 
+  /**
+   * Generate synthetic blip audio buffers for every NPC blip key.
+   * Uses the Web Audio API via Phaser's AudioContext.
+   * Safe to call multiple times — skips keys already in cache.
+   */
+  _ensurePlaceholderAudio() {
+    const ctx = this.sound?.context;
+    if (!ctx) return;
+
+    // NPC-specific frequencies (higher pitch = brighter character voice)
+    const FREQ = {
+      [SFX_BLIP_DEFAULT]:           880,
+      [NPC_BLIP_MAP.lars]:          660,
+      [NPC_BLIP_MAP.mette]:         770,
+      [NPC_BLIP_MAP.thomas]:        440,
+      [NPC_BLIP_MAP.sofie]:         990,
+      [NPC_BLIP_MAP.henrik]:        550,
+      [NPC_BLIP_MAP.kasper]:        720,
+      [NPC_BLIP_MAP.dr_jensen]:     500,
+      [NPC_BLIP_MAP.bjorn]:         420,
+      [NPC_BLIP_MAP.freja]:         880,
+      [NPC_BLIP_MAP.emma]:          940,
+    };
+
+    const sampleRate = ctx.sampleRate;
+    const durationSec = 0.07; // 70 ms
+    const samples = Math.floor(sampleRate * durationSec);
+
+    for (const [key, freq] of Object.entries(FREQ)) {
+      if (!key || this.cache.audio.has(key)) continue;
+      try {
+        const buffer = ctx.createBuffer(1, samples, sampleRate);
+        const ch = buffer.getChannelData(0);
+        for (let i = 0; i < samples; i++) {
+          // Sine wave with exponential decay envelope
+          ch[i] = Math.sin(2 * Math.PI * freq * i / sampleRate)
+                  * Math.exp(-6 * i / samples)
+                  * 0.25;
+        }
+        this.cache.audio.add(key, buffer);
+      } catch (_) {
+        // Web Audio unavailable — silently skip
+      }
+    }
+  }
+
   /** Play the NPC blip sound for the current conversation partner. */
   _playBlip() {
-    if (!this.sound) return;
+    if (!this.sound || !this.cache?.audio) return;
     const key = (this._npcId && NPC_BLIP_MAP[this._npcId])
       ? NPC_BLIP_MAP[this._npcId]
       : SFX_BLIP_DEFAULT;
-    const sound = this.sound.add(key);
-    if (sound) sound.play({ volume: 0.3 });
+    if (!this.cache.audio.has(key)) return;
+    try {
+      const sound = this.sound.add(key);
+      if (sound) sound.play({ volume: 0.3 });
+    } catch (_) {}
   }
 
   // ─── Event handlers ─────────────────────────────────────────────────────────
