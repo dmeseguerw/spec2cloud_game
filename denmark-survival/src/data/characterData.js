@@ -193,14 +193,20 @@ export const JOBS = [
  * Sanitize a name string by stripping HTML tags and characters that could
  * be dangerous in a web context, then trimming whitespace.
  *
+ * The sanitization uses two passes:
+ *  1. Strip complete HTML tags (e.g. `<script>`, `</b>`)
+ *  2. Strip any remaining angle brackets and other dangerous chars to
+ *     ensure that no partial tag or injection vector survives
+ *
  * @param {string} name - Raw name input.
  * @returns {string} Sanitized name.
  */
 export function sanitizeName(name) {
   return String(name)
-    .replace(/<[^>]*>/g, '')        // strip HTML tags
-    .replace(/[<>&"'`/\\]/g, '')    // strip dangerous chars
-    .replace(/\s+/g, ' ')           // collapse whitespace
+    .replace(/<[^>]*>/g, '')           // strip complete HTML tags
+    .replace(/[<>]/g, '')              // strip any remaining angle brackets
+    .replace(/[&"'`/\\]/g, '')         // strip other dangerous chars
+    .replace(/\s+/g, ' ')              // collapse whitespace
     .trim();
 }
 
