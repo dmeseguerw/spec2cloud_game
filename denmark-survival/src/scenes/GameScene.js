@@ -584,7 +584,7 @@ export class GameScene extends BaseScene {
     } else if (nearest?.indicator) {
       // Re-assert indicator visibility every frame in case the sprite state drifted.
       nearest.indicator.setVisible(true);
-    } else if (!nearest && this._contextHintText) {
+    } else if (!nearest && this.registry.get(CONTEXT_HINT)) {
       // Safety: ensure hint is cleared when nothing is nearby.
       this.registry.set(CONTEXT_HINT, '');
     }
