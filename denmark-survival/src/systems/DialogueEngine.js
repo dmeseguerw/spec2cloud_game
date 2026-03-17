@@ -381,9 +381,11 @@ export class DialogueEngine {
       }
 
       case 'encyclopedia': {
-        const entries = { ...(registry.get(RK.ENCYCLOPEDIA_ENTRIES) || {}) };
-        entries[effect.entryId] = true;
-        registry.set(RK.ENCYCLOPEDIA_ENTRIES, entries);
+        const entries = registry.get(RK.ENCYCLOPEDIA_ENTRIES);
+        const entriesArr = Array.isArray(entries) ? entries : [];
+        if (effect.entryId && !entriesArr.includes(effect.entryId)) {
+          registry.set(RK.ENCYCLOPEDIA_ENTRIES, [...entriesArr, effect.entryId]);
+        }
         registry.events.emit(ENCYCLOPEDIA_UNLOCKED, { entryId: effect.entryId });
         break;
       }

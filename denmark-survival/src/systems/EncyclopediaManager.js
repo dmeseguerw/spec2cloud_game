@@ -24,6 +24,20 @@ export const DISCOVERY_XP_BONUS = 5;
 /** Registry key for the encyclopedia category-completion flags. */
 const CATEGORY_COMPLETE_KEY = 'encyclopedia_category_complete';
 
+/**
+ * Read ENCYCLOPEDIA_ENTRIES from the registry, always returning an Array.
+ * Handles the case where old code accidentally stored a plain object.
+ * @param {Phaser.Data.DataManager} registry
+ * @returns {string[]}
+ */
+function _getEntries(registry) {
+  const val = registry.get(RK.ENCYCLOPEDIA_ENTRIES);
+  if (Array.isArray(val)) return val;
+  // Corrupted object format — repair by extracting truthy keys
+  if (val && typeof val === 'object') return Object.keys(val).filter(k => val[k]);
+  return [];
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Public API
 // ─────────────────────────────────────────────────────────────────────────────
@@ -71,9 +85,8 @@ export function unlockEntry(registry, entryId, source = '') {
   }
 
   // Add to unlocked set
-  const entries = registry.get(RK.ENCYCLOPEDIA_ENTRIES) || [];
-  entries.push(entryId);
-  registry.set(RK.ENCYCLOPEDIA_ENTRIES, entries);
+  const entries = _getEntries(registry);
+  registry.set(RK.ENCYCLOPEDIA_ENTRIES, [...entries, entryId]);
 
   // Grant discovery XP bonus
   grantXP(registry, DISCOVERY_XP_BONUS, `Encyclopedia: ${entry.title}`, 'Encyclopedia');
@@ -100,8 +113,7 @@ export function unlockEntry(registry, entryId, source = '') {
  * @returns {boolean}
  */
 export function isUnlocked(registry, entryId) {
-  const entries = registry.get(RK.ENCYCLOPEDIA_ENTRIES) || [];
-  return entries.includes(entryId);
+  return _getEntries(registry).includes(entryId);
 }
 
 /**
@@ -112,7 +124,7 @@ export function isUnlocked(registry, entryId) {
  * @returns {Array<object>} Array of entry objects.
  */
 export function getUnlockedEntries(registry, category) {
-  const unlockedIds = registry.get(RK.ENCYCLOPEDIA_ENTRIES) || [];
+  const unlockedIds = _getEntries(registry);
   let entries = ENCYCLOPEDIA_DATA.filter(e => unlockedIds.includes(e.id));
   if (category) {
     entries = entries.filter(e => e.category === category);
@@ -128,7 +140,7 @@ export function getUnlockedEntries(registry, category) {
  * @returns {{ unlocked: number, total: number }}
  */
 export function getCategoryProgress(registry, category) {
-  const unlockedIds = registry.get(RK.ENCYCLOPEDIA_ENTRIES) || [];
+  const unlockedIds = _getEntries(registry);
   const allInCategory = getEntriesByCategory(category);
   const unlockedInCategory = allInCategory.filter(e => unlockedIds.includes(e.id));
   return {
@@ -144,7 +156,7 @@ export function getCategoryProgress(registry, category) {
  * @returns {number} Percentage (0–100) of entries discovered.
  */
 export function getOverallProgress(registry) {
-  const unlockedIds = registry.get(RK.ENCYCLOPEDIA_ENTRIES) || [];
+  const unlockedIds = _getEntries(registry);
   if (ENCYCLOPEDIA_DATA.length === 0) return 0;
   // Only count IDs that correspond to actual entries
   const validUnlocked = unlockedIds.filter(id => getEntryById(id));
