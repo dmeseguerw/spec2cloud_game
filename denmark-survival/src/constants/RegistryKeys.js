@@ -57,6 +57,10 @@ export const MANDATORY_ACTIVITIES = 'mandatory_activities';
 export const PENDING_BILLS = 'pending_bills';
 export const LAST_SALARY_DAY = 'last_salary_day';
 export const PANT_BOTTLES = 'pant_bottles';
+export const SHOP_SALES = 'shop_sales';
+export const LAST_SALE_DAY = 'last_sale_day';
+export const TAX_LAST_FILED_DAY = 'tax_last_filed_day';
+export const SHOP_CART = 'shop_cart';
 
 // Inventory daily flags (reset each day)
 export const ATE_TODAY = 'ate_today';
@@ -71,6 +75,7 @@ export const VOLUME_SFX = 'volume_sfx';
 export const CONTROLS_SCHEME = 'controls_scheme';
 export const TUTORIAL_COMPLETED = 'tutorial_completed';
 export const DIFFICULTY = 'difficulty';
+export const REDUCED_MOTION = 'reduced_motion';
 
 // Meta
 export const SAVE_SLOT = 'save_slot';

@@ -131,9 +131,14 @@ export function instantTransition(scene, target, data = {}) {
 export function launchOverlay(parentScene, overlayKey, data = {}) {
   if (!parentScene || !overlayKey) return;
 
-  // Close any existing overlay first (prevent stacking)
+  // Close any existing overlay first (prevent stacking).
+  // Guard: never stop the parent scene itself or the scene we're about to open.
   const currentOverlay = parentScene.registry.get('_activeOverlay');
-  if (currentOverlay) {
+  if (
+    currentOverlay &&
+    currentOverlay !== parentScene.scene.key &&
+    currentOverlay !== overlayKey
+  ) {
     parentScene.scene.stop(currentOverlay);
   }
 
@@ -165,11 +170,13 @@ export function closeOverlay(overlayScene) {
     overlayScene.registry.set('_activeOverlay', null);
   }
 
-  // Stop the overlay scene
-  overlayScene.scene.stop(overlayScene.scene.key);
-
-  // Resume the parent scene
+  // Resume the parent BEFORE stopping the overlay.
+  // Stopping a scene can tear down its Scene Plugin, so we must resume first
+  // while the plugin reference is still valid.
   if (parentKey) {
     overlayScene.scene.resume(parentKey);
   }
+
+  // Stop the overlay scene
+  overlayScene.scene.stop();
 }

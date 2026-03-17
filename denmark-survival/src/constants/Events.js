@@ -51,6 +51,12 @@ export const DIALOGUE_RESPONSE_SELECTED = 'dialogue_response_selected';
 // Encounters
 export const ENCOUNTER_TRIGGERED = 'encounter_triggered';
 export const ENCOUNTER_RESOLVED  = 'encounter_resolved';
+// Economy
+export const SALARY_RECEIVED            = 'salary_received';
+export const TAX_FILED                  = 'tax_filed';
+export const SHOP_PURCHASE              = 'shop_purchase';
+export const BILL_OVERDUE               = 'bill_overdue';
+
 // Transportation
 export const TRANSPORT_MODE_CHANGED      = 'transport_mode_changed';
 export const BIKE_MOUNTED                = 'bike_mounted';

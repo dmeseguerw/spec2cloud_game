@@ -1,5 +1,8 @@
 # Task 019: Random Encounter System
 
+**GitHub Issue:** [#42 - Task 019: Implement Random Encounter System](https://github.com/dmeseguerw/spec2cloud_game/issues/42)
+**GitHub PR:** [#45 - [WIP] [TASK-019] Implement random encounter system](https://github.com/dmeseguerw/spec2cloud_game/pull/45)
+
 ## Description
 Implement the random encounter engine that generates 2-4 contextual events per in-game day. Encounters are drawn from a weighted pool filtered by location, weather, season, skill levels, and history. Each encounter presents a choice card with 2-3 response options and outcomes (XP, items, relationships). This is what makes each day feel unique and unpredictable.
 

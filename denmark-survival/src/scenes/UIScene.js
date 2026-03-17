@@ -20,14 +20,15 @@ import {
   PLAYER_MONEY,
   CURRENT_LOCATION,
   CONTEXT_HINT,
+  REDUCED_MOTION,
 } from '../constants/RegistryKeys.js';
 
 /** Map time-of-day values to display labels. */
 const TIME_LABELS = {
-  morning: '🌅 Morning',
+  morning:   '🌅 Morning',
   afternoon: '☀️ Afternoon',
-  evening: '🌆 Evening',
-  night: '🌙 Night',
+  evening:   '🌆 Evening',
+  night:     '🌙 Night',
 };
 
 /** XP required to advance from one level to the next. */
@@ -35,13 +36,22 @@ const XP_PER_LEVEL = 100;
 
 /** Map weather values to display labels. */
 const WEATHER_LABELS = {
-  sunny: '☀️ Sunny',
+  sunny:  '☀️ Sunny',
   cloudy: '☁️ Cloudy',
-  rainy: '🌧️ Rainy',
-  snowy: '❄️ Snowy',
-  windy: '💨 Windy',
-  foggy: '🌫️ Foggy',
+  rainy:  '🌧️ Rainy',
+  snowy:  '❄️ Snowy',
+  windy:  '💨 Windy',
+  foggy:  '🌫️ Foggy',
 };
+
+/** Health/energy percentage below which a pulse effect activates. */
+const CRITICAL_THRESHOLD = 25;
+
+/** Duration of the bar tween animation (ms). */
+const BAR_ANIM_DURATION = 300;
+
+/** Duration of the money flash scale tween (ms). */
+const MONEY_FLASH_DURATION = 120;
 
 export class UIScene extends BaseScene {
   constructor() {
@@ -77,6 +87,9 @@ export class UIScene extends BaseScene {
     // Cached values for compound display
     this._currentDay = 1;
     this._currentSeason = 'spring';
+
+    // Previous money value — used to detect gains and trigger flash animation
+    this._lastMoney = null;
   }
 
   create() {
@@ -356,7 +369,7 @@ export class UIScene extends BaseScene {
 
   _updateXP(xp) {
     const xpInLevel = xp % XP_PER_LEVEL;
-    this._xpBar.setValue(xpInLevel, false);
+    this._xpBar.setValue(xpInLevel, !this._isReducedMotion());
     this._xpText.setText(`${xpInLevel}/${XP_PER_LEVEL} XP`);
   }
 
@@ -390,15 +403,26 @@ export class UIScene extends BaseScene {
   }
 
   _updateHealth(health) {
-    this._healthBar.setValue(health, true);
+    this._healthBar.setValue(health, !this._isReducedMotion());
+    if (health <= CRITICAL_THRESHOLD) {
+      this._pulseCritical(this._healthLabel);
+    }
   }
 
   _updateEnergy(energy) {
-    this._energyBar.setValue(energy, true);
+    this._energyBar.setValue(energy, !this._isReducedMotion());
+    if (energy <= CRITICAL_THRESHOLD) {
+      this._pulseCritical(this._energyLabel);
+    }
   }
 
   _updateMoney(money) {
+    const prev = this._lastMoney;
+    this._lastMoney = money;
     this._moneyText.setText(`${money} DKK`);
+    if (prev !== null && money > prev) {
+      this._flashMoneyText();
+    }
   }
 
   _updateLocation(location) {
@@ -407,6 +431,50 @@ export class UIScene extends BaseScene {
 
   _updateContextHint(hint) {
     this._contextHintText.setText(hint || '');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Animation helpers
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Return true if the reduced-motion accessibility setting is active.
+   * @returns {boolean}
+   */
+  _isReducedMotion() {
+    return this.registry?.get?.(REDUCED_MOTION) === true;
+  }
+
+  /**
+   * Pulse a HUD label (alpha blink) to signal a critically low stat.
+   * No-ops when animations are unavailable or reducedMotion is set.
+   * @param {object} target - Phaser text / game object.
+   */
+  _pulseCritical(target) {
+    if (!target || !this.tweens || this._isReducedMotion()) return;
+    this.tweens.add({
+      targets:  target,
+      alpha:    { from: 1, to: 0.3 },
+      duration: 400,
+      yoyo:     true,
+      repeat:   2,
+    });
+  }
+
+  /**
+   * Brief scale-pop on the money text to highlight a money gain.
+   * No-ops when animations are unavailable or reducedMotion is set.
+   */
+  _flashMoneyText() {
+    if (!this._moneyText || !this.tweens || this._isReducedMotion()) return;
+    this.tweens.add({
+      targets:  this._moneyText,
+      scaleX:   { from: 1, to: 1.25 },
+      scaleY:   { from: 1, to: 1.25 },
+      duration: MONEY_FLASH_DURATION,
+      yoyo:     true,
+      ease:     'Quad.easeOut',
+    });
   }
 
   // ---------------------------------------------------------------------------

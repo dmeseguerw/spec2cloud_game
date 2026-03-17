@@ -1,5 +1,8 @@
 # Task 023: Visual Polish, Animations & Game Feel
 
+**GitHub Issue:** [#43 - Task 023: Visual Polish, Animations & Game Feel](https://github.com/dmeseguerw/spec2cloud_game/issues/43)
+**GitHub PR:** [#46 - [WIP] [TASK-023] Add visual polish and animations for game feel](https://github.com/dmeseguerw/spec2cloud_game/pull/46)
+
 ## Description
 Add visual polish, animations, juice effects, and game feel enhancements across all existing systems. This task takes the functional game and makes it feel alive — smooth transitions, satisfying feedback, particle effects, screen shake, number animations, and the "cozy Scandinavian" atmosphere. This should be done after all core features are functional.
 

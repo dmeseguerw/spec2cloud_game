@@ -14,5 +14,8 @@
     "@vitest/coverage-v8": "^4.1.0",
     "http-server": "^14.1.1",
     "vitest": "^4.1.0"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1"
   }
 }

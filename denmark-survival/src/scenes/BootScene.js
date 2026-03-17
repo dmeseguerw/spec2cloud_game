@@ -140,8 +140,61 @@ export class BootScene extends Phaser.Scene {
       try {
         if (!this.textures.exists(key)) {
           const g = this.make.graphics({ x: 0, y: 0, add: false });
-          g.fillStyle(color, 1);
-          g.fillRect(0, 0, w, h);
+
+          if (key === AK.SPRITE_PLAYER) {
+            // Top-down character silhouette
+            // Shadow
+            g.fillStyle(0x000000, 0.25);
+            g.fillEllipse(w / 2 + 3, h - 3, w - 6, 8);
+            // Legs
+            g.fillStyle(0x1a3a80);
+            g.fillRect(w / 2 - 9, h - 10, 7, 8);
+            g.fillRect(w / 2 + 2, h - 10, 7, 8);
+            // Body (jacket)
+            g.fillStyle(0x2a60cc);
+            g.fillRect(w / 2 - 10, h / 2 + 2, 20, 16);
+            // Backpack detail
+            g.fillStyle(0x1a4098);
+            g.fillRect(w / 2 - 5, h / 2 + 3, 10, 12);
+            // Head (skin)
+            g.fillStyle(0xd4a070);
+            g.fillCircle(w / 2, h / 2 - 6, 10);
+            // Hair
+            g.fillStyle(0x5a2e10);
+            g.fillRect(w / 2 - 9, h / 2 - 15, 18, 7);
+            g.fillCircle(w / 2 - 9, h / 2 - 12, 4);
+            g.fillCircle(w / 2 + 9, h / 2 - 12, 4);
+            // Eyes
+            g.fillStyle(0x1a1a2a);
+            g.fillRect(w / 2 - 5, h / 2 - 7, 2, 2);
+            g.fillRect(w / 2 + 3, h / 2 - 7, 2, 2);
+          } else if (key === AK.SPRITE_NPC_LARS || key === AK.SPRITE_NPC_ANNA || key === AK.SPRITE_NPC_METTE) {
+            // NPC silhouette — distinct colour per NPC
+            const bodyCol = key === AK.SPRITE_NPC_LARS  ? 0xb5432a
+                          : key === AK.SPRITE_NPC_ANNA  ? 0x2a9b4a
+                                                         : 0x6a28a8;
+            // Shadow
+            g.fillStyle(0x000000, 0.2);
+            g.fillEllipse(w / 2 + 3, h - 3, w - 8, 7);
+            // Legs
+            g.fillStyle(this._darkenHex(bodyCol, 40));
+            g.fillRect(w / 2 - 8, h - 10, 6, 8);
+            g.fillRect(w / 2 + 2, h - 10, 6, 8);
+            // Body
+            g.fillStyle(bodyCol);
+            g.fillRect(w / 2 - 9, h / 2 + 2, 18, 16);
+            // Head
+            g.fillStyle(0xd4a070);
+            g.fillCircle(w / 2, h / 2 - 5, 9);
+            // Hair
+            g.fillStyle(0x4a2a10);
+            g.fillRect(w / 2 - 8, h / 2 - 13, 16, 6);
+          } else {
+            // Generic placeholder: solid colour rectangle
+            g.fillStyle(color, 1);
+            g.fillRect(0, 0, w, h);
+          }
+
           g.generateTexture(key, w, h);
           g.destroy();
         }
@@ -149,5 +202,18 @@ export class BootScene extends Phaser.Scene {
         console.warn(`[BootScene] Failed to create placeholder texture "${key}":`, err);
       }
     }
+  }
+
+  /**
+   * Darken a 0xRRGGBB value by subtracting `amount` from each channel.
+   * @param {number} hex
+   * @param {number} amount
+   * @returns {number}
+   */
+  _darkenHex(hex, amount) {
+    const r = Math.max(0, ((hex >> 16) & 0xff) - amount);
+    const g = Math.max(0, ((hex >> 8)  & 0xff) - amount);
+    const b = Math.max(0, (hex         & 0xff) - amount);
+    return (r << 16) | (g << 8) | b;
   }
 }
