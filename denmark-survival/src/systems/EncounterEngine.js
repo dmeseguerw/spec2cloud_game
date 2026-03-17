@@ -425,7 +425,8 @@ function _pickCategory(pool) {
  *   money       — add or subtract player money
  *   relationship — { npcId, delta } — change NPC relationship
  *   item        — { itemId, action: 'give'|'take' } — add or remove item
- *   skill       — { skillKey, delta } — increment a skill
+ *   skill       — { skillKey, delta } — increment a single skill
+ *   skills      — [{ skillKey, delta }, ...] — increment multiple skills
  *   encyclopedia — entryId string — unlock an encyclopedia entry
  *   flag        — { key, value } — set a game flag
  *
@@ -471,7 +472,7 @@ function _applyOutcome(registry, outcome) {
     applied.item = { itemId, action };
   }
 
-  // Skill
+  // Skill (single) or skills (array) — both formats supported
   if (outcome.skill) {
     const { skillKey, delta } = outcome.skill;
     const registryKey = SKILL_NAME_TO_KEY[skillKey] ?? skillKey;
@@ -479,6 +480,17 @@ function _applyOutcome(registry, outcome) {
       incrementSkill(registry, registryKey, delta);
     }
     applied.skill = { skillKey, delta };
+  }
+
+  if (outcome.skills) {
+    applied.skills = [];
+    for (const { skillKey, delta } of outcome.skills) {
+      const registryKey = SKILL_NAME_TO_KEY[skillKey] ?? skillKey;
+      if (delta > 0) {
+        incrementSkill(registry, registryKey, delta);
+      }
+      applied.skills.push({ skillKey, delta });
+    }
   }
 
   // Encyclopedia

@@ -1302,8 +1302,10 @@
         "text": "Politely ask if they speak English",
         "outcome": {
           "xp": 10,
-          "skill": { "skillKey": "language", "delta": 5 },
-          "skill": { "skillKey": "bureaucracy", "delta": 3 }
+          "skills": [
+            { "skillKey": "language", "delta": 5 },
+            { "skillKey": "bureaucracy", "delta": 3 }
+          ]
         },
         "resultText": "They switch to perfect English immediately. You feel relief and slight embarrassment in equal measure.",
         "culturalTip": "💡 Almost all Danish officials speak excellent English. Don't be afraid to ask — it's not impolite."
@@ -1720,8 +1722,10 @@
         "text": "Embrace the feeling",
         "outcome": {
           "xp": 150,
-          "skill": { "skillKey": "cultural", "delta": 20 },
-          "skill": { "skillKey": "language", "delta": 15 },
+          "skills": [
+            { "skillKey": "cultural", "delta": 20 },
+            { "skillKey": "language", "delta": 15 }
+          ],
           "encyclopedia": "culture_belonging",
           "flag": { "key": "cultural_breakthrough", "value": true }
         },
@@ -1761,8 +1765,10 @@
         "text": "Accept and commit fully",
         "outcome": {
           "xp": 200,
-          "skill": { "skillKey": "cultural", "delta": 20 },
-          "skill": { "skillKey": "language", "delta": 10 },
+          "skills": [
+            { "skillKey": "cultural", "delta": 20 },
+            { "skillKey": "language", "delta": 10 }
+          ],
           "relationship": { "npcId": "thomas", "delta": 25 },
           "encyclopedia": "culture_foreningsliv",
           "flag": { "key": "is_community_leader", "value": true }
@@ -1995,6 +2001,41 @@
         },
         "resultText": "The collective joy is contagious even from the sidelines. Denmark has won something.",
         "culturalTip": "💡 FC Copenhagen (FCK) and Brøndby IF are the biggest clubs. The rivalry is intense but friendly."
+      }
+    ]
+  },
+  {
+    "id": "challenge_public_embarrassment",
+    "category": "challenge",
+    "title": "An Unfortunate Mistake",
+    "description": "You loudly greet a stranger you thought you recognised in the supermarket. It's not who you thought — and everyone heard.",
+    "icon": "icon_conflict",
+    "conditions": {
+      "locations": ["grocery_store", "city_center", "any"],
+      "weather": ["any"],
+      "seasons": ["any"],
+      "timeOfDay": ["morning", "afternoon"],
+      "minLevel": 1,
+      "maxLevel": 20
+    },
+    "oneTime": false,
+    "options": [
+      {
+        "text": "Laugh it off and apologise gracefully",
+        "outcome": {
+          "xp": 5,
+          "skill": { "skillKey": "cultural", "delta": 4 }
+        },
+        "resultText": "The stranger chuckles too. Everyone has been there. Danish directness can coexist with humour.",
+        "culturalTip": "💡 Danes appreciate self-deprecating humour. Being able to laugh at yourself is a social asset here."
+      },
+      {
+        "text": "Sink into the floor and leave quickly",
+        "outcome": {
+          "xp": -5
+        },
+        "resultText": "You make a rapid exit. The embarrassment stings but fades by the time you reach the street.",
+        "culturalTip": "💡 Social blunders happen to everyone. Recovering gracefully is more memorable than the mistake itself."
       }
     ]
   }
