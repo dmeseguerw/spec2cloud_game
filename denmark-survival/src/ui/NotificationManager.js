@@ -2,7 +2,11 @@
  * src/ui/NotificationManager.js
  * Toast notification queue with priority levels.
  * Displays one notification at a time and auto-dismisses after a configurable duration.
+ * Supports bounce-in entrance, fade-slide-out exit, and HIGH-priority shake animations.
+ * All animations respect the REDUCED_MOTION registry setting.
  */
+
+import { REDUCED_MOTION } from '../constants/RegistryKeys.js';
 
 // Priority level constants
 export const PRIORITY = {
@@ -23,6 +27,15 @@ const PRIORITY_TEXT_COLORS = {
   [PRIORITY.LOW]: '#90ee90',
   [PRIORITY.MEDIUM]: '#ffd700',
   [PRIORITY.HIGH]: '#ff6666',
+};
+
+/** Animation timing constants (ms) — all animations check reducedMotion before running. */
+const ANIM = {
+  ENTRANCE_DURATION: 250,
+  EXIT_DURATION:     200,
+  SHAKE_DURATION:    50,
+  SHAKE_REPEAT:      3,
+  SLIDE_OFFSET:      40,
 };
 
 export class NotificationManager {
@@ -47,6 +60,11 @@ export class NotificationManager {
     this._dismissTimer = null;
     this._toastBg = null;
     this._toastText = null;
+
+    // Active animation tween references (for cancellation)
+    this._entranceTween = null;
+    this._shakeTween    = null;
+    this._exitTween     = null;
   }
 
   /**
@@ -76,6 +94,11 @@ export class NotificationManager {
    * Clear all notifications (active + queued).
    */
   clearAll() {
+    // Cancel any in-progress animations
+    if (this._entranceTween) { this._entranceTween.stop?.(); this._entranceTween = null; }
+    if (this._shakeTween)    { this._shakeTween.stop?.();    this._shakeTween    = null; }
+    if (this._exitTween)     { this._exitTween.stop?.();     this._exitTween     = null; }
+
     if (this._dismissTimer !== null) {
       clearTimeout(this._dismissTimer);
       this._dismissTimer = null;
@@ -129,15 +152,19 @@ export class NotificationManager {
   }
 
   /**
-   * Display a notification toast.
+   * Display a notification toast with optional bounce-in animation.
    * @param {object} notification
    */
   _display(notification) {
+    // Cancel leftover tweens from the previous notification
+    if (this._entranceTween) { this._entranceTween.stop?.(); this._entranceTween = null; }
+    if (this._shakeTween)    { this._shakeTween.stop?.();    this._shakeTween    = null; }
+
     // Destroy old toast objects if any
     this._destroyToast();
 
-    const bgColor = PRIORITY_BG_COLORS[notification.priority] ?? PRIORITY_BG_COLORS[PRIORITY.LOW];
-    const textColor = PRIORITY_TEXT_COLORS[notification.priority] ?? PRIORITY_TEXT_COLORS[PRIORITY.LOW];
+    const bgColor   = PRIORITY_BG_COLORS[notification.priority]   ?? PRIORITY_BG_COLORS[PRIORITY.LOW];
+    const textColor = PRIORITY_TEXT_COLORS[notification.priority]  ?? PRIORITY_TEXT_COLORS[PRIORITY.LOW];
 
     // Create background rectangle
     this._toastBg = this._scene.add.rectangle(this._x, this._y, 400, 40, bgColor);
@@ -157,16 +184,64 @@ export class NotificationManager {
     this._toastText.setOrigin(0.5, 0.5);
     this._toastText.setDepth(this._depth + 1);
     this._toastText.setScrollFactor(0);
+
+    // Bounce-in entrance animation (skipped when reducedMotion or tweens unavailable)
+    if (this._scene.tweens && !this._isReducedMotion()) {
+      this._toastBg.y   = this._y - ANIM.SLIDE_OFFSET;
+      this._toastBg.alpha = 0;
+      this._toastText.y  = this._y - ANIM.SLIDE_OFFSET;
+      this._toastText.alpha = 0;
+
+      this._entranceTween = this._scene.tweens.add({
+        targets:  [this._toastBg, this._toastText],
+        y:        this._y,
+        alpha:    1,
+        duration: ANIM.ENTRANCE_DURATION,
+        ease:     'Back.easeOut',
+        onComplete: () => { this._entranceTween = null; },
+      });
+
+      // Extra shake for HIGH priority notifications (fires after entrance completes)
+      if (notification.priority === PRIORITY.HIGH) {
+        this._shakeTween = this._scene.tweens.add({
+          targets:  [this._toastBg, this._toastText],
+          x:        { from: this._x - 4, to: this._x + 4 },
+          duration: ANIM.SHAKE_DURATION,
+          yoyo:     true,
+          repeat:   ANIM.SHAKE_REPEAT,
+          delay:    ANIM.ENTRANCE_DURATION,
+          onComplete: () => { this._shakeTween = null; },
+        });
+      }
+    }
   }
 
   /**
-   * Dismiss the current notification and show the next one.
+   * Dismiss the current notification with optional fade-slide-out animation.
    */
   _dismiss() {
-    this._destroyToast();
-    this._active = null;
-    this._dismissTimer = null;
-    this._showNext();
+    if (this._scene.tweens && !this._isReducedMotion() && this._toastBg) {
+      // Animated exit: fade and slide upward
+      this._exitTween = this._scene.tweens.add({
+        targets:  [this._toastBg, this._toastText].filter(Boolean),
+        alpha:    0,
+        y:        this._y - ANIM.SLIDE_OFFSET,
+        duration: ANIM.EXIT_DURATION,
+        onComplete: () => {
+          this._exitTween = null;
+          this._destroyToast();
+          this._active = null;
+          this._dismissTimer = null;
+          this._showNext();
+        },
+      });
+    } else {
+      // Immediate dismiss (no tweens available or reduced motion)
+      this._destroyToast();
+      this._active = null;
+      this._dismissTimer = null;
+      this._showNext();
+    }
   }
 
   /**
@@ -181,5 +256,14 @@ export class NotificationManager {
       this._toastText.destroy();
       this._toastText = null;
     }
+  }
+
+  /**
+   * Check whether the reduced-motion accessibility setting is active.
+   * Reads the REDUCED_MOTION registry key from the scene registry.
+   * @returns {boolean}
+   */
+  _isReducedMotion() {
+    return this._scene?.registry?.get?.(REDUCED_MOTION) === true;
   }
 }

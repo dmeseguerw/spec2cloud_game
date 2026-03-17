@@ -336,6 +336,63 @@ describe('SettingsScene', () => {
     });
   });
 
+  // ── Reduced motion ────────────────────────────────────────────────────────
+
+  describe('setReducedMotion()', () => {
+    it('enables reduced motion', () => {
+      const { scene, storage } = buildScene();
+      initAndCreate(scene, storage);
+      scene.setReducedMotion(true);
+      expect(scene.getSettings().reducedMotion).toBe(true);
+    });
+
+    it('disables reduced motion', () => {
+      const { scene, storage } = buildScene();
+      initAndCreate(scene, storage);
+      scene.setReducedMotion(true);
+      scene.setReducedMotion(false);
+      expect(scene.getSettings().reducedMotion).toBe(false);
+    });
+
+    it('writes REDUCED_MOTION key to registry when enabled', () => {
+      const { scene, storage, registry } = buildScene();
+      initAndCreate(scene, storage);
+      scene.setReducedMotion(true);
+      expect(registry.get(RK.REDUCED_MOTION)).toBe(true);
+    });
+
+    it('writes REDUCED_MOTION key to registry when disabled', () => {
+      const { scene, storage, registry } = buildScene();
+      initAndCreate(scene, storage);
+      scene.setReducedMotion(true);
+      scene.setReducedMotion(false);
+      expect(registry.get(RK.REDUCED_MOTION)).toBe(false);
+    });
+
+    it('persists reducedMotion to localStorage', () => {
+      const { scene, storage } = buildScene();
+      initAndCreate(scene, storage);
+      scene.setReducedMotion(true);
+      const saved = JSON.parse(storage.getItem('denmarkSurvival_settings'));
+      expect(saved.reducedMotion).toBe(true);
+    });
+
+    it('loads reducedMotion from localStorage on create()', () => {
+      const { scene, storage } = buildScene();
+      storage.setItem('denmarkSurvival_settings', JSON.stringify({
+        reducedMotion: true,
+      }));
+      initAndCreate(scene, storage);
+      expect(scene.getSettings().reducedMotion).toBe(true);
+    });
+
+    it('defaults reducedMotion to false when absent from localStorage', () => {
+      const { scene, storage } = buildScene();
+      initAndCreate(scene, storage);
+      expect(scene.getSettings().reducedMotion).toBe(false);
+    });
+  });
+
   // ── Settings persistence ──────────────────────────────────────────────────
 
   describe('settings persistence (cross-session)', () => {

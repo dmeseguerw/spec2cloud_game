@@ -32,15 +32,16 @@ export class SettingsScene extends BaseScene {
 
     /** Current in-memory settings snapshot. */
     this._settings = {
-      masterVolume: 0.8,
-      musicVolume:  0.6,
-      sfxVolume:    0.8,
-      muted:        false,
-      difficulty:   'normal',
+      masterVolume:  0.8,
+      musicVolume:   0.6,
+      sfxVolume:     0.8,
+      muted:         false,
+      difficulty:    'normal',
       tutorialHints: true,
-      textSize:     100,
-      highContrast: false,
-      dyslexiaFont: false,
+      textSize:      100,
+      highContrast:  false,
+      dyslexiaFont:  false,
+      reducedMotion: false,
     };
 
     /** Map of UI label objects so tests can read displayed values. */
@@ -191,6 +192,17 @@ export class SettingsScene extends BaseScene {
     this._persistSettings();
   }
 
+  /**
+   * Enable or disable reduced-motion mode.
+   * When enabled, all non-essential animations are suppressed.
+   * @param {boolean} enabled
+   */
+  setReducedMotion(enabled) {
+    this._settings.reducedMotion = Boolean(enabled);
+    this.registry.set(RK.REDUCED_MOTION, this._settings.reducedMotion);
+    this._persistSettings();
+  }
+
   // ---------------------------------------------------------------------------
   // Public API — Getters
   // ---------------------------------------------------------------------------
@@ -222,10 +234,11 @@ export class SettingsScene extends BaseScene {
     // localStorage-backed accessibility / mute settings
     const saved = this._loadFromStorage();
     if (saved) {
-      this._settings.muted        = Boolean(saved.muted ?? false);
-      this._settings.textSize     = Math.max(100, Math.min(200, saved.textSize ?? 100));
-      this._settings.highContrast = Boolean(saved.highContrast ?? false);
-      this._settings.dyslexiaFont = Boolean(saved.dyslexiaFont ?? false);
+      this._settings.muted         = Boolean(saved.muted         ?? false);
+      this._settings.textSize      = Math.max(100, Math.min(200, saved.textSize ?? 100));
+      this._settings.highContrast  = Boolean(saved.highContrast  ?? false);
+      this._settings.dyslexiaFont  = Boolean(saved.dyslexiaFont  ?? false);
+      this._settings.reducedMotion = Boolean(saved.reducedMotion ?? false);
     }
   }
 
@@ -243,10 +256,11 @@ export class SettingsScene extends BaseScene {
     if (this._storage) {
       try {
         this._storage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({
-          muted:        this._settings.muted,
-          textSize:     this._settings.textSize,
-          highContrast: this._settings.highContrast,
-          dyslexiaFont: this._settings.dyslexiaFont,
+          muted:         this._settings.muted,
+          textSize:      this._settings.textSize,
+          highContrast:  this._settings.highContrast,
+          dyslexiaFont:  this._settings.dyslexiaFont,
+          reducedMotion: this._settings.reducedMotion,
         }));
       } catch (_) {
         // Ignore storage errors (e.g. private browsing quota)
@@ -414,6 +428,10 @@ export class SettingsScene extends BaseScene {
     // Dyslexia font
     this._createToggleRow('dyslexiaFont', 'Dyslexia Font', sectionX, startY + 170,
       () => this.setDyslexiaFont(!this._settings.dyslexiaFont));
+
+    // Reduced motion (disables non-essential animations)
+    this._createToggleRow('reducedMotion', 'Reduced Motion', sectionX, startY + 230,
+      () => this.setReducedMotion(!this._settings.reducedMotion));
   }
 
   _createControlsSection(width, _height) {

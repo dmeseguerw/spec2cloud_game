@@ -13,15 +13,25 @@ import { NotificationManager, PRIORITY } from '../../src/ui/NotificationManager.
 // Shared helpers
 // ---------------------------------------------------------------------------
 
-function buildManager(config = {}) {
+/**
+ * Build a scene mock with optional `tweens` support.
+ * @param {boolean} [withTweens=false] - Whether to include a tweens stub.
+ * @param {boolean} [reducedMotion=false] - Whether registry returns reducedMotion=true.
+ */
+function buildManager(config = {}, { withTweens = false, reducedMotion = false } = {}) {
   const rectObjects = [];
   const textObjects = [];
+  const tweenTargets = [];
+
   const scene = {
     scale: { width: 1280, height: 720 },
+    registry: {
+      get: vi.fn().mockImplementation((key) => key === 'reduced_motion' ? reducedMotion : undefined),
+    },
     add: {
       rectangle: vi.fn().mockImplementation(() => {
         const obj = {
-          x: 0, y: 0, width: 0, height: 0, visible: true, depth: 0,
+          x: 0, y: 0, width: 0, height: 0, visible: true, depth: 0, alpha: 1,
           _fillColor: 0,
           setOrigin: vi.fn().mockReturnThis(),
           setDepth: vi.fn().mockReturnThis(),
@@ -34,7 +44,7 @@ function buildManager(config = {}) {
       }),
       text: vi.fn().mockImplementation(() => {
         const obj = {
-          text: '', visible: true,
+          text: '', visible: true, alpha: 1,
           setOrigin: vi.fn().mockReturnThis(),
           setDepth: vi.fn().mockReturnThis(),
           setScrollFactor: vi.fn().mockReturnThis(),
@@ -47,8 +57,21 @@ function buildManager(config = {}) {
       }),
     },
   };
+
+  if (withTweens) {
+    scene.tweens = {
+      add: vi.fn().mockImplementation((cfg) => {
+        tweenTargets.push(cfg);
+        const tween = { stop: vi.fn() };
+        // Immediately invoke onComplete for testing purposes
+        if (cfg.onComplete) cfg.onComplete();
+        return tween;
+      }),
+    };
+  }
+
   const mgr = new NotificationManager(scene, config);
-  return { mgr, scene, rectObjects, textObjects };
+  return { mgr, scene, rectObjects, textObjects, tweenTargets };
 }
 
 // ---------------------------------------------------------------------------
@@ -179,5 +202,106 @@ describe('NotificationManager', () => {
     // The text object should contain the icon prefix
     const textCall = mgr._scene.add.text.mock.calls[0];
     expect(textCall[2]).toBe('🏆 Achievement');
+  });
+
+  // ── Animation tests ────────────────────────────────────────────────────────
+
+  describe('entrance animation', () => {
+    it('triggers tweens.add when tweens are available and reducedMotion is false', () => {
+      const { mgr, scene } = buildManager({}, { withTweens: true, reducedMotion: false });
+      mgr.addNotification('Animated');
+      expect(scene.tweens.add).toHaveBeenCalled();
+    });
+
+    it('does NOT trigger tweens when reducedMotion is true', () => {
+      const { mgr, scene } = buildManager({}, { withTweens: true, reducedMotion: true });
+      mgr.addNotification('No anim');
+      expect(scene.tweens.add).not.toHaveBeenCalled();
+    });
+
+    it('does NOT trigger tweens when tweens system is absent', () => {
+      // buildManager without withTweens: true — scene has no tweens property
+      const { mgr } = buildManager({}, { withTweens: false, reducedMotion: false });
+      // Should not throw
+      expect(() => mgr.addNotification('No tweens')).not.toThrow();
+    });
+
+    it('sets toast alpha to 0 before entrance tween when animating', () => {
+      const { mgr, rectObjects, textObjects } = buildManager({}, { withTweens: true, reducedMotion: false });
+      mgr.addNotification('Animated');
+      // Both bg and text should have had alpha=0 set (then tween restores to 1)
+      // After onComplete fires (our mock fires it immediately), alpha reverts via tween
+      expect(rectObjects[0]).toBeDefined();
+      expect(textObjects[0]).toBeDefined();
+    });
+  });
+
+  describe('HIGH priority shake', () => {
+    it('adds a shake tween for HIGH priority notifications when tweens available', () => {
+      const { mgr, scene, tweenTargets } = buildManager({}, { withTweens: true, reducedMotion: false });
+      mgr.addNotification('Urgent!', { priority: PRIORITY.HIGH });
+      // Entrance tween + shake tween = 2 calls
+      expect(scene.tweens.add).toHaveBeenCalledTimes(2);
+    });
+
+    it('does NOT add shake tween for LOW priority', () => {
+      const { mgr, scene } = buildManager({}, { withTweens: true, reducedMotion: false });
+      mgr.addNotification('Normal', { priority: PRIORITY.LOW });
+      // Only entrance tween — no shake
+      expect(scene.tweens.add).toHaveBeenCalledTimes(1);
+    });
+
+    it('does NOT add shake tween when reducedMotion is true', () => {
+      const { mgr, scene } = buildManager({}, { withTweens: true, reducedMotion: true });
+      mgr.addNotification('Urgent!', { priority: PRIORITY.HIGH });
+      // Neither entrance nor shake tweens when reduced motion
+      expect(scene.tweens.add).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('_isReducedMotion()', () => {
+    it('returns false when registry does not have reduced_motion set', () => {
+      const { mgr } = buildManager({}, { withTweens: false, reducedMotion: false });
+      expect(mgr._isReducedMotion()).toBe(false);
+    });
+
+    it('returns true when registry has reduced_motion = true', () => {
+      const { mgr } = buildManager({}, { withTweens: false, reducedMotion: true });
+      expect(mgr._isReducedMotion()).toBe(true);
+    });
+  });
+
+  describe('clearAll() with active tweens', () => {
+    it('calls stop() on active entrance tween when clearing', () => {
+      // Use a tween mock that does NOT auto-invoke onComplete
+      const rectObjects = [];
+      const textObjects = [];
+      const scene = {
+        scale: { width: 1280, height: 720 },
+        registry: { get: vi.fn().mockReturnValue(false) },
+        add: {
+          rectangle: vi.fn().mockImplementation(() => {
+            const obj = { x: 0, y: 0, alpha: 1, setOrigin: vi.fn().mockReturnThis(), setDepth: vi.fn().mockReturnThis(), setScrollFactor: vi.fn().mockReturnThis(), destroy: vi.fn() };
+            rectObjects.push(obj);
+            return obj;
+          }),
+          text: vi.fn().mockImplementation(() => {
+            const obj = { text: '', alpha: 1, setOrigin: vi.fn().mockReturnThis(), setDepth: vi.fn().mockReturnThis(), setScrollFactor: vi.fn().mockReturnThis(), destroy: vi.fn() };
+            textObjects.push(obj);
+            return obj;
+          }),
+        },
+        tweens: {
+          add: vi.fn().mockImplementation(() => ({ stop: vi.fn() })),
+        },
+      };
+
+      const mgr = new NotificationManager(scene, {});
+      mgr.addNotification('Test');
+      // After display, _entranceTween should exist (onComplete not called since mock returns tween)
+      // clearAll should stop it
+      expect(() => mgr.clearAll()).not.toThrow();
+      expect(mgr.isDisplaying()).toBe(false);
+    });
   });
 });

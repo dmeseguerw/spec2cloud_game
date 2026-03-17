@@ -10,6 +10,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MockRegistry } from '../mocks/PhaserMocks.js';
 import { UIScene } from '../../src/scenes/UIScene.js';
+import * as RK from '../../src/constants/RegistryKeys.js';
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -17,13 +18,15 @@ import { UIScene } from '../../src/scenes/UIScene.js';
 
 /**
  * Build a fresh UIScene instance with all required Phaser context stubbed.
- * Returns the scene together with the mock registry for event testing.
+ * @param {object} [opts]
+ * @param {boolean} [opts.withTweens] - Attach a tweens stub to the scene.
  */
-function buildScene() {
+function buildScene({ withTweens = false } = {}) {
   const scene = new UIScene();
 
   const textObjects = [];
   const rectObjects = [];
+  const tweenCalls  = [];
 
   const makeText = () => {
     const obj = {
@@ -85,7 +88,16 @@ function buildScene() {
     launch: vi.fn(),
   };
 
-  return { scene, registry, textObjects, rectObjects };
+  if (withTweens) {
+    scene.tweens = {
+      add: vi.fn().mockImplementation((cfg) => {
+        tweenCalls.push(cfg);
+        return { stop: vi.fn() };
+      }),
+    };
+  }
+
+  return { scene, registry, textObjects, rectObjects, tweenCalls };
 }
 
 // ---------------------------------------------------------------------------
@@ -185,5 +197,136 @@ describe('UIScene', () => {
     const addSpy = vi.spyOn(scene._notificationManager, 'addNotification');
     scene.showNotification('Test message', { priority: 'high' });
     expect(addSpy).toHaveBeenCalledWith('Test message', { priority: 'high' });
+  });
+
+  // ── Animation / reduced-motion tests ────────────────────────────────────
+
+  describe('_isReducedMotion()', () => {
+    it('returns false when REDUCED_MOTION registry key is not set', () => {
+      const { scene, registry } = buildScene();
+      scene.create();
+      expect(scene._isReducedMotion()).toBe(false);
+    });
+
+    it('returns true when REDUCED_MOTION registry key is true', () => {
+      const { scene, registry } = buildScene();
+      scene.create();
+      registry.set(RK.REDUCED_MOTION, true);
+      expect(scene._isReducedMotion()).toBe(true);
+    });
+
+    it('returns false when REDUCED_MOTION registry key is false', () => {
+      const { scene, registry } = buildScene();
+      scene.create();
+      registry.set(RK.REDUCED_MOTION, false);
+      expect(scene._isReducedMotion()).toBe(false);
+    });
+  });
+
+  describe('_updateXP() — animation flag', () => {
+    it('passes animate=false (reduced motion) when REDUCED_MOTION is true', () => {
+      const { scene, registry } = buildScene();
+      scene.create();
+      registry.set(RK.REDUCED_MOTION, true);
+
+      const spy = vi.spyOn(scene._xpBar, 'setValue');
+      registry.set(RK.PLAYER_XP, 50);
+      // animate should be !_isReducedMotion() = false
+      expect(spy).toHaveBeenCalledWith(50, false);
+    });
+
+    it('passes animate=true when REDUCED_MOTION is false (default)', () => {
+      const { scene, registry } = buildScene();
+      scene.create();
+
+      const spy = vi.spyOn(scene._xpBar, 'setValue');
+      registry.set(RK.PLAYER_XP, 50);
+      expect(spy).toHaveBeenCalledWith(50, true);
+    });
+  });
+
+  describe('_updateHealth() — critical pulse', () => {
+    it('calls _pulseCritical when health is at critical threshold (≤25)', () => {
+      const { scene, registry } = buildScene({ withTweens: true });
+      scene.create();
+      const spy = vi.spyOn(scene, '_pulseCritical');
+      registry.set(RK.PLAYER_HEALTH, 20);
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('does NOT call _pulseCritical when health is above critical threshold', () => {
+      const { scene, registry } = buildScene({ withTweens: true });
+      scene.create();
+      const spy = vi.spyOn(scene, '_pulseCritical');
+      registry.set(RK.PLAYER_HEALTH, 80);
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('_pulseCritical fires tweens.add when tweens available and not reduced motion', () => {
+      const { scene, registry, tweenCalls } = buildScene({ withTweens: true });
+      scene.create();
+      registry.set(RK.PLAYER_HEALTH, 10);
+      expect(tweenCalls.length).toBeGreaterThan(0);
+    });
+
+    it('_pulseCritical does NOT fire tweens.add when reducedMotion is true', () => {
+      const { scene, registry, tweenCalls } = buildScene({ withTweens: true });
+      scene.create();
+      registry.set(RK.REDUCED_MOTION, true);
+      // Snapshot tween count after create() — subsequent health update should not add more
+      const countBefore = tweenCalls.length;
+      registry.set(RK.PLAYER_HEALTH, 10);
+      expect(tweenCalls.length).toBe(countBefore);
+    });
+  });
+
+  describe('_updateEnergy() — critical pulse', () => {
+    it('calls _pulseCritical when energy is at critical threshold (≤25)', () => {
+      const { scene, registry } = buildScene({ withTweens: true });
+      scene.create();
+      const spy = vi.spyOn(scene, '_pulseCritical');
+      registry.set(RK.PLAYER_ENERGY, 15);
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('does NOT call _pulseCritical when energy is above critical threshold', () => {
+      const { scene, registry } = buildScene({ withTweens: true });
+      scene.create();
+      const spy = vi.spyOn(scene, '_pulseCritical');
+      registry.set(RK.PLAYER_ENERGY, 50);
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('_updateMoney() — flash on gain', () => {
+    it('calls _flashMoneyText when money increases', () => {
+      const { scene, registry } = buildScene({ withTweens: true });
+      scene.create();
+      // Seed initial money
+      registry.set(RK.PLAYER_MONEY, 100);
+      const spy = vi.spyOn(scene, '_flashMoneyText');
+      // Increase money — should trigger flash
+      registry.set(RK.PLAYER_MONEY, 200);
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it('does NOT call _flashMoneyText when money decreases', () => {
+      const { scene, registry } = buildScene({ withTweens: true });
+      scene.create();
+      registry.set(RK.PLAYER_MONEY, 200);
+      const spy = vi.spyOn(scene, '_flashMoneyText');
+      registry.set(RK.PLAYER_MONEY, 100);
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('does NOT call _flashMoneyText on first money update (no previous value)', () => {
+      const { scene, registry } = buildScene({ withTweens: true });
+      scene.create();
+      // Clear lastMoney to simulate first-ever update
+      scene._lastMoney = null;
+      const spy = vi.spyOn(scene, '_flashMoneyText');
+      registry.set(RK.PLAYER_MONEY, 500);
+      expect(spy).not.toHaveBeenCalled();
+    });
   });
 });
