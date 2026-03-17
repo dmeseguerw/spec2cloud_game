@@ -93,7 +93,7 @@ export const ENCYCLOPEDIA_DATA = [
     body: 'Danes typically greet with a firm handshake and direct eye contact. Hugs are reserved for close friends and family. In professional settings, the handshake is the go-to greeting — warm but not overly enthusiastic. First names are used almost universally, even with your boss. Formality exists, but Danish greetings are usually quick and sincere.',
     icon: 'icon_handshake',
     triggers: [
-      { type: 'npc_conversation', npcId: 'boss', conversationId: 'first_meeting' },
+      { type: 'npc_conversation', npcId: 'henrik', conversationId: 'first_meeting' },
     ],
     relatedEntries: ['lang_hej', 'culture_directness'],
     sourceText: 'Learned from: first formal meeting in Denmark',
@@ -106,7 +106,7 @@ export const ENCYCLOPEDIA_DATA = [
     icon: 'icon_quiet_hours',
     triggers: [
       { type: 'mistake', mistakeType: 'quiet_hours_violation' },
-      { type: 'npc_conversation', npcId: 'neighbor', conversationId: 'noise_rules' },
+      { type: 'npc_conversation', npcId: 'lars', conversationId: 'noise_rules' },
     ],
     relatedEntries: ['tips_apartment_rules', 'culture_directness'],
     sourceText: 'Learned from: apartment living experience',
@@ -203,7 +203,7 @@ export const ENCYCLOPEDIA_DATA = [
     body: 'Danish humor is famously dry, self-deprecating, and occasionally dark. Sarcasm is a love language, and irony is a daily communication tool. Don\'t be alarmed when a Dane deadpans something absurd — it\'s probably a joke. Understanding Danish humor is a milestone in cultural integration, and being able to joke back earns genuine respect.',
     icon: 'icon_humor',
     triggers: [
-      { type: 'npc_conversation', npcId: 'mikkel', conversationId: 'danish_joke' },
+      { type: 'npc_conversation', npcId: 'kasper', conversationId: 'danish_joke' },
     ],
     relatedEntries: ['culture_directness', 'lang_slang'],
     sourceText: 'Learned from: a Danish joke (probably)',
@@ -338,7 +338,7 @@ export const ENCYCLOPEDIA_DATA = [
     body: 'Danes are famously direct. They say what they mean without layers of politeness or ambiguity. "Your presentation needs work" means exactly that — no sugar-coating. This isn\'t rudeness; it\'s efficiency and honesty. Once you get used to it, you\'ll appreciate the clarity. But newcomers often mistake directness for hostility.',
     icon: 'icon_directness',
     triggers: [
-      { type: 'npc_conversation', npcId: 'colleague', conversationId: 'blunt_feedback' },
+      { type: 'npc_conversation', npcId: 'henrik', conversationId: 'blunt_feedback' },
     ],
     relatedEntries: ['culture_humor', 'culture_janteloven'],
     sourceText: 'Learned from: experiencing Danish directness firsthand',
@@ -391,7 +391,7 @@ export const ENCYCLOPEDIA_DATA = [
     body: '"Rødgrød med fløde" (red berry pudding with cream) is the quintessential Danish pronunciation test. The three soft D\'s and the "ø" and "ø" vowels are nearly impossible for non-Danes. It\'s a beloved party trick — Danes love asking foreigners to attempt it. Don\'t feel bad when you fail; it\'s practically designed to be unpronounceable.',
     icon: 'icon_rodgrod',
     triggers: [
-      { type: 'npc_conversation', npcId: 'mikkel', conversationId: 'pronunciation_challenge' },
+      { type: 'npc_conversation', npcId: 'kasper', conversationId: 'pronunciation_challenge' },
     ],
     relatedEntries: ['lang_tongue_twisters', 'culture_humor'],
     sourceText: 'Learned from: attempting Danish pronunciation',
@@ -571,7 +571,7 @@ export const ENCYCLOPEDIA_DATA = [
     body: '"Fem flade flødeboller på et fladt flødebollefad" — try saying that five times fast. Danish tongue twisters are practically weapons of mass pronunciation destruction. They\'re also a fun party trick and a sign that a Dane really likes you if they teach you one. Practicing them actually does improve your Danish pronunciation.',
     icon: 'icon_tongue_twisters',
     triggers: [
-      { type: 'npc_conversation', npcId: 'mikkel', conversationId: 'tongue_twister_lesson' },
+      { type: 'npc_conversation', npcId: 'kasper', conversationId: 'tongue_twister_lesson' },
     ],
     relatedEntries: ['lang_rodgrod', 'culture_humor'],
     sourceText: 'Learned from: a Danish language lesson',
@@ -941,7 +941,7 @@ export const ENCYCLOPEDIA_DATA = [
     icon: 'icon_apartment_rules',
     triggers: [
       { type: 'mistake', mistakeType: 'apartment_rule_violation' },
-      { type: 'npc_conversation', npcId: 'neighbor', conversationId: 'building_rules' },
+      { type: 'npc_conversation', npcId: 'lars', conversationId: 'building_rules' },
     ],
     relatedEntries: ['culture_quiet_hours', 'places_apartment'],
     sourceText: 'Learned from: learning about apartment etiquette',

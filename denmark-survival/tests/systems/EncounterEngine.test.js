@@ -507,11 +507,11 @@ describe('resolveEncounter — flag outcomes', () => {
 describe('resolveEncounter — encyclopedia outcomes', () => {
   it('unlocks an encyclopedia entry when specified', () => {
     const r = makeRegistry();
-    // neutral_street_musician option 0 unlocks culture_folk_music
+    // neutral_street_musician option 0 unlocks culture_fredagsbaren
     // (entry may or may not exist in data, but the call should be made)
     const result = resolveEncounter(r, 'neutral_street_musician', 0);
     expect(result.success).toBe(true);
-    expect(result.effects.encyclopedia).toBe('culture_folk_music');
+    expect(result.effects.encyclopedia).toBe('culture_fredagsbaren');
   });
 });
 

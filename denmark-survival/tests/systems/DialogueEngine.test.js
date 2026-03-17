@@ -634,7 +634,7 @@ describe('DialogueEngine — effect application', () => {
     engine.startDialogue(registry, 'mette', 'test_effects');
     engine.selectResponse(registry, 4); // encyclopedia hygge
     const entries = registry.get(RK.ENCYCLOPEDIA_ENTRIES);
-    expect(entries['hygge']).toBe(true);
+    expect(entries).toContain('hygge');
   });
 
   it('encyclopedia effect emits ENCYCLOPEDIA_UNLOCKED event', () => {
@@ -968,7 +968,7 @@ describe('DialogueEngine — integration: full conversation flow', () => {
     engine.selectResponse(registry, 0); // what do you love → node_lars_love
     engine.selectResponse(registry, 0); // "That sounds lovely" → effects: encyclopedia hygge
     const entries = registry.get(RK.ENCYCLOPEDIA_ENTRIES);
-    expect(entries['hygge']).toBe(true);
+    expect(entries).toContain('hygge');
   });
 
   it('traverses mette_shopping specials path', async () => {
@@ -980,7 +980,7 @@ describe('DialogueEngine — integration: full conversation flow', () => {
     engine.selectResponse(registry, 1); // specials
     engine.selectResponse(registry, 0); // "I'll try it!" → encyclopedia smorrebrod
     const entries = registry.get(RK.ENCYCLOPEDIA_ENTRIES);
-    expect(entries['smorrebrod']).toBe(true);
+    expect(entries).toContain('smorrebrod');
   });
 
   it('traverses thomas_first_meeting Danish-attempt path', async () => {

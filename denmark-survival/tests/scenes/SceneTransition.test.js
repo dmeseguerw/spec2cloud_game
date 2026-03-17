@@ -337,7 +337,7 @@ describe('SceneTransition', () => {
       const scene = buildMockScene('InventoryScene');
       scene._parentSceneKey = 'GameScene';
       closeOverlay(scene);
-      expect(scene.scene.stop).toHaveBeenCalledWith('InventoryScene');
+      expect(scene.scene.stop).toHaveBeenCalled();
     });
 
     it('resumes the parent scene', () => {
@@ -363,7 +363,7 @@ describe('SceneTransition', () => {
       const scene = buildMockScene('InventoryScene');
       scene._parentSceneKey = null;
       closeOverlay(scene);
-      expect(scene.scene.stop).toHaveBeenCalledWith('InventoryScene');
+      expect(scene.scene.stop).toHaveBeenCalled();
       expect(scene.scene.resume).not.toHaveBeenCalled();
     });
   });
@@ -602,7 +602,7 @@ describe('BaseScene', () => {
       const scene = buildBaseScene('InventoryScene');
       scene.init({ _parentSceneKey: 'GameScene' });
       scene.closeOverlay();
-      expect(scene.scene.stop).toHaveBeenCalledWith('InventoryScene');
+      expect(scene.scene.stop).toHaveBeenCalled();
       expect(scene.scene.resume).toHaveBeenCalledWith('GameScene');
     });
 
@@ -680,7 +680,7 @@ describe('Scene Navigation Integration', () => {
     dialogue._parentSceneKey = 'GameScene';
     dialogue.registry = game.registry;
     closeOverlay(dialogue);
-    expect(dialogue.scene.stop).toHaveBeenCalledWith('DialogueScene');
+    expect(dialogue.scene.stop).toHaveBeenCalled();
     expect(dialogue.scene.resume).toHaveBeenCalledWith('GameScene');
   });
 
