@@ -48,6 +48,9 @@ export const DIALOGUE_STARTED = 'dialogue_started';
 export const DIALOGUE_ENDED = 'dialogue_ended';
 export const DIALOGUE_NODE_CHANGED = 'dialogue_node_changed';
 export const DIALOGUE_RESPONSE_SELECTED = 'dialogue_response_selected';
+// Encounters
+export const ENCOUNTER_TRIGGERED = 'encounter_triggered';
+export const ENCOUNTER_RESOLVED  = 'encounter_resolved';
 // Economy
 export const SALARY_RECEIVED            = 'salary_received';
 export const TAX_FILED                  = 'tax_filed';

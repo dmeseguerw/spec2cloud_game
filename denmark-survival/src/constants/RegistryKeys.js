@@ -43,6 +43,8 @@ export const ENCYCLOPEDIA_ENTRIES = 'encyclopedia_entries';
 export const COMPLETED_SCENARIOS = 'completed_scenarios';
 export const DIALOGUE_HISTORY = 'dialogue_history';
 export const ENCOUNTER_HISTORY = 'encounter_history';
+export const PENDING_ENCOUNTERS = 'pending_encounters';
+export const ENCOUNTER_FLAGS = 'encounter_flags';
 
 // Time & Season
 export const TIME_OF_DAY = 'time_of_day';
