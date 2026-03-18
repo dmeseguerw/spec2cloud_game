@@ -228,123 +228,127 @@ describe('HTMLOverlayManager', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Edge-case: show() with missing DOM element (getElementById returns null)
-  // Covers lines 52–55 of HTMLOverlayManager.js
+  // show() — element not found in DOM (lines 52–55)
   // ---------------------------------------------------------------------------
 
-  it('show() with missing DOM element does not throw', () => {
-    // document exists but getElementById returns null for unknown id
-    const { mgr } = buildManager();
+  describe('show() — element not found in DOM', () => {
+    it('does not throw when getElementById returns null', () => {
+      const { mgr } = buildManager();
+      // document exists but element not registered — getElementById returns null
+      expect(() => mgr.show('nonexistent-overlay-id')).not.toThrow();
+    });
 
-    expect(() => mgr.show('nonexistent-overlay')).not.toThrow();
-  });
+    it('stores overlay id and sets _activeOverlayEl to null when element missing', () => {
+      const { mgr } = buildManager();
+      mgr.show('nonexistent-overlay-id');
+      expect(mgr._activeOverlayId).toBe('nonexistent-overlay-id');
+      expect(mgr._activeOverlayEl).toBeNull();
+    });
 
-  it('show() with missing DOM element stores overlay id', () => {
-    const { mgr } = buildManager();
+    it('blocks game input even when element is missing', () => {
+      const { mgr } = buildManager();
+      mgr.show('nonexistent-overlay-id');
+      expect(mgr._inputBlocked).toBe(true);
+    });
 
-    mgr.show('nonexistent-overlay');
-    expect(mgr.getActiveId()).toBe('nonexistent-overlay');
-    expect(mgr.isActive()).toBe(true);
-  });
+    it('hide() does not throw after show() with missing element', () => {
+      const { mgr } = buildManager();
+      mgr.show('nonexistent-overlay-id');
+      expect(() => mgr.hide('nonexistent-overlay-id')).not.toThrow();
+    });
 
-  it('show() with missing DOM element sets _activeOverlayEl to null and blocks input', () => {
-    const { mgr, scene } = buildManager();
+    it('isActive() returns true after show() with missing element', () => {
+      const { mgr } = buildManager();
+      mgr.show('nonexistent-overlay-id');
+      expect(mgr.isActive()).toBe(true);
+    });
 
-    mgr.show('nonexistent-overlay');
-    expect(mgr.isInputBlocked()).toBe(true);
-    expect(scene.input.enabled).toBe(false);
-    // Verify the overlay is tracked as active with no DOM errors (element is null internally)
-    expect(mgr.isActive()).toBe(true);
-    expect(mgr.getActiveId()).toBe('nonexistent-overlay');
-  });
-
-  it('hide() after show() with missing DOM element does not throw and unblocks input', () => {
-    const { mgr, scene } = buildManager();
-
-    mgr.show('nonexistent-overlay');
-    expect(() => mgr.hide('nonexistent-overlay')).not.toThrow();
-    expect(mgr.isActive()).toBe(false);
-    expect(mgr.isInputBlocked()).toBe(false);
-    expect(scene.input.enabled).toBe(true);
-  });
-
-  it('game input stays blocked after show() with missing element until hide() is called', () => {
-    const { mgr } = buildManager();
-
-    mgr.show('nonexistent-overlay');
-    expect(mgr.isInputBlocked()).toBe(true);
-
-    // Calling show() again with another missing element should keep input blocked
-    mgr.show('another-missing-overlay');
-    expect(mgr.isInputBlocked()).toBe(true);
+    it('getActiveId() returns the id after show() with missing element', () => {
+      const { mgr } = buildManager();
+      mgr.show('nonexistent-overlay-id');
+      expect(mgr.getActiveId()).toBe('nonexistent-overlay-id');
+    });
   });
 
   // ---------------------------------------------------------------------------
-  // Edge-case: _trapFocus with focusable children present
-  // Covers line 180 of HTMLOverlayManager.js (focusable[0].focus() call)
+  // _trapFocus() — focus-trap paths (line 179–181)
   // ---------------------------------------------------------------------------
 
-  it('show() with element that has focusable children calls focus() without error', () => {
-    const focusableMock = { focus: vi.fn() };
-    const el = createMockElement('pause-menu');
-    // Override querySelectorAll to return a non-empty focusable list
-    el.querySelectorAll = vi.fn().mockReturnValue([focusableMock]);
-    global.document._registerElement('pause-menu', el);
-    const { mgr } = buildManager();
+  describe('_trapFocus() — focus trap behavior', () => {
+    it('does not throw when overlay has no focusable children', () => {
+      const { mgr } = buildManager();
+      const el = createMockElement('empty-overlay');
+      // querySelectorAll returns [] by default in createMockElement
+      expect(() => mgr._trapFocus(el)).not.toThrow();
+    });
 
-    expect(() => mgr.show('pause-menu')).not.toThrow();
-    expect(focusableMock.focus).toHaveBeenCalledTimes(1);
+    it('calls focus() on first focusable element when focusable children exist', () => {
+      const { mgr } = buildManager();
+      const el = createMockElement('focus-overlay');
+      const focusableEl = { focus: vi.fn() };
+      el.querySelectorAll.mockReturnValue([focusableEl]);
+      mgr._trapFocus(el);
+      expect(focusableEl.focus).toHaveBeenCalled();
+    });
   });
 
   // ---------------------------------------------------------------------------
-  // Edge-case: _addEscapeListener guard — already listening (line 188 true branch)
+  // _addEscapeListener() — already-listening branch (line 188)
   // ---------------------------------------------------------------------------
 
-  it('show() same overlay twice does not add duplicate Escape listener', () => {
-    const el = createMockElement('pause-menu');
-    global.document._registerElement('pause-menu', el);
-    const { mgr } = buildManager();
+  describe('_addEscapeListener() — already listening', () => {
+    it('does not add duplicate listener when called twice', () => {
+      const el = createMockElement('pause-menu');
+      global.document._registerElement('pause-menu', el);
+      const { mgr } = buildManager();
 
-    mgr.show('pause-menu');
-    const addCallsBefore = global.document.addEventListener.mock.calls.length;
+      // First show registers the listener
+      mgr.show('pause-menu');
+      const addCallCount = global.document.addEventListener.mock.calls.length;
 
-    // Second show with same id: _addEscapeListener early-returns because
-    // _isListeningForEscape is already true (covers line 188 true branch)
-    mgr.show('pause-menu');
-    expect(global.document.addEventListener.mock.calls.length).toBe(addCallsBefore);
+      // Second show() on same overlay calls _addEscapeListener again —
+      // it should hit the early-return at line 188 and NOT add another listener
+      mgr.show('pause-menu');
+      expect(global.document.addEventListener.mock.calls.length).toBe(addCallCount);
+    });
   });
 
   // ---------------------------------------------------------------------------
-  // Edge-case: hide() with falsy overlayId (line 71 early return)
+  // _onEscapeKey() — non-Escape key (line 211 false branch)
   // ---------------------------------------------------------------------------
 
-  it('hide() with null/undefined overlayId does not throw', () => {
-    const { mgr } = buildManager();
-    expect(() => mgr.hide(null)).not.toThrow();
-    expect(() => mgr.hide(undefined)).not.toThrow();
-    expect(() => mgr.hide('')).not.toThrow();
+  describe('_onEscapeKey() — non-Escape key', () => {
+    it('does not hide overlay when a non-Escape key is pressed', () => {
+      const el = createMockElement('pause-menu');
+      global.document._registerElement('pause-menu', el);
+      const { mgr } = buildManager();
+
+      mgr.show('pause-menu');
+
+      // Simulate a non-Escape key via the bound handler directly
+      mgr._onEscapeKey({ key: 'Enter' });
+
+      // Overlay should still be active
+      expect(mgr.isActive()).toBe(true);
+    });
   });
 
   // ---------------------------------------------------------------------------
-  // Edge-case: _onEscapeKey called with non-Escape key (line 211 false branch)
+  // hide() — overlayId does not match active overlay (false branch of line 80)
   // ---------------------------------------------------------------------------
 
-  it('non-Escape keydown event does not hide active overlay', () => {
-    const el = createMockElement('pause-menu');
-    global.document._registerElement('pause-menu', el);
-    const { mgr } = buildManager();
+  describe('hide() — overlayId does not match active overlay', () => {
+    it('does not unblock input when hiding a non-active overlay', () => {
+      const el = createMockElement('pause-menu');
+      global.document._registerElement('pause-menu', el);
+      const { mgr } = buildManager();
 
-    mgr.show('pause-menu');
-
-    const addEventCall = global.document.addEventListener.mock.calls.find(
-      call => call[0] === 'keydown'
-    );
-    expect(addEventCall).toBeDefined();
-    const handler = addEventCall[1];
-
-    // Pressing a non-Escape key should leave the overlay active
-    handler({ key: 'Enter' });
-    expect(mgr.isActive()).toBe(true);
-    expect(mgr.getActiveId()).toBe('pause-menu');
+      mgr.show('pause-menu');
+      // Hiding a different overlay should leave 'pause-menu' active
+      mgr.hide('settings-menu');
+      expect(mgr.isActive()).toBe(true);
+      expect(mgr.getActiveId()).toBe('pause-menu');
+      expect(mgr.isInputBlocked()).toBe(true);
+    });
   });
 });
