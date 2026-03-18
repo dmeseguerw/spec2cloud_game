@@ -287,3 +287,119 @@ describe('InputManager — destroy', () => {
     expect(() => im.destroy()).not.toThrow();
   });
 });
+
+describe('InputManager — isEscapeJustPressed (rising-edge detection)', () => {
+  it('returns true only on the frame key transitions from up to down', () => {
+    const { im } = buildInputManager();
+    im._keyEscape = makeKey(true);
+    im._escapeWasDown = false;
+    expect(im.isEscapeJustPressed()).toBe(true);
+  });
+
+  it('returns false on the next call when key is still held', () => {
+    const { im } = buildInputManager();
+    im._keyEscape = makeKey(true);
+    im._escapeWasDown = false;
+    im.isEscapeJustPressed(); // first call — consumes rising edge
+    expect(im.isEscapeJustPressed()).toBe(false);
+  });
+
+  it('returns false when key was already down last frame', () => {
+    const { im } = buildInputManager();
+    im._keyEscape = makeKey(true);
+    im._escapeWasDown = true;
+    expect(im.isEscapeJustPressed()).toBe(false);
+  });
+
+  it('returns false when key is not pressed', () => {
+    const { im } = buildInputManager();
+    im._keyEscape = makeKey(false);
+    im._escapeWasDown = false;
+    expect(im.isEscapeJustPressed()).toBe(false);
+  });
+
+  it('returns false when _blocked is true', () => {
+    const { im } = buildInputManager();
+    im._blocked = true;
+    im._keyEscape = makeKey(true);
+    im._escapeWasDown = false;
+    expect(im.isEscapeJustPressed()).toBe(false);
+  });
+
+  it('returns false when _keyEscape is null', () => {
+    const { im } = buildInputManager();
+    im._keyEscape = null;
+    im._escapeWasDown = false;
+    expect(im.isEscapeJustPressed()).toBe(false);
+  });
+
+  it('updates _escapeWasDown to reflect current key state', () => {
+    const { im } = buildInputManager();
+    im._keyEscape = makeKey(true);
+    im._escapeWasDown = false;
+    im.isEscapeJustPressed();
+    expect(im._escapeWasDown).toBe(true);
+
+    im._keyEscape.isDown = false;
+    im.isEscapeJustPressed();
+    expect(im._escapeWasDown).toBe(false);
+  });
+});
+
+describe('InputManager — isInventoryJustPressed (rising-edge detection)', () => {
+  it('returns true only on the frame Tab transitions from up to down', () => {
+    const { im } = buildInputManager();
+    im._keyInventory = makeKey(true);
+    im._inventoryWasDown = false;
+    expect(im.isInventoryJustPressed()).toBe(true);
+  });
+
+  it('returns false on the next call when key is still held', () => {
+    const { im } = buildInputManager();
+    im._keyInventory = makeKey(true);
+    im._inventoryWasDown = false;
+    im.isInventoryJustPressed(); // first call — consumes rising edge
+    expect(im.isInventoryJustPressed()).toBe(false);
+  });
+
+  it('returns false when key was already down last frame', () => {
+    const { im } = buildInputManager();
+    im._keyInventory = makeKey(true);
+    im._inventoryWasDown = true;
+    expect(im.isInventoryJustPressed()).toBe(false);
+  });
+
+  it('returns false when key is not pressed', () => {
+    const { im } = buildInputManager();
+    im._keyInventory = makeKey(false);
+    im._inventoryWasDown = false;
+    expect(im.isInventoryJustPressed()).toBe(false);
+  });
+
+  it('returns false when _blocked is true', () => {
+    const { im } = buildInputManager();
+    im._blocked = true;
+    im._keyInventory = makeKey(true);
+    im._inventoryWasDown = false;
+    expect(im.isInventoryJustPressed()).toBe(false);
+  });
+
+  it('returns false when _keyInventory is null', () => {
+    const { im } = buildInputManager();
+    im._keyInventory = null;
+    im._inventoryWasDown = false;
+    expect(im.isInventoryJustPressed()).toBe(false);
+  });
+
+  it('updates _inventoryWasDown to reflect current key state', () => {
+    const { im } = buildInputManager();
+    im._keyInventory = makeKey(true);
+    im._inventoryWasDown = false;
+    im.isInventoryJustPressed();
+    expect(im._inventoryWasDown).toBe(true);
+
+    im._keyInventory.isDown = false;
+    im.isInventoryJustPressed();
+    expect(im._inventoryWasDown).toBe(false);
+  });
+});
