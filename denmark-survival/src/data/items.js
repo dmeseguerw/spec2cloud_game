@@ -4,7 +4,7 @@
  * Auto-generated from items.json — edit items.json and re-export if needed.
  */
 
-export default [
+export const ITEMS = [
   {
     "id": "rugbrod",
     "name": "Rugbrød",
@@ -357,3 +357,5 @@ export default [
   }
 ]
 ;
+
+export default ITEMS;
