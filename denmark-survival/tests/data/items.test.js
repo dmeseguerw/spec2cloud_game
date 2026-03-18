@@ -1,18 +1,18 @@
 /**
  * tests/data/items.test.js
- * Unit tests for the items data module.
+ * Unit tests for the item definitions module.
  *
  * Covers:
- *  - Export shape — items is a non-empty array of 25 entries
- *  - Required fields — id, name, description, category, price on every item
- *  - Uniqueness — all ids are unique strings
- *  - Price integrity — all prices are non-negative integers (DKK)
- *  - Category validity — all categories are one of the five allowed values
- *  - Stackable constraint — stackable items have a positive integer maxStack
- *  - spoilsAfter constraint — null or positive integer ≤ 30
- *  - pantValue constraint — 0 or a non-negative number
- *  - Health items — all have useEffect defined
- *  - Food items — all have useEffect: "eat"
+ *  - Export shape — must be a non-empty array
+ *  - Required fields — id, name, description, category, price
+ *  - id uniqueness and type
+ *  - price values — non-negative integers
+ *  - category values — one of the five valid categories
+ *  - stackable items — must have a positive integer maxStack
+ *  - spoilsAfter values — null or positive integer, max 30 days
+ *  - pantValue values — 0 or positive number
+ *  - Health items — useEffect must be defined
+ *  - Food items — useEffect must be "eat"
  */
 
 import { describe, it, expect } from 'vitest';
@@ -29,7 +29,11 @@ describe('items export', () => {
     expect(Array.isArray(items)).toBe(true);
   });
 
-  it('contains exactly 25 items', () => {
+  it('exports a non-empty array', () => {
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it('exports exactly 25 items', () => {
     expect(items).toHaveLength(25);
   });
 });
@@ -39,15 +43,36 @@ describe('items export', () => {
 // ---------------------------------------------------------------------------
 
 describe('required fields', () => {
-  it('every item has id, name, description, category and price', () => {
-    const required = ['id', 'name', 'description', 'category', 'price'];
+  const requiredFields = ['id', 'name', 'description', 'category', 'price'];
+
+  it('every item has all required fields', () => {
     for (const item of items) {
-      for (const field of required) {
-        expect(item, `Item "${item.id || '?'}" is missing field "${field}"`).toHaveProperty(field);
+      for (const field of requiredFields) {
+        expect(item, `Item "${item.id}" is missing field "${field}"`).toHaveProperty(field);
       }
     }
   });
 
+  it('every name is a non-empty string', () => {
+    for (const item of items) {
+      expect(typeof item.name, `Item "${item.id}" name is not a string`).toBe('string');
+      expect(item.name.length, `Item "${item.id}" name is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it('every description is a non-empty string', () => {
+    for (const item of items) {
+      expect(typeof item.description, `Item "${item.id}" description is not a string`).toBe('string');
+      expect(item.description.length, `Item "${item.id}" description is empty`).toBeGreaterThan(0);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// id uniqueness and type
+// ---------------------------------------------------------------------------
+
+describe('item ids', () => {
   it('every id is a non-empty string', () => {
     for (const item of items) {
       expect(typeof item.id).toBe('string');
@@ -55,109 +80,124 @@ describe('required fields', () => {
     }
   });
 
-  it('every name is a non-empty string', () => {
-    for (const item of items) {
-      expect(typeof item.name).toBe('string');
-      expect(item.name.length).toBeGreaterThan(0);
-    }
-  });
-
-  it('every description is a non-empty string', () => {
-    for (const item of items) {
-      expect(typeof item.description).toBe('string');
-      expect(item.description.length).toBeGreaterThan(0);
-    }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Uniqueness
-// ---------------------------------------------------------------------------
-
-describe('item id uniqueness', () => {
-  it('all item ids are unique', () => {
+  it('all id values are unique', () => {
     const ids = items.map(i => i.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Price integrity
+// price values
 // ---------------------------------------------------------------------------
 
-describe('price integrity', () => {
-  it('all prices are non-negative integers', () => {
+describe('price values', () => {
+  it('every price is a non-negative integer', () => {
     for (const item of items) {
-      expect(typeof item.price).toBe('number');
-      expect(Number.isInteger(item.price)).toBe(true);
-      expect(item.price).toBeGreaterThanOrEqual(0);
+      expect(typeof item.price, `Item "${item.id}" price is not a number`).toBe('number');
+      expect(item.price, `Item "${item.id}" price is negative`).toBeGreaterThanOrEqual(0);
+      expect(Number.isInteger(item.price), `Item "${item.id}" price is not an integer`).toBe(true);
     }
   });
 });
 
 // ---------------------------------------------------------------------------
-// Category validity
+// category values
 // ---------------------------------------------------------------------------
 
-describe('category validity', () => {
-  it('all categories are one of the five allowed values', () => {
+describe('category values', () => {
+  it('every category is one of the valid categories', () => {
     for (const item of items) {
-      expect(VALID_CATEGORIES, `Item "${item.id}" has invalid category "${item.category}"`).toContain(item.category);
+      expect(
+        VALID_CATEGORIES,
+        `Item "${item.id}" has invalid category "${item.category}"`
+      ).toContain(item.category);
     }
   });
 
   it('contains items from all five categories', () => {
-    const presentCategories = new Set(items.map(i => i.category));
+    const categories = new Set(items.map(i => i.category));
     for (const cat of VALID_CATEGORIES) {
-      expect(presentCategories).toContain(cat);
+      expect(categories, `No items found with category "${cat}"`).toContain(cat);
     }
   });
 });
 
 // ---------------------------------------------------------------------------
-// Stackable constraint
+// stackable / maxStack
 // ---------------------------------------------------------------------------
 
-describe('stackable constraint', () => {
-  it('stackable items have a positive integer maxStack', () => {
+describe('stackable items', () => {
+  it('every stackable item has a positive integer maxStack', () => {
     for (const item of items) {
       if (item.stackable) {
-        expect(typeof item.maxStack).toBe('number');
-        expect(Number.isInteger(item.maxStack)).toBe(true);
-        expect(item.maxStack).toBeGreaterThan(0);
+        expect(
+          typeof item.maxStack,
+          `Stackable item "${item.id}" maxStack is not a number`
+        ).toBe('number');
+        expect(
+          Number.isInteger(item.maxStack),
+          `Stackable item "${item.id}" maxStack is not an integer`
+        ).toBe(true);
+        expect(
+          item.maxStack,
+          `Stackable item "${item.id}" maxStack is not positive`
+        ).toBeGreaterThan(0);
       }
     }
   });
 });
 
 // ---------------------------------------------------------------------------
-// spoilsAfter constraint
+// spoilsAfter values
 // ---------------------------------------------------------------------------
 
-describe('spoilsAfter constraint', () => {
-  it('spoilsAfter is null or a positive integer ≤ 30', () => {
+describe('spoilsAfter values', () => {
+  it('every spoilsAfter is null or a positive integer', () => {
     for (const item of items) {
       if (item.spoilsAfter !== null) {
-        expect(typeof item.spoilsAfter).toBe('number');
-        expect(Number.isInteger(item.spoilsAfter)).toBe(true);
-        expect(item.spoilsAfter).toBeGreaterThan(0);
-        expect(item.spoilsAfter).toBeLessThanOrEqual(30);
+        expect(
+          typeof item.spoilsAfter,
+          `Item "${item.id}" spoilsAfter is not a number`
+        ).toBe('number');
+        expect(
+          Number.isInteger(item.spoilsAfter),
+          `Item "${item.id}" spoilsAfter is not an integer`
+        ).toBe(true);
+        expect(
+          item.spoilsAfter,
+          `Item "${item.id}" spoilsAfter is not positive`
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('no item has a spoilsAfter greater than 30 days', () => {
+    for (const item of items) {
+      if (item.spoilsAfter !== null) {
+        expect(
+          item.spoilsAfter,
+          `Item "${item.id}" spoilsAfter exceeds 30 days`
+        ).toBeLessThanOrEqual(30);
       }
     }
   });
 });
 
 // ---------------------------------------------------------------------------
-// pantValue constraint
+// pantValue values
 // ---------------------------------------------------------------------------
 
-describe('pantValue constraint', () => {
-  it('all pantValue entries are non-negative numbers when present', () => {
+describe('pantValue values', () => {
+  it('every pantValue is 0 or a positive number', () => {
     for (const item of items) {
-      if ('pantValue' in item) {
-        expect(typeof item.pantValue).toBe('number');
-        expect(item.pantValue).toBeGreaterThanOrEqual(0);
-      }
+      expect(
+        typeof item.pantValue,
+        `Item "${item.id}" pantValue is not a number`
+      ).toBe('number');
+      expect(
+        item.pantValue,
+        `Item "${item.id}" pantValue is negative`
+      ).toBeGreaterThanOrEqual(0);
     }
   });
 });
@@ -171,8 +211,10 @@ describe('health items', () => {
     const healthItems = items.filter(i => i.category === 'health');
     expect(healthItems.length).toBeGreaterThan(0);
     for (const item of healthItems) {
-      expect(item.useEffect, `Health item "${item.id}" is missing useEffect`).toBeDefined();
-      expect(item.useEffect).not.toBeNull();
+      expect(
+        item.useEffect,
+        `Health item "${item.id}" is missing useEffect`
+      ).toBeTruthy();
     }
   });
 });
@@ -186,7 +228,10 @@ describe('food items', () => {
     const foodItems = items.filter(i => i.category === 'food');
     expect(foodItems.length).toBeGreaterThan(0);
     for (const item of foodItems) {
-      expect(item.useEffect).toBe('eat');
+      expect(
+        item.useEffect,
+        `Food item "${item.id}" useEffect is not "eat"`
+      ).toBe('eat');
     }
   });
 });
@@ -197,47 +242,54 @@ describe('food items', () => {
 
 describe('spot-checks', () => {
   it('rugbrod is a food item priced at 25 DKK that spoils after 5 days', () => {
-    const item = items.find(i => i.id === 'rugbrod');
-    expect(item).toBeDefined();
-    expect(item.category).toBe('food');
-    expect(item.price).toBe(25);
-    expect(item.spoilsAfter).toBe(5);
-    expect(item.useEffect).toBe('eat');
-  });
-
-  it('rejsekort is a transport item priced at 80 DKK', () => {
-    const item = items.find(i => i.id === 'rejsekort');
-    expect(item).toBeDefined();
-    expect(item.category).toBe('transport');
-    expect(item.price).toBe(80);
-    expect(item.stackable).toBe(false);
-  });
-
-  it('cpr_card is a document item priced at 0 DKK', () => {
-    const item = items.find(i => i.id === 'cpr_card');
-    expect(item).toBeDefined();
-    expect(item.category).toBe('document');
-    expect(item.price).toBe(0);
+    const rugbrod = items.find(i => i.id === 'rugbrod');
+    expect(rugbrod).toBeDefined();
+    expect(rugbrod.category).toBe('food');
+    expect(rugbrod.price).toBe(25);
+    expect(rugbrod.spoilsAfter).toBe(5);
+    expect(rugbrod.useEffect).toBe('eat');
   });
 
   it('beer has a pantValue of 1', () => {
-    const item = items.find(i => i.id === 'beer');
-    expect(item).toBeDefined();
-    expect(item.pantValue).toBe(1);
+    const beer = items.find(i => i.id === 'beer');
+    expect(beer).toBeDefined();
+    expect(beer.pantValue).toBe(1);
+  });
+
+  it('rejsekort is a transport item priced at 80 DKK', () => {
+    const rejsekort = items.find(i => i.id === 'rejsekort');
+    expect(rejsekort).toBeDefined();
+    expect(rejsekort.category).toBe('transport');
+    expect(rejsekort.price).toBe(80);
+    expect(rejsekort.stackable).toBe(false);
+  });
+
+  it('cpr_card is a document item with price 0', () => {
+    const cprCard = items.find(i => i.id === 'cpr_card');
+    expect(cprCard).toBeDefined();
+    expect(cprCard.category).toBe('document');
+    expect(cprCard.price).toBe(0);
+  });
+
+  it('danish_flag_pin is a collectible priced at 25 DKK', () => {
+    const pin = items.find(i => i.id === 'danish_flag_pin');
+    expect(pin).toBeDefined();
+    expect(pin.category).toBe('collectible');
+    expect(pin.price).toBe(25);
   });
 
   it('danish_cookbook is a collectible item', () => {
-    const item = items.find(i => i.id === 'danish_cookbook');
-    expect(item).toBeDefined();
-    expect(item.category).toBe('collectible');
-    expect(item.stackable).toBe(false);
+    const cookbook = items.find(i => i.id === 'danish_cookbook');
+    expect(cookbook).toBeDefined();
+    expect(cookbook.category).toBe('collectible');
+    expect(cookbook.stackable).toBe(false);
   });
 
-  it('vitamin_d is a health item with useEffect: "vitamin_d"', () => {
-    const item = items.find(i => i.id === 'vitamin_d');
-    expect(item).toBeDefined();
-    expect(item.category).toBe('health');
-    expect(item.useEffect).toBe('vitamin_d');
-    expect(item.maxStack).toBe(30);
+  it('vitamin_d is a health item with useEffect "vitamin_d"', () => {
+    const vitaminD = items.find(i => i.id === 'vitamin_d');
+    expect(vitaminD).toBeDefined();
+    expect(vitaminD.category).toBe('health');
+    expect(vitaminD.useEffect).toBe('vitamin_d');
+    expect(vitaminD.maxStack).toBe(30);
   });
 });
