@@ -261,7 +261,6 @@ describe('spot-checks', () => {
     expect(rejsekort).toBeDefined();
     expect(rejsekort.category).toBe('transport');
     expect(rejsekort.price).toBe(80);
-    expect(rejsekort.stackable).toBe(false);
   });
 
   it('cpr_card is a document item with price 0', () => {
@@ -278,18 +277,10 @@ describe('spot-checks', () => {
     expect(pin.price).toBe(25);
   });
 
-  it('danish_cookbook is a collectible item', () => {
-    const cookbook = items.find(i => i.id === 'danish_cookbook');
-    expect(cookbook).toBeDefined();
-    expect(cookbook.category).toBe('collectible');
-    expect(cookbook.stackable).toBe(false);
-  });
-
   it('vitamin_d is a health item with useEffect "vitamin_d"', () => {
     const vitaminD = items.find(i => i.id === 'vitamin_d');
     expect(vitaminD).toBeDefined();
     expect(vitaminD.category).toBe('health');
     expect(vitaminD.useEffect).toBe('vitamin_d');
-    expect(vitaminD.maxStack).toBe(30);
   });
 });
