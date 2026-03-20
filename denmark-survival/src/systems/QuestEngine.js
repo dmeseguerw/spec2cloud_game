@@ -367,6 +367,8 @@ function _evaluateCondition(registry, cond, eventType, eventData) {
 
     case 'locationVisited': {
       if (eventType !== 'location:entered') return false;
+      // null locationId acts as a wildcard — any location satisfies the condition
+      if (cond.locationId === null || cond.locationId === undefined) return true;
       return eventData.locationId === cond.locationId;
     }
 

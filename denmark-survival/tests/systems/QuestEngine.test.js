@@ -432,6 +432,16 @@ describe('QuestEngine.checkCompletionConditions()', () => {
     expect(r.get(RK.ACTIVE_TASKS)).toHaveLength(1);
   });
 
+  it('completes a locationVisited task with null locationId on any location (wildcard)', () => {
+    const r = makeRegistry();
+    QE.addTask(r, makeTask({
+      id: 'explore_task',
+      completionCondition: { type: 'locationVisited', locationId: null },
+    }));
+    QE.checkCompletionConditions(r, 'location:entered', { locationId: 'park' });
+    expect(r.get(RK.ACTIVE_TASKS)).toHaveLength(0);
+  });
+
   // ── moneySpent ────────────────────────────────────────────────────────────
 
   it('completes a moneySpent task when amount is sufficient', () => {
