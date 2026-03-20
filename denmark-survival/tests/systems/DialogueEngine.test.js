@@ -921,54 +921,56 @@ describe('DialogueEngine — language gating', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('DialogueEngine — integration: full conversation flow', () => {
-  it('traverses lars_welcome "overwhelmed → language advice" path and applies effects', async () => {
-    const { lars_welcome } = await import('../../src/data/dialogues/lars_welcome.js');
-    const engine   = createEngine(lars_welcome);
+  it('traverses lars_day1_tutorial "nervous → grocery list" path and applies effects', async () => {
+    const { lars_day1_tutorial } = await import('../../src/data/dialogues/lars_day1_tutorial.js');
+    const engine   = createEngine(lars_day1_tutorial);
     const registry = createRegistry({ xp: 0, level: 1 });
 
-    engine.startDialogue(registry, 'lars', 'lars_welcome');
+    engine.startDialogue(registry, 'lars', 'lars_day1_tutorial');
     expect(engine.getCurrentNode().id).toBe('node_start');
 
-    engine.selectResponse(registry, 0); // "a bit overwhelmed" → node_overwhelmed
-    expect(engine.getCurrentNode().id).toBe('node_overwhelmed');
+    engine.selectResponse(registry, 0); // "A bit nervous" → node_nervous
+    expect(engine.getCurrentNode().id).toBe('node_nervous');
 
-    engine.selectResponse(registry, 0); // "language is hard" → node_language_advice
-    expect(engine.getCurrentNode().id).toBe('node_language_advice');
+    engine.selectResponse(registry, 0); // "Of course — where do I go?" → node_grocery_list
+    expect(engine.getCurrentNode().id).toBe('node_grocery_list');
 
-    engine.selectResponse(registry, 0); // "Thanks, I'll practise" → node_end_positive (+10 XP)
-    expect(engine.getCurrentNode().id).toBe('node_end_positive');
-    expect(registry.get(RK.PLAYER_XP)).toBe(10);
+    engine.selectResponse(registry, 0); // "Thank you, I'll head there" → node_mission_assigned (mission + relationship)
+    expect(engine.getCurrentNode().id).toBe('node_mission_assigned');
   });
 
-  it('traverses lars_welcome Danish-gated path at language level 2+', async () => {
-    const { lars_welcome } = await import('../../src/data/dialogues/lars_welcome.js');
-    const engine   = createEngine(lars_welcome);
-    const registry = createRegistry({ xp: 0, level: 1, languageSkill: 20 }); // Level 2
-
-    engine.startDialogue(registry, 'lars', 'lars_welcome');
-    engine.selectResponse(registry, 0); // overwhelmed
-    engine.selectResponse(registry, 0); // language advice
-
-    const responses = engine.getAvailableResponses(registry);
-    expect(responses[1].locked).toBe(false); // "Tak! Jeg prøver"
-
-    engine.selectResponse(registry, 1); // Danish response → node_end_danish
-    expect(engine.getCurrentNode().id).toBe('node_end_danish');
-    // 15 XP from dialogue + bonus XP from RelationshipSystem changeRelationship call
-    expect(registry.get(RK.PLAYER_XP)).toBeGreaterThanOrEqual(15);
-  });
-
-  it('traverses lars_welcome "excited → Lars loves" path and unlocks encyclopedia', async () => {
-    const { lars_welcome } = await import('../../src/data/dialogues/lars_welcome.js');
-    const engine   = createEngine(lars_welcome);
+  it('traverses lars_day1_tutorial "excited → shop tips" branching path', async () => {
+    const { lars_day1_tutorial } = await import('../../src/data/dialogues/lars_day1_tutorial.js');
+    const engine   = createEngine(lars_day1_tutorial);
     const registry = createRegistry({ xp: 0, level: 1 });
 
-    engine.startDialogue(registry, 'lars', 'lars_welcome');
-    engine.selectResponse(registry, 1); // excited
-    engine.selectResponse(registry, 0); // what do you love → node_lars_love
-    engine.selectResponse(registry, 0); // "That sounds lovely" → effects: encyclopedia hygge
-    const entries = registry.get(RK.ENCYCLOPEDIA_ENTRIES);
-    expect(entries).toContain('hygge');
+    engine.startDialogue(registry, 'lars', 'lars_day1_tutorial');
+    engine.selectResponse(registry, 1); // "Excited!" → node_excited
+    expect(engine.getCurrentNode().id).toBe('node_excited');
+
+    engine.selectResponse(registry, 0); // "Good point" → node_grocery_list
+    expect(engine.getCurrentNode().id).toBe('node_grocery_list');
+
+    engine.selectResponse(registry, 1); // "anything special" → node_shop_tips
+    expect(engine.getCurrentNode().id).toBe('node_shop_tips');
+
+    engine.selectResponse(registry, 0); // "Great tips" → node_mission_assigned (mission + relationship + encyclopedia)
+    expect(engine.getCurrentNode().id).toBe('node_mission_assigned');
+  });
+
+  it('traverses lars_day1_tutorial to end and applies XP', async () => {
+    const { lars_day1_tutorial } = await import('../../src/data/dialogues/lars_day1_tutorial.js');
+    const engine   = createEngine(lars_day1_tutorial);
+    const registry = createRegistry({ xp: 0, level: 1 });
+
+    engine.startDialogue(registry, 'lars', 'lars_day1_tutorial');
+    engine.selectResponse(registry, 0); // nervous
+    engine.selectResponse(registry, 0); // where do I go
+    engine.selectResponse(registry, 0); // head there (mission assigned)
+    engine.selectResponse(registry, 0); // "Thanks, Lars" → node_end (+10 XP)
+    expect(engine.getCurrentNode().id).toBe('node_end');
+    // 10 XP from dialogue + bonus XP from RelationshipSystem changeRelationship call
+    expect(registry.get(RK.PLAYER_XP)).toBeGreaterThanOrEqual(10);
   });
 
   it('traverses mette_shopping specials path', async () => {
@@ -999,21 +1001,22 @@ describe('DialogueEngine — integration: full conversation flow', () => {
   });
 
   it('dialogue effects reflect in registry after conversation ends', async () => {
-    const { lars_welcome } = await import('../../src/data/dialogues/lars_welcome.js');
-    const engine   = createEngine(lars_welcome);
+    const { lars_day1_tutorial } = await import('../../src/data/dialogues/lars_day1_tutorial.js');
+    const engine   = createEngine(lars_day1_tutorial);
     const registry = createRegistry({ xp: 50, level: 2 });
 
-    engine.startDialogue(registry, 'lars', 'lars_welcome');
-    engine.selectResponse(registry, 0); // overwhelmed
-    engine.selectResponse(registry, 1); // social advice → +10 XP, +5 relationship, flag
-    engine.selectResponse(registry, 0); // "That would be wonderful"
+    engine.startDialogue(registry, 'lars', 'lars_day1_tutorial');
+    engine.selectResponse(registry, 0); // nervous
+    engine.selectResponse(registry, 0); // where do I go
+    engine.selectResponse(registry, 0); // head there right away (mission + relationship)
+    engine.selectResponse(registry, 0); // "Thanks, Lars" → node_end (+10 XP)
 
     engine.endDialogue(registry);
 
     expect(engine.isConversationActive()).toBe(false);
     expect(registry.get(RK.PLAYER_XP)).toBeGreaterThan(50);
     const history = registry.get(RK.DIALOGUE_HISTORY);
-    expect(history['lars_welcome']).toBeDefined();
+    expect(history['lars_day1_tutorial']).toBeDefined();
   });
 });
 

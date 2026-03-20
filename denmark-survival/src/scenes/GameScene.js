@@ -17,7 +17,7 @@ import { BaseScene } from './BaseScene.js';
 import { Player } from '../entities/Player.js';
 import { InputManager } from '../systems/InputManager.js';
 import { DialogueEngine } from '../systems/DialogueEngine.js';
-import { lars_welcome }         from '../data/dialogues/lars_welcome.js';
+import { lars_day1_tutorial }    from '../data/dialogues/lars_day1_tutorial.js';
 import { mette_shopping }       from '../data/dialogues/mette_shopping.js';
 import { thomas_first_meeting } from '../data/dialogues/thomas_first_meeting.js';
 import {
@@ -118,7 +118,7 @@ export class GameScene extends BaseScene {
 
     // ── DialogueEngine ───────────────────────────────────────────────────────
     this._dialogueEngine = new DialogueEngine();
-    this._dialogueEngine.registerDialogue('lars_welcome',        lars_welcome);
+    this._dialogueEngine.registerDialogue('lars_day1_tutorial',   lars_day1_tutorial);
     this._dialogueEngine.registerDialogue('mette_shopping',      mette_shopping);
     this._dialogueEngine.registerDialogue('thomas_first_meeting', thomas_first_meeting);
 
@@ -736,7 +736,7 @@ export class GameScene extends BaseScene {
       x: 558,
       y: 295,
       texture: SPRITE_NPC_LARS,
-      callback: () => this._startDialogue('lars', 'lars_welcome'),
+      callback: () => this._startDialogue('lars', 'lars_day1_tutorial'),
     });
 
     // Anna — in Nørreport Torv central square near the fountain
