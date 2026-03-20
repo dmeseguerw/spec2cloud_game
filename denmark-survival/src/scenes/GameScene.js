@@ -145,9 +145,6 @@ export class GameScene extends BaseScene {
       this._spawnDay1World();
     }
 
-    // ── Building doors ────────────────────────────────────────────────────────
-    this._spawnDoors();
-
     // ── InputManager ─────────────────────────────────────────────────────────
     this._input = new InputManager(this);
 

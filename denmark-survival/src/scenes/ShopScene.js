@@ -250,18 +250,13 @@ export class ShopScene extends BaseScene {
         flags['first_grocery_complete'] = true;
         this.registry.set(RK.GAME_FLAGS, flags);
         // Trigger QuestEngine to auto-complete story_grocery_run via flag condition.
+        // QuestEngine.completeTask grants the task's xpReward (15 XP) with the
+        // task title as source, so no additional grantXP call is needed here.
         try {
           checkCompletionConditions(this.registry, 'flag:set', {
             key:   'first_grocery_complete',
             value: true,
           });
-        } catch (_) {
-          // Graceful degradation
-        }
-        // Grant quest XP (QuestEngine.completeTask also grants it, but
-        // grantXP here ensures the XP log source is human-readable on Day 1).
-        try {
-          grantXP(this.registry, 15, 'First grocery run completed', 'Story');
         } catch (_) {
           // Graceful degradation
         }

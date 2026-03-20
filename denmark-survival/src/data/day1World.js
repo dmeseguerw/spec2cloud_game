@@ -27,7 +27,7 @@ export const DAY1_COLLECTIBLE_MANIFEST = [
     zone:     'Copenhagen',
     spriteKey: null,
     sparkle:  true,
-    tooltip:  'Pant bottle — return at any shop for 1-3 DKK. Denmark has the world\'s highest bottle return rate!',
+    tooltip:  'An aluminium can (pant) — return at any shop for 1-3 DKK. Denmark has the world\'s highest bottle return rate!',
     oneTime:  true,
     xpSource: 'Picked up pant bottle',
   },

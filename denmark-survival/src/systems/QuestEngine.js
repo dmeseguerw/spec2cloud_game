@@ -114,7 +114,9 @@ export function completeTask(registry, taskId) {
   setCompletedTasks(registry, completed);
 
   if (task.xpReward > 0) {
-    grantXP(registry, task.xpReward, 'quest', 'task');
+    // Use the task title as XP source so Day Summary can show a friendly label.
+    const source = task.title ?? 'quest';
+    grantXP(registry, task.xpReward, source, 'Quest');
   }
 
   registry.events.emit(QUEST_TASK_COMPLETED, { task });

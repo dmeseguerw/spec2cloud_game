@@ -38,9 +38,13 @@ import { MISSIONS } from '../data/missions.js';
 /**
  * Friendly XP source labels used on the Day 1 summary screen.
  * Keys match `source` strings logged by grantXP() during gameplay.
+ * Story mission titles match the task.title field from missions.js.
  */
 export const DAY1_XP_LABELS = {
   'lars_dialogue':               'Talked with Lars',
+  // story_grocery_run title (from missions.js) → used by QuestEngine.completeTask
+  'Buy groceries from Netto':    'First grocery run completed',
+  // Fallback for direct ShopScene grantXP with legacy source
   'First grocery run completed': 'First grocery run completed',
   'Visited Netto for the first time': 'Visited Netto for the first time',
   'First item use':              'Ate a meal',
