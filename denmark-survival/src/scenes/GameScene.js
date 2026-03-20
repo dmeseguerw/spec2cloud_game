@@ -31,9 +31,12 @@ import {
   PLAYER_HEALTH, PLAYER_ENERGY, PLAYER_MONEY,
   PLAYER_XP, PLAYER_LEVEL, CURRENT_DAY,
   TIME_OF_DAY, SEASON, WEATHER,
+  TUTORIAL_COMPLETED, GAME_FLAGS, INVENTORY, PANT_BOTTLES,
 } from '../constants/RegistryKeys.js';
 import { initDayCycle } from '../systems/DayCycleEngine.js';
-import { applyDailyWeather } from '../systems/WeatherSystem.js';
+import { applyDailyWeather, WEATHER_CLOUDY } from '../systems/WeatherSystem.js';
+import { grantXP } from '../systems/XPEngine.js';
+import { addItem } from '../systems/InventoryManager.js';
 
 /** Default spawn position when no saved position exists. */
 const DEFAULT_SPAWN_X = 400;
@@ -44,6 +47,14 @@ const INTERACT_RANGE = 64;
 
 /** Vertical offset (px) above the NPC sprite for the interaction indicator. */
 const INDICATOR_VERTICAL_OFFSET = -32;
+
+/**
+ * Fallback sprite key used for world-item and door interactables when
+ * dedicated asset keys are not yet available.
+ * Replace with specific AssetKey constants once assets are added.
+ */
+const SPRITE_PLACEHOLDER_ITEM = SPRITE_NPC_LARS;
+const SPRITE_PLACEHOLDER_DOOR = SPRITE_NPC_LARS;
 
 export class GameScene extends BaseScene {
   constructor() {
@@ -112,6 +123,11 @@ export class GameScene extends BaseScene {
     this._interactables = [];
     this._nearestInteractable = null;
     this._spawnNPCs();
+
+    // ── Day 1 authored world elements ─────────────────────────────────────────
+    if (this._isDay1()) {
+      this._spawnDay1World();
+    }
 
     // ── InputManager ─────────────────────────────────────────────────────────
     this._input = new InputManager(this);
@@ -727,16 +743,21 @@ export class GameScene extends BaseScene {
 
   /**
    * Spawn the three starter NPCs at fixed world positions.
+   * On Day 1, Lars spawns at the apartment building entrance instead of his
+   * default position, using the Day 1 tutorial dialogue.
    */
   _spawnNPCs() {
-    // Lars — near Super Brugsen (Block B, north side near road)
+    const isDay1 = this._isDay1();
+
+    // Lars — Day 1: at apartment building entrance (default spawn area).
+    //        Day 2+: near Super Brugsen (Block B, north side near road).
     this.addInteractable({
       name: 'Lars',
       type: 'talk',
-      x: 558,
-      y: 295,
+      x: isDay1 ? DEFAULT_SPAWN_X + 80 : 558,
+      y: isDay1 ? DEFAULT_SPAWN_Y - 40 : 295,
       texture: SPRITE_NPC_LARS,
-      callback: () => this._startDialogue('lars', 'lars_welcome'),
+      callback: () => this._startDialogue('lars', isDay1 ? 'lars_day1_tutorial' : 'lars_welcome'),
     });
 
     // Anna — in Nørreport Torv central square near the fountain
@@ -758,6 +779,133 @@ export class GameScene extends BaseScene {
       texture: SPRITE_NPC_METTE,
       callback: () => this._startDialogue('mette', 'mette_shopping'),
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Day 1 authored world elements
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Return true when the current session is Day 1 and the tutorial is not yet
+   * complete.  All Day 1 special rules are gated behind this check.
+   *
+   * @returns {boolean}
+   */
+  _isDay1() {
+    return (
+      this.registry.get(CURRENT_DAY) === 1 &&
+      !this.registry.get(TUTORIAL_COMPLETED)
+    );
+  }
+
+  /**
+   * Place Day 1 authored world elements: pant bottle, Netto door, and ambient
+   * static props (bicycle, notice board).  Called only when _isDay1() is true.
+   */
+  _spawnDay1World() {
+    // ── Pant bottle collectible ───────────────────────────────────────────────
+    // Placed on the pavement halfway between the apartment and Netto.
+    this._pantBottleEntry = this.addInteractable({
+      name:    'Pant bottle',
+      type:    'pickup',
+      x:       460,
+      y:       310,
+      texture: SPRITE_PLACEHOLDER_ITEM,
+      callback: (entry) => this._collectPantBottle(entry),
+    });
+
+    // ── Netto door ────────────────────────────────────────────────────────────
+    // Always open on Day 1 (bypass hour restriction).
+    this.addInteractable({
+      name:     'Netto',
+      type:     'enter',
+      x:        540,
+      y:        120,
+      texture:  SPRITE_PLACEHOLDER_DOOR,
+      callback: () => this._enterShop('netto'),
+    });
+
+    // ── Apartment door ────────────────────────────────────────────────────────
+    this._apartmentDoorEntry = this.addInteractable({
+      name:     'Apartment',
+      type:     'enter',
+      x:        DEFAULT_SPAWN_X,
+      y:        DEFAULT_SPAWN_Y + 40,
+      texture:  SPRITE_PLACEHOLDER_DOOR,
+      callback: () => this._onApartmentDoor(),
+    });
+
+    // ── Ambient props (static, non-interactable) ──────────────────────────────
+    // Kasper's bicycle parked near apartment — rendered as a text label when
+    // sprite assets are unavailable.
+    if (this.add?.text) {
+      this.add.text(360, 340, '🚲', { fontSize: '22px' }).setDepth(1);
+      this.add.text(610, 135, '📋 Nørrebro Language Exchange — Tuesdays', {
+        fontSize: '11px', color: '#ffffff', backgroundColor: '#334455',
+      }).setDepth(1);
+    }
+  }
+
+  /**
+   * Handle pant bottle pickup: award XP, add to inventory, remove interactable.
+   *
+   * @param {object} entry - The interactable entry for the pant bottle.
+   */
+  _collectPantBottle(entry) {
+    try {
+      grantXP(this.registry, 2, 'Picked up pant bottle', 'Exploration');
+      // Increment pant bottle count and add to inventory
+      const current = this.registry.get(PANT_BOTTLES) ?? 0;
+      this.registry.set(PANT_BOTTLES, current + 1);
+      addItem(this.registry, 'pant_bottle', 1);
+    } catch (_) {
+      // Gracefully handle missing inventory system in test environments
+    }
+    // Remove from scene
+    entry.sprite?.destroy();
+    entry.indicator?.destroy();
+    this._interactables = this._interactables.filter(e => e !== entry);
+    if (this._nearestInteractable === entry) {
+      this._nearestInteractable = null;
+      this.registry.set(CONTEXT_HINT, '');
+    }
+  }
+
+  /**
+   * Enter a shop scene with the given shopId.
+   *
+   * @param {string} shopId - Shop identifier (e.g. 'netto').
+   */
+  _enterShop(shopId) {
+    this.scene.start('ShopScene', { shopId });
+  }
+
+  /**
+   * Context-sensitive apartment door handler.
+   *
+   * Day 1 + grocery mission incomplete → show "nothing to do here" message.
+   * Day 1 + grocery mission complete   → open day-end confirmation.
+   * Day 2+                             → enter apartment interior.
+   */
+  _onApartmentDoor() {
+    if (!this._isDay1()) {
+      // Day 2+: enter apartment interior
+      this.openOverlay('PauseScene');
+      return;
+    }
+
+    const flags = this.registry.get(GAME_FLAGS) ?? {};
+    if (flags['first_grocery_complete']) {
+      // Grocery complete — allow sleep / day summary
+      this.scene.start('DaySummaryScene', {
+        previousXP:    this.registry.get(PLAYER_XP) ?? 0,
+        previousLevel: this.registry.get(PLAYER_LEVEL) ?? 1,
+      });
+    } else {
+      // Grocery not complete — show gentle nudge
+      this.registry.set(CONTEXT_HINT, 'Nothing to do here yet. Lars said something about groceries…');
+      this.events.emit('interactionhint', 'Nothing to do here yet. Lars said something about groceries…');
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -784,13 +932,19 @@ export class GameScene extends BaseScene {
 
   /**
    * Initialise day-cycle tracking and apply the first day's weather.
+   * On Day 1 the weather is fixed to "Cloudy" (overcast, not punishing).
    * Wrapped in try/catch so a missing import never breaks the scene.
    */
   _initGameSystems() {
     try {
       initDayCycle(this.registry);
-      const season = this.registry.get(SEASON) || 'spring';
-      applyDailyWeather(this.registry, season);
+      if (this._isDay1()) {
+        // Day 1 special rule: fixed overcast weather
+        this.registry.set(WEATHER, WEATHER_CLOUDY);
+      } else {
+        const season = this.registry.get(SEASON) || 'spring';
+        applyDailyWeather(this.registry, season);
+      }
     } catch (err) {
       console.warn('[GameScene] Could not initialise game systems:', err);
     }
