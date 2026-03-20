@@ -152,8 +152,7 @@ export function failTask(registry, taskId) {
 
 /**
  * Mark a skippable task as skipped. No-op if task.skippable is false.
- * Does NOT move to COMPLETED_TASKS — the task is simply removed from active list
- * with status "skipped". Emits quest:taskSkipped.
+ * Moves the task to COMPLETED_TASKS with status "skipped" and emits quest:taskSkipped.
  *
  * @param {object} registry
  * @param {string} taskId

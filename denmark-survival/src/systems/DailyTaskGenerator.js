@@ -23,12 +23,13 @@ import { MISSION_SCHEDULE } from '../data/missionSchedule.js';
 const ITEM_MAP = new Map(ITEMS_DATA.map(item => [item.id, item]));
 
 /**
- * Count the total quantity of food items in the registry inventory.
+ * Count the number of distinct food-category item types in the registry inventory.
+ * Counts entries (distinct types), not stack quantities (Task 027 tuning).
  *
  * @param {object} registry
  * @returns {number}
  */
-function countFoodItems(registry) {
+function countDistinctFoodTypes(registry) {
   const inventory = registry.get(RK.INVENTORY) ?? [];
   let total = 0;
   for (const entry of inventory) {
@@ -97,7 +98,7 @@ export function generateDailyTasks(registry, currentDay, season) {
   const tasks = [];
 
   // ── Rule 1 & 2: Food check (mutually exclusive — stop at first match) ──────
-  const foodCount = countFoodItems(registry);
+  const foodCount = countDistinctFoodTypes(registry);
 
   if (foodCount === 0) {
     tasks.push(_makeTask('no_food', currentDay, {
