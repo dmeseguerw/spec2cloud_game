@@ -30,6 +30,7 @@ import { grantXP } from './XPEngine.js';
 import { changeRelationship } from './RelationshipSystem.js';
 import { getSkillLevel, incrementSkill } from './SkillSystem.js';
 import { ENCYCLOPEDIA_UNLOCKED } from '../constants/Events.js';
+import { addTask, getMissionDefinition } from './QuestEngine.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Internal helpers
@@ -402,6 +403,14 @@ export class DialogueEngine {
         const flags = { ...(registry.get(RK.GAME_FLAGS) || {}) };
         flags[effect.key] = effect.value;
         registry.set(RK.GAME_FLAGS, flags);
+        break;
+      }
+
+      case 'mission': {
+        const missionDef = getMissionDefinition(effect.missionId);
+        if (missionDef) {
+          addTask(registry, missionDef);
+        }
         break;
       }
 
