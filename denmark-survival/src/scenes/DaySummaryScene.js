@@ -28,6 +28,38 @@ import {
   SFX_XP_LOSS,
   SFX_LEVEL_UP,
 } from '../constants/AudioKeys.js';
+import { addTask, getActiveTasks } from '../systems/QuestEngine.js';
+import { MISSIONS } from '../data/missions.js';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Day 1 constants — exported for testing
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Friendly XP source labels used on the Day 1 summary screen.
+ * Keys match `source` strings logged by grantXP() during gameplay.
+ * Story mission titles match the task.title field from missions.js.
+ */
+export const DAY1_XP_LABELS = {
+  'lars_dialogue':               'Talked with Lars',
+  // story_grocery_run title (from missions.js) → used by QuestEngine.completeTask
+  'Buy groceries from Netto':    'First grocery run completed',
+  // Fallback for direct ShopScene grantXP with legacy source
+  'First grocery run completed': 'First grocery run completed',
+  'Visited Netto for the first time': 'Visited Netto for the first time',
+  'First item use':              'Ate a meal',
+  'Picked up pant bottle':       'Picked up pant bottle',
+  'Returned pant bottles':       'Returned pant bottles',
+  'Survived first day':          'Survived your first day!',
+};
+
+/**
+ * The "Tomorrow's Preview" seed text displayed on the Day 1 summary screen.
+ * Seeds the `story_first_class` mission for Day 2.
+ */
+export const DAY1_TOMORROW_PREVIEW_TEXT =
+  'Lars mentioned there\'s a free introductory class at the language school nearby. ' +
+  'It might be worth checking out tomorrow.';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pure data helpers — exported for unit testing without Phaser
@@ -278,7 +310,7 @@ export class DaySummaryScene extends BaseScene {
 
   /** Section 3 — XP Breakdown (two-column: Gains | Losses) with tally animation */
   _renderXPBreakdown(cx, y) {
-    const { gains, losses, gainTotal, lossTotal } = this._summary;
+    const { gains, losses, gainTotal, lossTotal, entries } = this._summary;
 
     this.add.text(cx, y, 'XP Breakdown', {
       fontFamily: 'Georgia, serif',
@@ -286,30 +318,65 @@ export class DaySummaryScene extends BaseScene {
       color:      '#e8d5b7',
     }).setOrigin(0.5).setDepth(2);
 
-    // Column headers
-    this.add.text(cx - 180, y + 26, 'Gains', {
-      fontFamily: 'Arial', fontSize: '15px', color: '#66cc66',
-    }).setOrigin(0.5).setDepth(2);
+    const currentDay        = this.registry.get(RK.CURRENT_DAY);
+    const tutorialCompleted = this.registry.get(RK.TUTORIAL_COMPLETED) ?? false;
+    const isDay1            = currentDay === 1 && !tutorialCompleted;
 
-    this.add.text(cx + 180, y + 26, 'Losses', {
-      fontFamily: 'Arial', fontSize: '15px', color: '#cc4444',
-    }).setOrigin(0.5).setDepth(2);
+    if (isDay1 && Array.isArray(entries) && entries.length > 0) {
+      // Day 1: show each XP entry as a friendly labelled row
+      this._renderDay1XPRows(cx, y + 30, entries);
+      const totY = y + 30 + entries.length * 24 + 8;
+      this.add.text(cx - 180, totY, `Total: +${gainTotal}`, {
+        fontFamily: 'Arial', fontSize: '14px', color: '#66cc66',
+      }).setOrigin(0.5).setDepth(2);
+    } else {
+      // Day 2+: category-grouped two-column layout
+      this.add.text(cx - 180, y + 26, 'Gains', {
+        fontFamily: 'Arial', fontSize: '15px', color: '#66cc66',
+      }).setOrigin(0.5).setDepth(2);
 
-    // Animated category rows
-    this._scheduleTallyAnimation(cx, y + 48, gains, losses);
+      this.add.text(cx + 180, y + 26, 'Losses', {
+        fontFamily: 'Arial', fontSize: '15px', color: '#cc4444',
+      }).setOrigin(0.5).setDepth(2);
 
-    // Totals row
-    const rowH  = 24;
-    const rows  = Math.max(Object.keys(gains).length, Object.keys(losses).length);
-    const totY  = y + 48 + rows * rowH + 4;
+      this._scheduleTallyAnimation(cx, y + 48, gains, losses);
 
-    this.add.text(cx - 180, totY, `Total: +${gainTotal}`, {
-      fontFamily: 'Arial', fontSize: '14px', color: '#66cc66',
-    }).setOrigin(0.5).setDepth(2);
+      const rowH  = 24;
+      const rows  = Math.max(Object.keys(gains).length, Object.keys(losses).length);
+      const totY  = y + 48 + rows * rowH + 4;
 
-    this.add.text(cx + 180, totY, `Total: ${lossTotal}`, {
-      fontFamily: 'Arial', fontSize: '14px', color: '#cc4444',
-    }).setOrigin(0.5).setDepth(2);
+      this.add.text(cx - 180, totY, `Total: +${gainTotal}`, {
+        fontFamily: 'Arial', fontSize: '14px', color: '#66cc66',
+      }).setOrigin(0.5).setDepth(2);
+
+      this.add.text(cx + 180, totY, `Total: ${lossTotal}`, {
+        fontFamily: 'Arial', fontSize: '14px', color: '#cc4444',
+      }).setOrigin(0.5).setDepth(2);
+    }
+  }
+
+  /**
+   * Render individual XP entries for the Day 1 summary using friendly labels.
+   *
+   * @param {number} cx
+   * @param {number} baseY
+   * @param {Array<{amount:number, source:string}>} entries
+   */
+  _renderDay1XPRows(cx, baseY, entries) {
+    entries.forEach((entry, idx) => {
+      const rowY   = baseY + idx * 24;
+      const label  = DAY1_XP_LABELS[entry.source] ?? entry.source;
+      const sign   = entry.amount >= 0 ? '+' : '';
+      const color  = entry.amount >= 0 ? '#66cc66' : '#cc4444';
+
+      this.add.text(cx - 220, rowY, label, {
+        fontFamily: 'Arial', fontSize: '13px', color: '#e8d5b7',
+      }).setOrigin(0, 0.5).setDepth(2);
+
+      this.add.text(cx + 160, rowY, `${sign}${entry.amount}`, {
+        fontFamily: 'Arial', fontSize: '13px', color,
+      }).setOrigin(0.5, 0.5).setDepth(2);
+    });
   }
 
   /** Section 4 — Net XP Change + progress bar + optional level-up */
@@ -427,11 +494,19 @@ export class DaySummaryScene extends BaseScene {
       lines.push(`Bills due: ${tomorrow.bills.length}`);
     }
 
+    // Day 1 seed text: hint at language school mission for Day 2.
+    const currentDay        = this.registry.get(RK.CURRENT_DAY);
+    const tutorialCompleted = this.registry.get(RK.TUTORIAL_COMPLETED) ?? false;
+    if (currentDay === 1 && !tutorialCompleted) {
+      lines.push(DAY1_TOMORROW_PREVIEW_TEXT);
+    }
+
     lines.forEach((line, idx) => {
       this.add.text(cx, y + 22 + idx * 18, line, {
         fontFamily: 'Arial',
         fontSize:   '13px',
         color:      '#a0bbd0',
+        wordWrap:   { width: 600 },
       }).setOrigin(0.5).setDepth(2);
     });
   }
@@ -547,6 +622,22 @@ export class DaySummaryScene extends BaseScene {
 
   /** "Continue" → advance to the next day's morning scene. */
   _onContinue() {
+    // Day 1 completion: mark tutorial done and transition to Day 2.
+    const currentDay = this.registry.get(RK.CURRENT_DAY);
+    if (currentDay === 1 && !this.registry.get(RK.TUTORIAL_COMPLETED)) {
+      this.registry.set(RK.TUTORIAL_COMPLETED, true);
+      this.registry.set(RK.CURRENT_DAY, 2);
+
+      // Assign story_first_class if story_grocery_run was completed on Day 1.
+      const flags = this.registry.get(RK.GAME_FLAGS) ?? {};
+      if (flags['first_grocery_complete']) {
+        try {
+          addTask(this.registry, MISSIONS.story_first_class);
+        } catch (_) {
+          // Graceful degradation
+        }
+      }
+    }
     this.scene.start('GameScene');
   }
 

@@ -348,5 +348,19 @@
     "spoilsAfter": null,
     "price": 120,
     "pantValue": 0
+  },
+  {
+    "id": "pant_aluminium_can",
+    "name": "Aluminium Can",
+    "description": "An empty aluminium can — return at any shop for 1–3 DKK. Denmark has the world's highest bottle return rate!",
+    "category": "collectible",
+    "icon": "🥫",
+    "stackable": true,
+    "maxStack": 20,
+    "usable": false,
+    "useEffect": null,
+    "spoilsAfter": null,
+    "price": 0,
+    "pantValue": 2
   }
 ]
