@@ -29,6 +29,11 @@ export const SFX_FOOTSTEP_3       = 'sfx_footstep_3';
 export const SFX_DOOR_OPEN        = 'sfx_door_open';
 export const SFX_DOOR_CLOSE       = 'sfx_door_close';
 
+// ── World Pickup Sound Effects ────────────────────────────────────────────────
+export const SFX_PICKUP_PANT      = 'sfx_pickup_pant';      // metallic clink for pant bottles
+export const SFX_PICKUP_DOCUMENT  = 'sfx_pickup_document';  // paper rustle for documents
+export const SFX_PICKUP_GENERAL   = 'sfx_pickup_general';   // soft pop for general items
+
 // ── Feedback Sound Effects ────────────────────────────────────────────────────
 export const SFX_XP_GAIN          = 'sfx_xp_gain';
 export const SFX_XP_LOSS          = 'sfx_xp_loss';
@@ -113,6 +118,7 @@ export const ALL_MUSIC_KEYS = [
 export const ALL_SFX_KEYS = [
   SFX_UI_CLICK, SFX_UI_HOVER, SFX_UI_CONFIRM, SFX_UI_CANCEL, SFX_UI_NOTIFICATION,
   SFX_FOOTSTEP_1, SFX_FOOTSTEP_2, SFX_FOOTSTEP_3, SFX_DOOR_OPEN, SFX_DOOR_CLOSE,
+  SFX_PICKUP_PANT, SFX_PICKUP_DOCUMENT, SFX_PICKUP_GENERAL,
   SFX_XP_GAIN, SFX_XP_LOSS, SFX_MONEY_GAIN, SFX_MONEY_SPEND, SFX_LEVEL_UP,
   SFX_ENCOUNTER_PING, SFX_ENCOUNTER_RESOLVE,
   SFX_AMBIENT_RAIN, SFX_AMBIENT_WIND, SFX_AMBIENT_BIRDS,

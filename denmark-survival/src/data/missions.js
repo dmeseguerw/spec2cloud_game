@@ -17,7 +17,7 @@
 export const MISSIONS = {
   story_grocery_run: {
     id: 'story_grocery_run',
-    type: 'mission',
+    type: 'story',
     title: 'Buy groceries from Netto',
     description: 'Lars gave you a shopping list: Rugbrød, pasta, and milk. Head to Netto nearby.',
     urgency: 'normal',
@@ -28,7 +28,7 @@ export const MISSIONS = {
   },
   story_first_class: {
     id: 'story_first_class',
-    type: 'mission',
+    type: 'story',
     title: 'Attend the language school',
     description: 'Lars mentioned a free introductory class at the language school. It might be worth checking out.',
     urgency: 'normal',
@@ -39,7 +39,7 @@ export const MISSIONS = {
   },
   story_first_metro: {
     id: 'story_first_metro',
-    type: 'mission',
+    type: 'story',
     title: 'Take the metro',
     description: 'Sofie mentioned the metro is the fastest way across town. Try it out.',
     urgency: 'normal',
@@ -50,7 +50,7 @@ export const MISSIONS = {
   },
   story_first_workday: {
     id: 'story_first_workday',
-    type: 'mission',
+    type: 'story',
     title: 'Attend your first work day',
     description: 'It\'s time to start your job. Head to the workplace during morning hours.',
     urgency: 'normal',
@@ -61,7 +61,7 @@ export const MISSIONS = {
   },
   story_one_week: {
     id: 'story_one_week',
-    type: 'mission',
+    type: 'story',
     title: 'Survive your first week',
     description: 'You\'ve been in Denmark for a whole week. Take a moment to reflect.',
     urgency: 'normal',
@@ -72,7 +72,7 @@ export const MISSIONS = {
   },
   story_thomas_second: {
     id: 'story_thomas_second',
-    type: 'mission',
+    type: 'story',
     title: 'Talk to Thomas again',
     description: 'Thomas seemed guarded last time. Maybe a second conversation would go differently.',
     urgency: 'normal',
@@ -83,7 +83,7 @@ export const MISSIONS = {
   },
   story_pant_run: {
     id: 'story_pant_run',
-    type: 'mission',
+    type: 'story',
     title: 'Return 5 pant bottles',
     description: 'Mette mentioned you can return bottles for money. Collect and return 5 pant bottles.',
     urgency: 'normal',
@@ -94,7 +94,7 @@ export const MISSIONS = {
   },
   story_lars_coffee: {
     id: 'story_lars_coffee',
-    type: 'mission',
+    type: 'story',
     title: 'Have coffee with Lars',
     description: 'Lars invited you for a cup of coffee. That\'s a big deal in Denmark.',
     urgency: 'normal',

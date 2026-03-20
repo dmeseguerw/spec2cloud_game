@@ -24,15 +24,13 @@ function createRegistry(overrides = {}) {
   const registry = new MockRegistry();
   registry.set('game_flags', overrides.flags || {});
   registry.set('npc_relationships', overrides.relationships || {});
-  registry.set('active_quests', overrides.activeQuests || {});
-  registry.set('completed_quests', overrides.completedQuests || {});
   return registry;
 }
 
-function createMockQuestEngine(active = {}, completed = {}) {
+function createMockQuestEngine(activeIds = [], completedIds = []) {
   return {
-    isTaskActive: (registry, questId) => questId in active,
-    isTaskCompleted: (registry, questId) => questId in completed,
+    getActiveTasks: () => activeIds.map(id => ({ id, status: 'active' })),
+    getCompletedTasks: () => completedIds.map(id => ({ id, status: 'completed' })),
   };
 }
 
@@ -121,7 +119,7 @@ describe('getAvailableDialogues', () => {
     const registry = createRegistry({
       flags: { character_creation_complete: true },
     });
-    const qe = createMockQuestEngine({}, { story_grocery_run: true });
+    const qe = createMockQuestEngine([], ['story_grocery_run']);
     const result = getAvailableDialogues(2, registry, qe);
     const larsDay2 = result.find(e => e.dialogueId === 'lars_day2_language');
     expect(larsDay2).toBeDefined();
@@ -151,7 +149,7 @@ describe('getAvailableDialogues', () => {
     const registry = createRegistry({
       flags: { character_creation_complete: true },
     });
-    const qe = createMockQuestEngine({}, { thomas_first_meeting: true });
+    const qe = createMockQuestEngine([], ['thomas_first_meeting']);
     const result = getAvailableDialogues(8, registry, qe);
     const thomas = result.find(e => e.dialogueId === 'thomas_second_meeting');
     expect(thomas).toBeDefined();
@@ -161,7 +159,7 @@ describe('getAvailableDialogues', () => {
     const registry = createRegistry({
       flags: { character_creation_complete: true },
     });
-    const qe = createMockQuestEngine({}, { story_grocery_run: true });
+    const qe = createMockQuestEngine([], ['story_grocery_run']);
     const result = getAvailableDialogues(11, registry, qe);
     const mette = result.find(e => e.dialogueId === 'mette_pant_tutorial');
     expect(mette).toBeDefined();
@@ -204,7 +202,7 @@ describe('getAvailableDialogues', () => {
       flags: { character_creation_complete: true },
       relationships: { lars: 50 },
     });
-    const qe = createMockQuestEngine({ story_lars_coffee: true });
+    const qe = createMockQuestEngine(['story_lars_coffee'], []);
     const result = getAvailableDialogues(14, registry, qe);
     const event = result.find(e => e.dialogueId === 'lars_coffee_event');
     expect(event).toBeDefined();

@@ -1,5 +1,8 @@
 # Task 025: World-Collectible Items & Building Entry System
 
+**GitHub Issue:** [#59 - Task 025: World-Collectible Items & Building Entry System](https://github.com/dmeseguerw/spec2cloud_game/issues/59)
+**GitHub PR:** [#60 - [WIP] Implement world-collectible items and building entry system](https://github.com/dmeseguerw/spec2cloud_game/pull/60)
+
 ## Description
 Implement two foundational interaction mechanics that are currently missing from the game: **picking up items from the game world** and **entering buildings through door interactions**. These are physical-world interactions that the player performs with the E key, extending the existing interaction system from Task 008. Currently, items can only be acquired through shop purchases or dialogue rewards — there is no way to pick up objects lying in the world. Similarly, while Task 008 defined a generic `enter` interaction type and Task 016 references "player enters shop," the actual door-entry mechanism (door sprite, visual indicator, scene transition to building interior) has never been specified.
 

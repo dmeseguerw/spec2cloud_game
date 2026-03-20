@@ -1,431 +1,487 @@
 /**
  * tests/systems/DailyTaskGenerator.test.js
- * Unit tests for all 5 daily task rule generators.
- *
- * Covers:
- *  - generateFoodTask: critical (0 food), urgent (1 food), null (2+ food)
- *  - generateBillTasks: overdue, due in 2 days, upcoming (3-7 days), ignored (8+ days)
- *  - generateVitaminDTask: normal (spring), urgent (winter), null (already taken)
- *  - generateNPCDialogueTask: available NPC, no available, already talked
- *  - generateExploreTask: < 3 locations, 5+ days since new location, null (explored enough)
- *  - generateDailyTasks: combined output
+ * Unit tests for DailyTaskGenerator — all 8 rules, correct urgencies,
+ * deterministic IDs, and Task 027 tuning fixes.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MockRegistry } from '../mocks/PhaserMocks.js';
+import { generateDailyTasks } from '../../src/systems/DailyTaskGenerator.js';
 import * as RK from '../../src/constants/RegistryKeys.js';
-import {
-  generateFoodTask,
-  generateBillTasks,
-  generateVitaminDTask,
-  generateNPCDialogueTask,
-  generateExploreTask,
-  generateDailyTasks,
-} from '../../src/systems/DailyTaskGenerator.js';
+import { MISSION_SCHEDULE } from '../../src/data/missionSchedule.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-function createRegistry(overrides = {}) {
-  const registry = new MockRegistry();
-  registry.set(RK.INVENTORY, overrides.inventory || []);
-  registry.set(RK.PLAYER_LOCATION, overrides.location || '');
-  registry.set(RK.PENDING_BILLS, overrides.bills || []);
-  registry.set(RK.CURRENT_DAY, overrides.day || 1);
-  registry.set(RK.VITAMIN_D_TAKEN, overrides.vitaminDTaken || false);
-  registry.set(RK.SEASON, overrides.season || 'spring');
-  registry.set(RK.DIALOGUE_HISTORY, overrides.dialogueHistory || {});
-  registry.set(RK.VISITED_LOCATIONS, overrides.visitedLocations || []);
-  registry.set('last_new_location_day', overrides.lastNewLocationDay || 0);
-  registry.set('game_flags', overrides.flags || {});
-  registry.set('npc_relationships', overrides.relationships || {});
-  registry.set(RK.ACTIVE_QUESTS, overrides.activeQuests || {});
-  registry.set(RK.COMPLETED_QUESTS, overrides.completedQuests || {});
-  return registry;
+/** Build a registry with all NPC dialogues already completed so NPC nudge is suppressed. */
+function allDialoguesCompleted() {
+  const history = {};
+  for (const entry of MISSION_SCHEDULE) {
+    history[entry.dialogueId] = { completedAt: 1 };
+  }
+  return history;
+}
+
+function makeRegistry(opts = {}) {
+  const r = new MockRegistry();
+  r.set(RK.CURRENT_DAY,     opts.day      ?? 1);
+  r.set(RK.PLAYER_HEALTH,   opts.health   ?? 100);
+  r.set(RK.PLAYER_XP,       opts.xp       ?? 0);
+  r.set(RK.PLAYER_LEVEL,    opts.level    ?? 1);
+  r.set(RK.INVENTORY,       opts.inventory ?? []);
+  r.set(RK.PENDING_BILLS,   opts.bills    ?? []);
+  r.set(RK.VISITED_LOCATIONS, opts.visitedLocations ?? ['loc1', 'loc2', 'loc3']);
+  r.set(RK.DIALOGUE_HISTORY, opts.dialogueHistory ?? allDialoguesCompleted());
+  r.set(RK.NPC_RELATIONSHIPS, opts.npcRelationships ?? {});
+  r.set(RK.ACTIVE_TASKS,    opts.activeTasks ?? []);
+  r.set(RK.COMPLETED_TASKS, opts.completedTasks ?? []);
+  if (opts.lastNewLocationDay !== undefined) {
+    r.set('last_new_location_day', opts.lastNewLocationDay);
+  }
+  return r;
+}
+
+/**
+ * Build a minimal inventory entry in the format InventoryManager uses.
+ */
+function inv(itemId, quantity = 1) {
+  return { itemId, quantity, acquiredDay: 1 };
+}
+
+/**
+ * Build a pending bill object.
+ */
+function bill(id, label, dueDay, status = 'pending', amount = 500) {
+  return { id, label, dueDay, status, amount, type: 'rent', arrivedDay: dueDay - 5 };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// generateFoodTask
+// Rule 1: no_food
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('DailyTaskGenerator — generateFoodTask', () => {
-  it('returns critical task when inventory has 0 food items', () => {
-    const registry = createRegistry({ inventory: [] });
-    const task = generateFoodTask(registry);
+describe('DailyTaskGenerator — Rule 1: no_food', () => {
+  it('generates no_food task when food inventory is empty', () => {
+    const r = makeRegistry({ inventory: [] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_no_food'));
     expect(task).toBeDefined();
     expect(task.urgency).toBe('critical');
-    expect(task.id).toBe('daily_food_critical');
-    expect(task.xpPenalty).toBe(5);
     expect(task.skippable).toBe(false);
   });
 
-  it('returns urgent task when inventory has exactly 1 food item', () => {
-    const registry = createRegistry({
-      inventory: [{ id: 'rugbrod', category: 'food' }],
-    });
-    const task = generateFoodTask(registry);
+  it('no_food task has correct type and fields', () => {
+    const r = makeRegistry({ inventory: [] });
+    const tasks = generateDailyTasks(r, 3, 'spring');
+    const task = tasks.find(t => t.id === 'daily_no_food_day3');
+    expect(task).toBeDefined();
+    expect(task.type).toBe('daily');
+    expect(task.icon).toBe('🚨');
+    expect(task.xpPenalty).toBe(10);
+  });
+
+  it('does NOT generate no_food when there is food', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 2)] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_no_food'))).toBeUndefined();
+  });
+
+  it('does NOT generate low_food when no_food is triggered (exclusive rules)', () => {
+    const r = makeRegistry({ inventory: [] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_low_food'))).toBeUndefined();
+  });
+
+  it('counts only food category items for food check', () => {
+    // vitamin_d is not food category — should still trigger no_food
+    const r = makeRegistry({ inventory: [inv('vitamin_d', 3)] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_no_food'))).toBeDefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rule 2: low_food (Task 027 tuning: count items not stacks)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('DailyTaskGenerator — Rule 2: low_food', () => {
+  it('generates low_food task when exactly 1 food item exists', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 1)] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_low_food'));
     expect(task).toBeDefined();
     expect(task.urgency).toBe('urgent');
-    expect(task.id).toBe('daily_food_low');
     expect(task.skippable).toBe(true);
   });
 
-  it('returns null when inventory has 2+ food items', () => {
-    const registry = createRegistry({
-      inventory: [
-        { id: 'rugbrod', category: 'food' },
-        { id: 'milk', category: 'food' },
-      ],
-    });
-    const task = generateFoodTask(registry);
-    expect(task).toBeNull();
-  });
-
-  it('recognizes string food items by ID', () => {
-    const registry = createRegistry({ inventory: ['milk'] });
-    const task = generateFoodTask(registry);
-    expect(task).toBeDefined();
-    expect(task.urgency).toBe('urgent'); // 1 food item
-  });
-
-  it('does not count non-food items', () => {
-    const registry = createRegistry({
-      inventory: [
-        { id: 'bike_light', category: 'equipment' },
-        { id: 'rejsekort', category: 'transport' },
-      ],
-    });
-    const task = generateFoodTask(registry);
-    expect(task).toBeDefined();
-    expect(task.urgency).toBe('critical'); // 0 food items
-  });
-
-  it('includes nearest shop name in title', () => {
-    const registry = createRegistry({ location: 'bilka_area', inventory: [] });
-    const task = generateFoodTask(registry);
-    expect(task.title).toContain('Bilka');
-  });
-
-  it('defaults to Netto when no location match', () => {
-    const registry = createRegistry({ location: 'apartment', inventory: [] });
-    const task = generateFoodTask(registry);
-    expect(task.title).toContain('Netto');
-  });
-
-  it('detects Kvickly from location', () => {
-    const registry = createRegistry({ location: 'kvickly_store', inventory: [] });
-    const task = generateFoodTask(registry);
-    expect(task.title).toContain('Kvickly');
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// generateBillTasks
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('DailyTaskGenerator — generateBillTasks', () => {
-  it('returns empty array when no pending bills', () => {
-    const registry = createRegistry({ bills: [] });
-    const tasks = generateBillTasks(registry);
-    expect(tasks).toEqual([]);
-  });
-
-  it('returns critical overdue bill task', () => {
-    const registry = createRegistry({
-      day: 10,
-      bills: [{ id: 'rent_1', type: 'Rent', amount: 5000, dueDay: 8, penalty: 500 }],
-    });
-    const tasks = generateBillTasks(registry);
-    expect(tasks).toHaveLength(1);
-    expect(tasks[0].urgency).toBe('critical');
-    expect(tasks[0].title).toContain('OVERDUE');
-    expect(tasks[0].title).toContain('Rent');
-    expect(tasks[0].description).toContain('Late fee');
-    expect(tasks[0].skippable).toBe(false);
-  });
-
-  it('returns urgent bill task when due in 1-2 days', () => {
-    const registry = createRegistry({
-      day: 8,
-      bills: [{ id: 'elec_1', type: 'Electric', amount: 800, dueDay: 10 }],
-    });
-    const tasks = generateBillTasks(registry);
-    expect(tasks).toHaveLength(1);
-    expect(tasks[0].urgency).toBe('urgent');
-    expect(tasks[0].title).toContain('2 days');
-  });
-
-  it('returns normal bill task when due in 3-7 days', () => {
-    const registry = createRegistry({
-      day: 3,
-      bills: [{ id: 'internet_1', type: 'Internet', amount: 300, dueDay: 8 }],
-    });
-    const tasks = generateBillTasks(registry);
-    expect(tasks).toHaveLength(1);
-    expect(tasks[0].urgency).toBe('normal');
-    expect(tasks[0].title).toContain('Upcoming');
-    expect(tasks[0].skippable).toBe(true);
-  });
-
-  it('returns no task for bills more than 7 days out', () => {
-    const registry = createRegistry({
-      day: 1,
-      bills: [{ id: 'future_1', type: 'Insurance', amount: 2000, dueDay: 20 }],
-    });
-    const tasks = generateBillTasks(registry);
-    expect(tasks).toHaveLength(0);
-  });
-
-  it('handles multiple bills of different urgencies', () => {
-    const registry = createRegistry({
-      day: 10,
-      bills: [
-        { id: 'b1', type: 'Rent', amount: 5000, dueDay: 8, penalty: 500 },
-        { id: 'b2', type: 'Electric', amount: 800, dueDay: 12 },
-        { id: 'b3', type: 'Internet', amount: 300, dueDay: 15 },
-      ],
-    });
-    const tasks = generateBillTasks(registry);
-    expect(tasks).toHaveLength(3);
-    expect(tasks[0].urgency).toBe('critical');  // overdue
-    expect(tasks[1].urgency).toBe('urgent');    // due in 2 days
-    expect(tasks[2].urgency).toBe('normal');    // due in 5 days
-  });
-
-  it('overdue bill without penalty has no late fee text', () => {
-    const registry = createRegistry({
-      day: 10,
-      bills: [{ id: 'b1', type: 'Rent', amount: 5000, dueDay: 8 }],
-    });
-    const tasks = generateBillTasks(registry);
-    expect(tasks[0].description).not.toContain('Late fee');
-  });
-
-  it('bill due on same day shows 0 days', () => {
-    const registry = createRegistry({
-      day: 10,
-      bills: [{ id: 'b1', type: 'Phone', amount: 200, dueDay: 10 }],
-    });
-    const tasks = generateBillTasks(registry);
-    expect(tasks).toHaveLength(1);
-    expect(tasks[0].urgency).toBe('urgent');
-    expect(tasks[0].title).toContain('0 days');
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// generateVitaminDTask
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('DailyTaskGenerator — generateVitaminDTask', () => {
-  it('returns normal urgency task in spring', () => {
-    const registry = createRegistry({ season: 'spring' });
-    const task = generateVitaminDTask(registry);
-    expect(task).toBeDefined();
-    expect(task.urgency).toBe('normal');
-    expect(task.id).toBe('daily_vitamin_d');
-  });
-
-  it('returns urgent task in winter with seasonal text', () => {
-    const registry = createRegistry({ season: 'winter' });
-    const task = generateVitaminDTask(registry);
+  it('generates low_food even when 1 food item has large quantity stack (Task 027: count items not stacks)', () => {
+    // 10 units of rugbrod is still only 1 distinct food item
+    const r = makeRegistry({ inventory: [inv('rugbrod', 10)] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_low_food'));
     expect(task).toBeDefined();
     expect(task.urgency).toBe('urgent');
-    expect(task.description).toContain('dark Danish winter');
   });
 
-  it('returns null when vitamin D already taken', () => {
-    const registry = createRegistry({ vitaminDTaken: true });
-    const task = generateVitaminDTask(registry);
-    expect(task).toBeNull();
+  it('does NOT generate low_food when 2+ distinct food items are present', () => {
+    // Two distinct food items — no longer "low"
+    const r = makeRegistry({ inventory: [inv('rugbrod', 1), inv('pasta', 1)] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_low_food'))).toBeUndefined();
   });
 
-  it('returns normal urgency in summer', () => {
-    const registry = createRegistry({ season: 'summer' });
-    const task = generateVitaminDTask(registry);
+  it('does NOT generate low_food when no_food is already triggered', () => {
+    const r = makeRegistry({ inventory: [] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_low_food'))).toBeUndefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rule 3: bill_overdue (Task 027 tuning: title includes type + amount)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('DailyTaskGenerator — Rule 3: bill_overdue', () => {
+  it('generates bill_overdue task when a bill is past due date', () => {
+    const currentDay = 10;
+    const r = makeRegistry({
+      bills: [bill('rent_month0', 'Husleje (Rent)', 8)], // dueDay < currentDay
+    });
+    const tasks = generateDailyTasks(r, currentDay, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_bill_overdue'));
+    expect(task).toBeDefined();
+    expect(task.urgency).toBe('urgent');
+  });
+
+  it('bill_overdue title includes type and amount (Task 027 tuning)', () => {
+    const currentDay = 10;
+    const r = makeRegistry({
+      bills: [{ id: 'rent1', label: 'Husleje', dueDay: 8, status: 'pending', amount: 8000, type: 'rent', arrivedDay: 3 }],
+    });
+    const tasks = generateDailyTasks(r, currentDay, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_bill_overdue'));
+    expect(task.title).toContain('Rent');
+    expect(task.title).toContain('8');
+    expect(task.title).toContain('overdue');
+  });
+
+  it('does NOT generate bill_overdue for a bill due in the future', () => {
+    const currentDay = 5;
+    const r = makeRegistry({
+      bills: [bill('rent_month0', 'Husleje (Rent)', 10)], // dueDay > currentDay
+    });
+    const tasks = generateDailyTasks(r, currentDay, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_bill_overdue'))).toBeUndefined();
+  });
+
+  it('does NOT generate bill_overdue for a paid bill', () => {
+    const currentDay = 10;
+    const r = makeRegistry({
+      bills: [bill('rent_month0', 'Husleje (Rent)', 8, 'paid')],
+    });
+    const tasks = generateDailyTasks(r, currentDay, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_bill_overdue'))).toBeUndefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rule 4: bill_due_soon (Task 027 tuning: title includes type + amount)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('DailyTaskGenerator — Rule 4: bill_due_soon', () => {
+  it('generates bill_due_soon when bill is due within 2 days', () => {
+    const currentDay = 8;
+    const r = makeRegistry({
+      bills: [bill('rent_month0', 'Husleje (Rent)', 10)], // 2 days from now
+    });
+    const tasks = generateDailyTasks(r, currentDay, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_bill_due_soon'));
     expect(task).toBeDefined();
     expect(task.urgency).toBe('normal');
   });
 
-  it('description does not include winter text in non-winter seasons', () => {
-    const registry = createRegistry({ season: 'autumn' });
-    const task = generateVitaminDTask(registry);
-    expect(task.description).not.toContain('dark Danish winter');
+  it('bill_due_soon title includes type, amount, and days remaining (Task 027 tuning)', () => {
+    const currentDay = 9;
+    const r = makeRegistry({
+      bills: [{ id: 'rent1', label: 'Husleje', dueDay: 10, status: 'pending', amount: 8000, type: 'rent', arrivedDay: 5 }],
+    });
+    const tasks = generateDailyTasks(r, currentDay, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_bill_due_soon'));
+    expect(task.title).toContain('Rent');
+    expect(task.title).toContain('8');
+    expect(task.title).toContain('1 day');
+  });
+
+  it('bill_due_soon title "2 days" for bill due in 2 days (Task 027 tuning)', () => {
+    const currentDay = 8;
+    const r = makeRegistry({
+      bills: [{ id: 'rent1', label: 'Husleje', dueDay: 10, status: 'pending', amount: 8000, type: 'rent', arrivedDay: 5 }],
+    });
+    const tasks = generateDailyTasks(r, currentDay, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_bill_due_soon'));
+    expect(task.title).toContain('2 days');
+  });
+
+  it('does NOT generate bill_due_soon for bill due in 3+ days', () => {
+    const currentDay = 5;
+    const r = makeRegistry({
+      bills: [bill('rent_month0', 'Husleje (Rent)', 10)], // 5 days from now
+    });
+    const tasks = generateDailyTasks(r, currentDay, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_bill_due_soon'))).toBeUndefined();
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// generateNPCDialogueTask
+// Rule 5: no_vitamin_d (Task 027: winter description, urgency escalation)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('DailyTaskGenerator — generateNPCDialogueTask', () => {
-  it('returns NPC nudge when dialogue is available and not completed', () => {
-    const registry = createRegistry({
-      day: 3,
-      flags: { character_creation_complete: true },
-    });
-    const qe = {
-      isTaskActive: () => false,
-      isTaskCompleted: () => false,
-    };
-    const task = generateNPCDialogueTask(registry, qe);
+describe('DailyTaskGenerator — Rule 5: no_vitamin_d', () => {
+  it('generates no_vitamin_d task when vitamin_d quantity is 0', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5)] }); // has food, no vit_d
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_no_vitamin_d'));
     expect(task).toBeDefined();
-    expect(task.id).toMatch(/^daily_npc_/);
-    expect(task.type).toBe('daily');
+    expect(task.urgency).toBe('normal');
   });
 
-  it('returns null when all available dialogues are in history', () => {
-    const registry = createRegistry({
+  it('urgency is "urgent" in winter (Task 027 tuning)', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5)] });
+    const tasks = generateDailyTasks(r, 1, 'winter');
+    const task = tasks.find(t => t.id.startsWith('daily_no_vitamin_d'));
+    expect(task).toBeDefined();
+    expect(task.urgency).toBe('urgent');
+  });
+
+  it('urgency is "normal" in other seasons', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5)] });
+    for (const season of ['spring', 'summer', 'autumn']) {
+      const tasks = generateDailyTasks(r, 1, season);
+      const task = tasks.find(t => t.id.startsWith('daily_no_vitamin_d'));
+      expect(task.urgency).toBe('normal');
+    }
+  });
+
+  it('winter description includes "The dark Danish winter demands it" (Task 027 tuning)', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5)] });
+    const tasks = generateDailyTasks(r, 1, 'winter');
+    const task = tasks.find(t => t.id.startsWith('daily_no_vitamin_d'));
+    expect(task.description).toContain('The dark Danish winter demands it');
+  });
+
+  it('non-winter description does NOT include winter flavour text', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5)] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_no_vitamin_d'));
+    expect(task.description).not.toContain('The dark Danish winter demands it');
+  });
+
+  it('does NOT generate no_vitamin_d when vitamin_d is present', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5), inv('vitamin_d', 1)] });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_no_vitamin_d'))).toBeUndefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rule 6: low_health
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('DailyTaskGenerator — Rule 6: low_health', () => {
+  it('generates low_health task when health is below 40', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5)], health: 30 });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_low_health'));
+    expect(task).toBeDefined();
+    expect(task.urgency).toBe('normal');
+  });
+
+  it('does NOT generate low_health when health is exactly 40', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5)], health: 40 });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_low_health'))).toBeUndefined();
+  });
+
+  it('does NOT generate low_health when health is above 40', () => {
+    const r = makeRegistry({ inventory: [inv('rugbrod', 5)], health: 80 });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_low_health'))).toBeUndefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rule 7: NPC dialogue nudge (Task 027 new rule)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('DailyTaskGenerator — Rule 7: npc_nudge', () => {
+  it('surfaces an NPC nudge when a story dialogue is available', () => {
+    // Day 1, no dialogues completed yet, no relationship prerequisites blocking
+    const r = makeRegistry({
+      inventory: [inv('rugbrod', 5), inv('pasta', 1), inv('milk', 1)],
+      dialogueHistory: {},
       day: 1,
-      flags: { character_creation_complete: true },
-      dialogueHistory: {
-        lars_day1_tutorial: { npcId: 'lars', completedAt: 1 },
-      },
     });
-    const qe = {
-      isTaskActive: () => false,
-      isTaskCompleted: () => false,
-    };
-    const task = generateNPCDialogueTask(registry, qe);
-    expect(task).toBeNull();
-  });
-
-  it('returns null when no dialogues are available', () => {
-    const registry = createRegistry({ day: 1 }); // no flags set
-    const task = generateNPCDialogueTask(registry, null);
-    expect(task).toBeNull();
-  });
-
-  it('picks the first (highest priority) available entry', () => {
-    const registry = createRegistry({
-      day: 3,
-      flags: { character_creation_complete: true },
-    });
-    const qe = {
-      isTaskActive: () => false,
-      isTaskCompleted: () => false,
-    };
-    const task = generateNPCDialogueTask(registry, qe);
-    // Day 1 entry (lars) should be first in MISSION_SCHEDULE, so it's picked
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_npc_nudge'));
     expect(task).toBeDefined();
-    expect(task.id).toBe('daily_npc_lars');
+    expect(task.urgency).toBe('normal');
+    expect(task.title).toContain('seems to want to talk');
+  });
+
+  it('only surfaces ONE NPC nudge per day (highest priority wins)', () => {
+    const r = makeRegistry({
+      inventory: [inv('rugbrod', 5), inv('pasta', 1), inv('milk', 1)],
+      dialogueHistory: {},
+      day: 3,
+    });
+    const tasks = generateDailyTasks(r, 3, 'spring');
+    const npcTasks = tasks.filter(t => t.id.startsWith('daily_npc_nudge'));
+    expect(npcTasks.length).toBeLessThanOrEqual(1);
+  });
+
+  it('does NOT generate NPC nudge when all story dialogues have been completed', () => {
+    const r = makeRegistry({
+      inventory: [inv('rugbrod', 5), inv('pasta', 1), inv('milk', 1)],
+      dialogueHistory: allDialoguesCompleted(),
+      day: 14,
+    });
+    const tasks = generateDailyTasks(r, 14, 'spring');
+    expect(tasks.find(t => t.id.startsWith('daily_npc_nudge'))).toBeUndefined();
+  });
+
+  it('NPC nudge completion condition is npcTalked', () => {
+    const r = makeRegistry({
+      inventory: [inv('rugbrod', 5), inv('pasta', 1), inv('milk', 1)],
+      dialogueHistory: {},
+      day: 1,
+    });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_npc_nudge'));
+    expect(task.completionCondition.type).toBe('npcTalked');
+  });
+
+  it('does NOT surface dialogue that requires a day not yet reached', () => {
+    // Day 1, lars_day2_language requires day 2
+    const r = makeRegistry({
+      inventory: [inv('rugbrod', 5), inv('pasta', 1), inv('milk', 1)],
+      dialogueHistory: { lars_day1_tutorial: { completedAt: 1 } }, // day1 done
+      day: 1,
+    });
+    const tasks = generateDailyTasks(r, 1, 'spring');
+    const npcTask = tasks.find(t => t.id.startsWith('daily_npc_nudge'));
+    // If there's a nudge, it shouldn't be lars (day2+ requirement)
+    if (npcTask) {
+      expect(npcTask.completionCondition.npcId).not.toBe('lars');
+    }
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// generateExploreTask
+// Rule 8: explore_nudge (Task 027 tuning: < 3 locations OR 5+ days)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('DailyTaskGenerator — generateExploreTask', () => {
-  it('returns explore task when < 3 locations visited', () => {
-    const registry = createRegistry({ visitedLocations: ['home', 'netto'] });
-    const task = generateExploreTask(registry);
+describe('DailyTaskGenerator — Rule 8: explore_nudge', () => {
+  it('generates explore_nudge when fewer than 3 locations visited', () => {
+    const r = makeRegistry({
+      inventory:        [inv('rugbrod', 5)],
+      visitedLocations: ['supermarket'], // only 1 location
+      lastNewLocationDay: 1,
+    });
+    // day 2 - day 1 = 1 < 5, but < 3 locations triggers it
+    const tasks = generateDailyTasks(r, 2, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_explore_nudge'));
     expect(task).toBeDefined();
-    expect(task.id).toBe('daily_explore');
     expect(task.urgency).toBe('low');
   });
 
-  it('returns explore task when 5+ days since last new location', () => {
-    const registry = createRegistry({
-      visitedLocations: ['home', 'netto', 'metro_station', 'language_school'],
-      day: 10,
+  it('generates explore_nudge when exactly 2 locations visited (< 3 threshold)', () => {
+    const r = makeRegistry({
+      inventory:        [inv('rugbrod', 5)],
+      visitedLocations: ['supermarket', 'metro_station'],
+      lastNewLocationDay: 1,
+    });
+    const tasks = generateDailyTasks(r, 2, 'spring');
+    const task = tasks.find(t => t.id.startsWith('daily_explore_nudge'));
+    expect(task).toBeDefined();
+  });
+
+  it('generates explore_nudge when ≥5 days since last new location', () => {
+    const r = makeRegistry({
+      inventory:          [inv('rugbrod', 5)],
+      visitedLocations:   ['loc1', 'loc2', 'loc3', 'loc4'], // 4 locations, ≥ 3
+      lastNewLocationDay: 1,
+    });
+    const tasks = generateDailyTasks(r, 6, 'spring'); // day 6 - day 1 = 5 ≥ 5
+    const task = tasks.find(t => t.id.startsWith('daily_explore_nudge'));
+    expect(task).toBeDefined();
+  });
+
+  it('does NOT generate explore_nudge when 3+ locations visited and recently explored', () => {
+    const r = makeRegistry({
+      inventory:          [inv('rugbrod', 5)],
+      visitedLocations:   ['loc1', 'loc2', 'loc3'], // exactly 3 locations
       lastNewLocationDay: 4,
     });
-    const task = generateExploreTask(registry);
-    expect(task).toBeDefined();
-    expect(task.id).toBe('daily_explore');
-  });
-
-  it('returns null when recently explored and 3+ locations visited', () => {
-    const registry = createRegistry({
-      visitedLocations: ['home', 'netto', 'metro_station'],
-      day: 5,
-      lastNewLocationDay: 3,
-    });
-    const task = generateExploreTask(registry);
-    expect(task).toBeNull();
-  });
-
-  it('returns null when 3+ locations visited and lastNewLocationDay is 0', () => {
-    const registry = createRegistry({
-      visitedLocations: ['home', 'netto', 'metro_station'],
-      day: 5,
-      lastNewLocationDay: 0,
-    });
-    const task = generateExploreTask(registry);
-    expect(task).toBeNull();
-  });
-
-  it('returns task when 0 locations visited', () => {
-    const registry = createRegistry({ visitedLocations: [] });
-    const task = generateExploreTask(registry);
-    expect(task).toBeDefined();
+    const tasks = generateDailyTasks(r, 6, 'spring'); // day 6 - day 4 = 2 < 5
+    expect(tasks.find(t => t.id.startsWith('daily_explore_nudge'))).toBeUndefined();
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// generateDailyTasks — combined
+// Deterministic IDs
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('DailyTaskGenerator — generateDailyTasks', () => {
-  it('returns all applicable tasks', () => {
-    const registry = createRegistry({
-      inventory: [],
-      season: 'winter',
-      visitedLocations: ['home'],
-      day: 1,
-      flags: { character_creation_complete: true },
-    });
-    const qe = {
-      isTaskActive: () => false,
-      isTaskCompleted: () => false,
-    };
-    const tasks = generateDailyTasks(registry, qe);
-
-    // Should include: food (critical), vitamin D (urgent), NPC nudge, explore
-    expect(tasks.length).toBeGreaterThanOrEqual(3);
-
-    const ids = tasks.map(t => t.id);
-    expect(ids).toContain('daily_food_critical');
-    expect(ids).toContain('daily_vitamin_d');
-    expect(ids).toContain('daily_explore');
+describe('DailyTaskGenerator — deterministic IDs', () => {
+  it('generates ID with format daily_{ruleKey}_day{N}', () => {
+    const r = makeRegistry({ inventory: [] });
+    const tasks = generateDailyTasks(r, 5, 'spring');
+    const task = tasks.find(t => t.id === 'daily_no_food_day5');
+    expect(task).toBeDefined();
   });
 
-  it('returns empty food/bills when state is good', () => {
-    const registry = createRegistry({
-      inventory: [
-        { id: 'rugbrod', category: 'food' },
-        { id: 'milk', category: 'food' },
-      ],
-      vitaminDTaken: true,
-      visitedLocations: ['home', 'netto', 'metro_station'],
-      day: 3,
-      lastNewLocationDay: 2,
-    });
-    const tasks = generateDailyTasks(registry, null);
-    // No food task, no vitamin D, no explore (recently explored + 3 locations)
-    const ids = tasks.map(t => t.id);
-    expect(ids).not.toContain('daily_food_critical');
-    expect(ids).not.toContain('daily_food_low');
-    expect(ids).not.toContain('daily_vitamin_d');
-    expect(ids).not.toContain('daily_explore');
+  it('different days produce different IDs', () => {
+    const r = makeRegistry({ inventory: [] });
+    const tasks1 = generateDailyTasks(r, 3, 'spring');
+    const tasks2 = generateDailyTasks(r, 7, 'spring');
+    const id1 = tasks1.find(t => t.id.startsWith('daily_no_food')).id;
+    const id2 = tasks2.find(t => t.id.startsWith('daily_no_food')).id;
+    expect(id1).not.toBe(id2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Task object schema
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('DailyTaskGenerator — task object schema', () => {
+  it('all generated tasks have required schema fields', () => {
+    const r = makeRegistry({ inventory: [], health: 30 });
+    const tasks = generateDailyTasks(r, 1, 'winter');
+    expect(tasks.length).toBeGreaterThan(0);
+    for (const task of tasks) {
+      expect(task.id).toBeDefined();
+      expect(task.type).toBe('daily');
+      expect(task.title).toBeDefined();
+      expect(task.description).toBeDefined();
+      expect(task.icon).toBeDefined();
+      expect(['low', 'normal', 'urgent', 'critical']).toContain(task.urgency);
+      expect(task.status).toBe('active');
+      expect(typeof task.xpReward).toBe('number');
+      expect(typeof task.xpPenalty).toBe('number');
+      expect(typeof task.skippable).toBe('boolean');
+      expect(task.assignedDay).toBe(1);
+      expect(task.completedDay).toBeNull();
+    }
   });
 
-  it('includes bill tasks when bills are pending', () => {
-    const registry = createRegistry({
-      inventory: [{ id: 'milk', category: 'food' }, { id: 'bread', category: 'food' }],
-      vitaminDTaken: true,
-      day: 10,
-      bills: [
-        { id: 'rent_1', type: 'Rent', amount: 5000, dueDay: 8, penalty: 500 },
-      ],
-      visitedLocations: ['home', 'netto', 'metro_station'],
-      lastNewLocationDay: 9,
+  it('returns an array', () => {
+    const r = makeRegistry({
+      inventory: [inv('rugbrod', 5), inv('pasta', 1), inv('milk', 1), inv('vitamin_d', 2)],
+      health: 80,
+      visitedLocations: ['loc1', 'loc2', 'loc3'],
+      lastNewLocationDay: 3, // day 5 - day 3 = 2 < 5
     });
-    const tasks = generateDailyTasks(registry, null);
-    const billTask = tasks.find(t => t.id.startsWith('daily_bill_'));
-    expect(billTask).toBeDefined();
-    expect(billTask.urgency).toBe('critical');
+    const tasks = generateDailyTasks(r, 5, 'spring');
+    expect(Array.isArray(tasks)).toBe(true);
   });
 });

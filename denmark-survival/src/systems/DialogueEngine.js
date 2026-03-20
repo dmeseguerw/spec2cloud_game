@@ -30,6 +30,7 @@ import { grantXP } from './XPEngine.js';
 import { changeRelationship } from './RelationshipSystem.js';
 import { getSkillLevel, incrementSkill } from './SkillSystem.js';
 import { ENCYCLOPEDIA_UNLOCKED } from '../constants/Events.js';
+import { addTask, getMissionDefinition } from './QuestEngine.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Internal helpers
@@ -406,9 +407,10 @@ export class DialogueEngine {
       }
 
       case 'mission': {
-        // Emit an event for the game to handle mission assignment/completion.
-        // Avoids circular dependency with QuestEngine.
-        registry.events.emit('quest:assign', { missionId: effect.missionId });
+        const missionDef = getMissionDefinition(effect.missionId);
+        if (missionDef) {
+          addTask(registry, missionDef);
+        }
         break;
       }
 

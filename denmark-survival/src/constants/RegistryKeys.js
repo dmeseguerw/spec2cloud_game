@@ -89,6 +89,15 @@ export const CONTEXT_HINT = 'context_hint';
 
 // Game Flags — free-form key/value pairs set by dialogue effects and scenarios
 export const GAME_FLAGS = 'game_flags';
+
+// Quest & Objectives
+export const ACTIVE_TASKS    = 'active_tasks';
+export const COMPLETED_TASKS = 'completed_tasks';
+export const TRACKED_TASK_ID = 'tracked_task_id';
+// World Collectibles & Building Entry (Task 025)
+export const COLLECTED_ITEMS    = 'collected_items';    // serialised array of collected one-time collectible IDs
+export const WORLD_COLLECTIBLES = 'world_collectibles'; // current day's active collectible manifest array
+
 // Transportation
 export const TRANSPORT_MODE    = 'transport_mode';
 export const BIKE_MOUNTED      = 'bike_mounted';
@@ -99,10 +108,3 @@ export const REJSEKORT_BALANCE = 'rejsekort_balance';
 export const METRO_CHECKED_IN  = 'metro_checked_in';
 export const METRO_MONTHLY_PASS = 'metro_monthly_pass';
 export const VISITED_LOCATIONS = 'visited_locations';
-
-// Quest System
-export const ACTIVE_QUESTS = 'active_quests';
-export const COMPLETED_QUESTS = 'completed_quests';
-
-// Daily Tasks
-export const DAILY_TASKS = 'daily_tasks';

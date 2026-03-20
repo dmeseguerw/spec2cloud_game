@@ -68,9 +68,9 @@ describe('MISSIONS data', () => {
     }
   });
 
-  it('every mission has type "mission"', () => {
+  it("every story mission has type 'story'", () => {
     for (const mission of Object.values(MISSIONS)) {
-      expect(mission.type).toBe('mission');
+      expect(mission.type).toBe('story');
     }
   });
 

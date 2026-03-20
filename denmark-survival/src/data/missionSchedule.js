@@ -106,9 +106,11 @@ function checkPrerequisite(prereq, currentDay, registry, questEngine) {
     case 'dayReached':
       return currentDay >= prereq.day;
     case 'questCompleted':
-      return questEngine ? questEngine.isTaskCompleted(registry, prereq.questId) : false;
+      if (!questEngine) return false;
+      return questEngine.getCompletedTasks(registry).some(t => t.id === prereq.questId && t.status === 'completed');
     case 'questActive':
-      return questEngine ? questEngine.isTaskActive(registry, prereq.questId) : false;
+      if (!questEngine) return false;
+      return questEngine.getActiveTasks(registry).some(t => t.id === prereq.questId);
     case 'relationship': {
       const relMap = registry.get('npc_relationships') || {};
       return (relMap[prereq.npcId] ?? 0) >= prereq.value;
