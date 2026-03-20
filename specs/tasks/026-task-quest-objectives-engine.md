@@ -1,5 +1,8 @@
 # Task 026: Quest & Objectives Engine
 
+**GitHub Issue:** [#61 - Task 026: Quest & Objectives Engine](https://github.com/dmeseguerw/spec2cloud_game/issues/61)
+**GitHub PR:** [#62 - [WIP] Implement quest and objectives system](https://github.com/dmeseguerw/spec2cloud_game/pull/62)
+
 ## Description
 Implement the Quest & Objectives System — the core engine that tracks what the player should be doing at any given moment. This system introduces two task types: **Story Missions** (authored, narrative-driven goals given by NPCs) and **Daily Maintenance Tasks** (generated each day from the player's current state). It also implements the **Objectives Panel** — an always-visible HUD element at the bottom-centre of the screen that shows the current active task.
 

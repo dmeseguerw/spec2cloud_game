@@ -1,5 +1,8 @@
 # Task 028: First Day Onboarding Sequence
 
+**GitHub Issue:** [#65 - Task 028: First Day Onboarding Sequence](https://github.com/dmeseguerw/spec2cloud_game/issues/65)
+**GitHub PR:** [#66 - [WIP] Implement first day onboarding sequence](https://github.com/dmeseguerw/spec2cloud_game/pull/66)
+
 ## Description
 Implement the authored **Day 1 experience** — the fully scripted onboarding sequence that guides the player from waking up in their apartment through their first NPC conversation, first world-item pickup, first shop visit, first inventory use, and first Day Summary. This task wires together systems built in Tasks 025 (collectibles + door entry), 026 (quest engine + objectives panel), and 027 (story mission content + Lars Day 1 dialogue) into a single cohesive first-play experience.
 
