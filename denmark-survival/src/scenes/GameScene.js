@@ -27,13 +27,23 @@ import {
 } from '../constants/AssetKeys.js';
 import {
   PLAYER_X, PLAYER_Y, PLAYER_SCENE, PLAYER_LOCATION,
-  CURRENT_LOCATION, CONTEXT_HINT,
+  CURRENT_LOCATION, CONTEXT_HINT, WORLD_COLLECTIBLES,
   PLAYER_HEALTH, PLAYER_ENERGY, PLAYER_MONEY,
   PLAYER_XP, PLAYER_LEVEL, CURRENT_DAY,
   TIME_OF_DAY, SEASON, WEATHER,
 } from '../constants/RegistryKeys.js';
 import { initDayCycle } from '../systems/DayCycleEngine.js';
 import { applyDailyWeather } from '../systems/WeatherSystem.js';
+import {
+  evaluateManifest,
+  getCollectedItems,
+  getPickupSound,
+  collectItem,
+} from '../systems/WorldCollectibleSystem.js';
+import { isDoorOpen, getDoorContextHint } from '../systems/DoorSystem.js';
+import { getItemData } from '../systems/InventoryManager.js';
+import { DEFAULT_COLLECTIBLE_MANIFEST } from '../data/worldCollectibles.js';
+import { DEFAULT_DOORS } from '../data/worldDoors.js';
 
 /** Default spawn position when no saved position exists. */
 const DEFAULT_SPAWN_X = 400;
@@ -113,6 +123,12 @@ export class GameScene extends BaseScene {
     this._nearestInteractable = null;
     this._spawnNPCs();
 
+    // ── World collectibles ───────────────────────────────────────────────────
+    this._spawnCollectibles();
+
+    // ── Building doors ────────────────────────────────────────────────────────
+    this._spawnDoors();
+
     // ── InputManager ─────────────────────────────────────────────────────────
     this._input = new InputManager(this);
 
@@ -171,6 +187,9 @@ export class GameScene extends BaseScene {
 
     // Zone detection.
     this._updateZone(x, y);
+
+    // Door frame visibility based on proximity (2× interact range).
+    this._updateDoorFrames(x, y);
 
     // Interaction detection.
     this._updateInteraction(x, y, time);
@@ -576,9 +595,7 @@ export class GameScene extends BaseScene {
         nearest.indicator.setVisible(true);
       }
       // Notify UIScene with context hint text via registry and event.
-      const hint = nearest
-        ? `Press E to ${nearest.type === 'talk' ? 'talk to' : nearest.type} ${nearest.name}`
-        : null;
+      const hint = nearest ? this._buildContextHint(nearest) : null;
       this.registry.set(CONTEXT_HINT, hint ?? '');
       this.events.emit('interactionhint', hint);
     } else if (nearest?.indicator) {
@@ -591,6 +608,10 @@ export class GameScene extends BaseScene {
 
     // Execute interaction on E press.
     if (nearest && this._input?.isInteractJustPressed(time)) {
+      // Closed doors suppress the interaction callback.
+      if (nearest.type === 'door' && !isDoorOpen(nearest.doorData, this.registry)) {
+        return;
+      }
       nearest.callback(nearest);
     }
   }
@@ -608,6 +629,220 @@ export class GameScene extends BaseScene {
       conversationId,
       engine: this._dialogueEngine,
     });
+  }
+
+  /**
+   * Build the context hint string for a given interactable entry.
+   *
+   * @param {object} entry - Interactable entry with at least `type` and `name`.
+   * @returns {string}
+   */
+  _buildContextHint(entry) {
+    switch (entry.type) {
+      case 'pickup':
+        return `Press E — Pick up ${entry.name}`;
+      case 'door':
+        return getDoorContextHint(entry.doorData, this.registry);
+      case 'talk':
+        return `Press E to talk to ${entry.name}`;
+      default:
+        return `Press E to ${entry.type} ${entry.name}`;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // World collectibles
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Evaluate the daily collectible manifest and place sprites for uncollected items.
+   * Uses WORLD_COLLECTIBLES from the registry if set (allows Task 028 override),
+   * otherwise falls back to DEFAULT_COLLECTIBLE_MANIFEST.
+   */
+  _spawnCollectibles() {
+    const manifest     = this.registry.get(WORLD_COLLECTIBLES) ?? DEFAULT_COLLECTIBLE_MANIFEST;
+    const collectedIds = getCollectedItems(this.registry);
+    const active       = evaluateManifest(manifest, collectedIds);
+
+    for (const def of active) {
+      // Draw a simple golden circle as placeholder collectible sprite.
+      let sprite = null;
+      try {
+        const texKey = `_collectible_${def.id}`;
+        if (!this.textures?.exists(texKey)) {
+          const gfx = this.make?.graphics({ x: 0, y: 0, add: false });
+          if (gfx) {
+            gfx.fillStyle(0xffdd44, 1);
+            gfx.fillCircle(8, 8, 8);
+            gfx.generateTexture(texKey, 16, 16);
+            gfx.destroy();
+          }
+        }
+        sprite = this.add.sprite(def.x, def.y, texKey);
+      } catch {
+        // If sprite creation fails (e.g. in tests), continue without sprite.
+      }
+
+      const itemData = getItemData(def.itemId);
+      const entry = {
+        name: itemData?.name ?? def.itemId,
+        type: 'pickup',
+        x: def.x,
+        y: def.y,
+        sprite,
+        indicator: null,
+        collectibleDef: def,
+        callback: (e) => this._handlePickup(e),
+      };
+      this._interactables.push(entry);
+    }
+  }
+
+  /**
+   * Handle a collectible pickup: animate sprite, add item, show toast if needed.
+   *
+   * @param {object} entry - The interactable entry for this collectible.
+   */
+  _handlePickup(entry) {
+    const { collectibleDef, sprite } = entry;
+
+    const result = collectItem(this.registry, collectibleDef);
+    if (!result.success) return;
+
+    // Remove from interactables immediately so double-pickup is impossible.
+    this._interactables = this._interactables.filter(e => e !== entry);
+    if (this._nearestInteractable === entry) {
+      this._nearestInteractable = null;
+      this.registry.set(CONTEXT_HINT, '');
+    }
+
+    // Animate sprite float-up + fade-out, then destroy.
+    if (sprite) {
+      try {
+        if (this.tweens) {
+          this.tweens.add({
+            targets: sprite,
+            y: sprite.y - 24,
+            alpha: 0,
+            duration: 500,
+            onComplete: () => sprite.destroy(),
+          });
+        } else {
+          sprite.destroy();
+        }
+      } catch {
+        sprite.destroy?.();
+      }
+    }
+
+    // Play category-specific pickup sound.
+    try {
+      const itemData = getItemData(collectibleDef.itemId);
+      const soundKey = getPickupSound(itemData);
+      this.sound?.play?.(soundKey, { volume: 0.7 });
+    } catch { /* Audio not critical */ }
+
+    // Show first-pickup tooltip notification.
+    if (result.firstPickup && collectibleDef.tooltip) {
+      try {
+        this.events.emit('notification', {
+          message: collectibleDef.tooltip,
+          duration: 4000,
+        });
+      } catch { /* UI not critical */ }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Building doors
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Place door interactables for each door in DEFAULT_DOORS (or a registry override).
+   * Each door gets a coloured frame drawn with Phaser Graphics that pulses green
+   * when open and glows amber when closed, visible within 2× INTERACT_RANGE.
+   */
+  _spawnDoors() {
+    for (const door of DEFAULT_DOORS) {
+      // Create a Graphics object for the door frame indicator.
+      let doorFrame = null;
+      try {
+        doorFrame = this.add.graphics();
+        if (doorFrame?.setAlpha) doorFrame.setAlpha(0);
+      } catch { /* non-critical */ }
+
+      const entry = {
+        name: door.label,
+        type: 'door',
+        x: door.x,
+        y: door.y,
+        sprite: null,
+        indicator: null,
+        doorFrame,
+        doorData: door,
+        callback: (e) => this._handleDoorEntry(e.doorData),
+      };
+      this._interactables.push(entry);
+    }
+  }
+
+  /**
+   * Update door frame visibility and colour based on player proximity.
+   * Frames become visible at 2× INTERACT_RANGE (128 px); colour reflects open state.
+   *
+   * @param {number} px - Player world x.
+   * @param {number} py - Player world y.
+   */
+  _updateDoorFrames(px, py) {
+    const DOOR_VISUAL_RANGE = INTERACT_RANGE * 2;
+
+    for (const entry of this._interactables) {
+      if (entry.type !== 'door' || !entry.doorFrame) continue;
+
+      const dx   = entry.x - px;
+      const dy   = entry.y - py;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist >= DOOR_VISUAL_RANGE) {
+        try { entry.doorFrame.setAlpha(0); } catch { /* non-critical */ }
+        continue;
+      }
+
+      try {
+        const open  = isDoorOpen(entry.doorData, this.registry);
+        const color = open ? 0x44ff44 : 0xffaa00;
+
+        entry.doorFrame.clear();
+        entry.doorFrame.lineStyle(3, color, 1);
+        entry.doorFrame.strokeRect(entry.x - 12, entry.y - 20, 24, 20);
+        entry.doorFrame.setAlpha(0.8);
+      } catch { /* non-critical */ }
+    }
+  }
+
+  /**
+   * Launch the target scene for a door entry.
+   *
+   * @param {object} door - Door definition.
+   */
+  _handleDoorEntry(door) {
+    if (!isDoorOpen(door, this.registry)) return;
+
+    try {
+      this.sound?.play?.('sfx_door_open', { volume: 0.8 });
+    } catch { /* non-critical */ }
+
+    this.scene.launch(door.targetScene, door.targetData);
+
+    // Restore input when the launched scene closes.
+    this.scene.get(door.targetScene)?.events?.once('shutdown', () => {
+      try {
+        this.sound?.play?.('sfx_door_close', { volume: 0.6 });
+      } catch { /* non-critical */ }
+      this._input?.unblockInput?.();
+    });
+
+    this._input?.blockInput?.();
   }
 
   /**
