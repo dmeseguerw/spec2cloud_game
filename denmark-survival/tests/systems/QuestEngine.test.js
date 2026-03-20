@@ -615,8 +615,15 @@ describe('QuestEngine.evaluateEndOfDay()', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('QuestEngine.getMissionDefinition()', () => {
-  it('returns null for an unknown missionId (stub missions.js)', () => {
-    expect(QE.getMissionDefinition('story_grocery_run')).toBeNull();
+  it('returns the mission definition for a known missionId', () => {
+    const def = QE.getMissionDefinition('story_grocery_run');
+    expect(def).not.toBeNull();
+    expect(def.id).toBe('story_grocery_run');
+    expect(def.type).toBe('story');
+  });
+
+  it('returns null for an unknown missionId', () => {
+    expect(QE.getMissionDefinition('nonexistent_mission')).toBeNull();
   });
 
   it('returns null for undefined missionId', () => {

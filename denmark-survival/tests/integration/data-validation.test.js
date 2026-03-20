@@ -20,7 +20,7 @@ import { createRequire } from 'node:module';
 import { ENCYCLOPEDIA_DATA, CATEGORIES, STARTER_ENTRY_IDS, getEntryById } from '../../src/data/encyclopedia.js';
 import { NPCS } from '../../src/data/npcs.js';
 import ITEMS_DATA from '../../src/data/items.js';
-import { lars_welcome } from '../../src/data/dialogues/lars_welcome.js';
+import { lars_day1_tutorial } from '../../src/data/dialogues/lars_day1_tutorial.js';
 import { mette_shopping } from '../../src/data/dialogues/mette_shopping.js';
 import { thomas_first_meeting } from '../../src/data/dialogues/thomas_first_meeting.js';
 
@@ -162,7 +162,7 @@ describe('Data Validation: Encounters', () => {
 
 describe('Data Validation: Dialogue Trees', () => {
   const dialogues = [
-    { name: 'lars_welcome', tree: lars_welcome },
+    { name: 'lars_day1_tutorial', tree: lars_day1_tutorial },
     { name: 'mette_shopping', tree: mette_shopping },
     { name: 'thomas_first_meeting', tree: thomas_first_meeting },
   ];
@@ -448,7 +448,7 @@ describe('Data Validation: Cross-System References', () => {
   });
 
   it('dialogue trees reference existing NPCs', () => {
-    const dialogues = [lars_welcome, mette_shopping, thomas_first_meeting];
+    const dialogues = [lars_day1_tutorial, mette_shopping, thomas_first_meeting];
     for (const tree of dialogues) {
       expect(
         npcIds.has(tree.npcId),

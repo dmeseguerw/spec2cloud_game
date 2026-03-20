@@ -59,7 +59,8 @@ import {
 // ── Relationships & dialogue ─────────────────────────────────────────────────
 import { changeRelationship, getRelationship, getRelationshipStage } from '../../src/systems/RelationshipSystem.js';
 import { DialogueEngine } from '../../src/systems/DialogueEngine.js';
-import { lars_welcome } from '../../src/data/dialogues/lars_welcome.js';
+import { lars_day1_tutorial } from '../../src/data/dialogues/lars_day1_tutorial.js';
+import { thomas_first_meeting } from '../../src/data/dialogues/thomas_first_meeting.js';
 
 // ── Transport ────────────────────────────────────────────────────────────────
 import {
@@ -225,8 +226,8 @@ describe('E2E: Full Game Loop', () => {
 
     // ── Dialogue ────────────────────────────────────────────────────────────
     const engine = new DialogueEngine();
-    engine.registerDialogue('lars_welcome', lars_welcome);
-    engine.startDialogue(registry, 'lars', 'lars_welcome');
+    engine.registerDialogue('lars_day1_tutorial', lars_day1_tutorial);
+    engine.startDialogue(registry, 'lars', 'lars_day1_tutorial');
 
     const node = engine.getCurrentNode();
     expect(node).toBeTruthy();
@@ -443,16 +444,18 @@ describe('Integration: Dialogue → Relationships', () => {
     registry.set(RK.NPC_RELATIONSHIPS, { lars: 40 });
 
     const engine = new DialogueEngine();
-    engine.registerDialogue('lars_welcome', lars_welcome);
-    engine.startDialogue(registry, 'lars', 'lars_welcome');
+    engine.registerDialogue('lars_day1_tutorial', lars_day1_tutorial);
+    engine.startDialogue(registry, 'lars', 'lars_day1_tutorial');
 
     // Navigate to node with effects
-    // Select first response (goes to node_overwhelmed)
+    // Select first response (goes to node_nervous)
     engine.selectResponse(registry, 0);
-    // Select first response (goes to node_language_advice)
+    // Select first response (goes to node_grocery_list)
     engine.selectResponse(registry, 0);
-    // Select first response (has xp effect +10)
+    // Select first response (has mission + relationship effects)
     const xpBefore = registry.get(RK.PLAYER_XP);
+    engine.selectResponse(registry, 0);
+    // Select response to get XP (+10)
     engine.selectResponse(registry, 0);
 
     expect(registry.get(RK.PLAYER_XP)).toBeGreaterThan(xpBefore);
@@ -604,17 +607,14 @@ describe('Integration: Skills → Dialogue (language gating)', () => {
     registry.set(RK.SKILL_LANGUAGE, 5);
 
     const engine = new DialogueEngine();
-    engine.registerDialogue('lars_welcome', lars_welcome);
-    engine.startDialogue(registry, 'lars', 'lars_welcome');
-
-    // Navigate to node_excited (second response)
-    engine.selectResponse(registry, 1);
+    engine.registerDialogue('thomas_first_meeting', thomas_first_meeting);
+    engine.startDialogue(registry, 'thomas', 'thomas_first_meeting');
 
     // Get available responses — language-gated option should be locked
     const responses = engine.getAvailableResponses(registry);
     // The Danish option requires languageLevel 2 which is skill >= 20
     const danishOption = responses.find(r =>
-      r.text && r.text.includes('Jeg vil gerne')
+      r.text && r.text.includes('Undskyld')
     );
     if (danishOption) {
       expect(danishOption.locked).toBe(true);
@@ -626,15 +626,12 @@ describe('Integration: Skills → Dialogue (language gating)', () => {
     registry.set(RK.SKILL_LANGUAGE, 25);
 
     const engine = new DialogueEngine();
-    engine.registerDialogue('lars_welcome', lars_welcome);
-    engine.startDialogue(registry, 'lars', 'lars_welcome');
-
-    // Navigate to node_excited
-    engine.selectResponse(registry, 1);
+    engine.registerDialogue('thomas_first_meeting', thomas_first_meeting);
+    engine.startDialogue(registry, 'thomas', 'thomas_first_meeting');
 
     const responses = engine.getAvailableResponses(registry);
     const danishOption = responses.find(r =>
-      r.text && r.text.includes('Jeg vil gerne')
+      r.text && r.text.includes('Undskyld')
     );
     expect(danishOption).toBeTruthy();
     expect(danishOption.locked).toBe(false);

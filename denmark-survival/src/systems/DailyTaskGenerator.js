@@ -13,6 +13,7 @@
 
 import * as RK from '../constants/RegistryKeys.js';
 import ITEMS_DATA from '../data/items.js';
+import { MISSION_SCHEDULE } from '../data/missionSchedule.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Item helpers
@@ -22,18 +23,20 @@ import ITEMS_DATA from '../data/items.js';
 const ITEM_MAP = new Map(ITEMS_DATA.map(item => [item.id, item]));
 
 /**
- * Count the total quantity of food items in the registry inventory.
+ * Count the number of distinct food-category item types in the registry inventory.
+ * Counts entries (distinct types), not stack quantities (Task 027 tuning).
  *
  * @param {object} registry
  * @returns {number}
  */
-function countFoodItems(registry) {
+function countDistinctFoodTypes(registry) {
   const inventory = registry.get(RK.INVENTORY) ?? [];
   let total = 0;
   for (const entry of inventory) {
     const itemDef = ITEM_MAP.get(entry.itemId);
     if (itemDef && itemDef.category === 'food') {
-      total += entry.quantity ?? 1;
+      // Count distinct food-category items, not stacks (Task 027 tuning)
+      total += 1;
     }
   }
   return total;
@@ -77,11 +80,12 @@ function getPendingBills(registry) {
  * Rules (evaluated in order; stops at first matching food rule):
  *  1. no_food       — food items = 0           → critical
  *  2. low_food      — food items ≤ 1            → urgent
- *  3. bill_overdue  — any bill past due date    → urgent
- *  4. bill_due_soon — any bill due within 2 days→ normal
- *  5. no_vitamin_d  — vitamin_d qty = 0         → normal (urgent in winter)
+ *  3. bill_overdue  — any bill past due date    → urgent (with type+amount in title)
+ *  4. bill_due_soon — any bill due within 2 days→ normal (with type+amount in title)
+ *  5. no_vitamin_d  — vitamin_d qty = 0         → normal (urgent in winter, with seasonal text)
  *  6. low_health    — PLAYER_HEALTH < 40        → normal
- *  7. explore_nudge — days since new location ≥ 5 → low
+ *  7. npc_nudge     — highest-priority story NPC with pending dialogue → normal
+ *  8. explore_nudge — < 3 distinct locations OR days since new location ≥ 5 → low
  *
  * Does NOT check for duplicate IDs — caller (QuestEngine.addTask) handles that.
  *
@@ -94,7 +98,7 @@ export function generateDailyTasks(registry, currentDay, season) {
   const tasks = [];
 
   // ── Rule 1 & 2: Food check (mutually exclusive — stop at first match) ──────
-  const foodCount = countFoodItems(registry);
+  const foodCount = countDistinctFoodTypes(registry);
 
   if (foodCount === 0) {
     tasks.push(_makeTask('no_food', currentDay, {
@@ -124,11 +128,25 @@ export function generateDailyTasks(registry, currentDay, season) {
   const pendingBills = getPendingBills(registry);
 
   for (const bill of pendingBills) {
+    // Format bill label as "Type of X,XXX DKK" if amount available, else fallback to label
+    const billTypeLabel = bill.type
+      ? `${bill.type.charAt(0).toUpperCase() + bill.type.slice(1)}`
+      : (bill.label ?? 'Bill');
+    const amountStr = bill.amount != null
+      ? `${Number(bill.amount).toLocaleString('da-DK')} DKK`
+      : null;
+    const billTitle = amountStr
+      ? `${billTypeLabel} of ${amountStr}`
+      : (bill.label ?? billTypeLabel);
+
     if (bill.dueDay < currentDay) {
       // Rule 3: overdue
+      const penaltyStr = bill.latePenaltyAmount != null
+        ? ` Late fee: ${Number(bill.latePenaltyAmount).toLocaleString('da-DK')} DKK.`
+        : '';
       tasks.push(_makeTask(`bill_overdue_${bill.id}`, currentDay, {
-        title:       `${bill.label} is overdue — pay now to avoid penalty`,
-        description: `${bill.label} was due on day ${bill.dueDay}. Pay it immediately to minimise penalties.`,
+        title:       `${billTitle} is overdue — pay now to avoid penalty`,
+        description: `${billTitle} was due on day ${bill.dueDay}. Pay it immediately to minimise penalties.${penaltyStr}`,
         icon:        '🚨',
         urgency:     'urgent',
         xpReward:    0,
@@ -140,8 +158,8 @@ export function generateDailyTasks(registry, currentDay, season) {
       // Rule 4: due soon
       const daysLeft = bill.dueDay - currentDay;
       tasks.push(_makeTask(`bill_due_soon_${bill.id}`, currentDay, {
-        title:       `${bill.label} is due in ${daysLeft} day${daysLeft !== 1 ? 's' : ''} — pay it soon`,
-        description: `${bill.label} is coming due. Pay before day ${bill.dueDay} to avoid a late penalty.`,
+        title:       `${billTitle} is due in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`,
+        description: `${billTitle} is coming due. Pay before day ${bill.dueDay} to avoid a late penalty.`,
         icon:        '⚠️',
         urgency:     'normal',
         xpReward:    0,
@@ -155,10 +173,14 @@ export function generateDailyTasks(registry, currentDay, season) {
   // ── Rule 5: Vitamin D ───────────────────────────────────────────────────────
   const vitaminDCount = countItem(registry, 'vitamin_d');
   if (vitaminDCount === 0) {
-    const vitUrgency = season === 'winter' ? 'urgent' : 'normal';
+    const isWinter = season === 'winter';
+    const vitUrgency = isWinter ? 'urgent' : 'normal';
+    const vitDesc = isWinter
+      ? 'Vitamin D is important during the dark months. Buy some at a pharmacy or supermarket. The dark Danish winter demands it.'
+      : 'Vitamin D is important during the dark months. Buy some at a pharmacy or supermarket.';
     tasks.push(_makeTask('no_vitamin_d', currentDay, {
       title:       "You're out of vitamin D — pick some up",
-      description: 'Vitamin D is important during the dark months. Buy some at a pharmacy or supermarket.',
+      description: vitDesc,
       icon:        '🔵',
       urgency:     vitUrgency,
       xpReward:    2,
@@ -183,12 +205,36 @@ export function generateDailyTasks(registry, currentDay, season) {
     }));
   }
 
-  // ── Rule 7: Explore nudge ──────────────────────────────────────────────────
+  // ── Rule 7: NPC dialogue nudge ────────────────────────────────────────────
+  const dialogueHistory = registry.get(RK.DIALOGUE_HISTORY) ?? {};
+  const npcRelMap = registry.get(RK.NPC_RELATIONSHIPS) ?? {};
+  const completedTasks = registry.get(RK.COMPLETED_TASKS) ?? [];
+  const activeTasks = registry.get(RK.ACTIVE_TASKS) ?? [];
+
+  // Find the highest-priority pending NPC dialogue from the schedule
+  const pendingNPC = _findHighestPriorityNPCNudge(
+    currentDay, dialogueHistory, npcRelMap, completedTasks, activeTasks,
+  );
+
+  if (pendingNPC) {
+    tasks.push(_makeTask(`npc_nudge_${pendingNPC.npcId}`, currentDay, {
+      title:       `${pendingNPC.npcName} seems to want to talk to you`,
+      description: `You should go find ${pendingNPC.npcName} — they might have something important to say.`,
+      icon:        '💬',
+      urgency:     'normal',
+      xpReward:    5,
+      xpPenalty:   0,
+      skippable:   true,
+      completionCondition: { type: 'npcTalked', npcId: pendingNPC.npcId },
+    }));
+  }
+
+  // ── Rule 8: Explore nudge ──────────────────────────────────────────────────
   const visitedLocations = registry.get(RK.VISITED_LOCATIONS) ?? [];
   const lastNewLocationDay = registry.get('last_new_location_day') ?? 1;
   const daysSinceExplore = currentDay - lastNewLocationDay;
 
-  if (visitedLocations.length === 0 || daysSinceExplore >= 5) {
+  if (visitedLocations.length < 3 || daysSinceExplore >= 5) {
     tasks.push(_makeTask('explore_nudge', currentDay, {
       title:       "You haven't explored much — venture somewhere new",
       description: "Discover new locations around Copenhagen. There's always something new to find.",
@@ -207,6 +253,65 @@ export function generateDailyTasks(registry, currentDay, season) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Internal helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Find the highest-priority NPC that has a pending story dialogue available.
+ * Returns the first matching MISSION_SCHEDULE entry, or null if none.
+ *
+ * @param {number} currentDay
+ * @param {object} dialogueHistory
+ * @param {object} npcRelMap
+ * @param {object[]} completedTasks
+ * @param {object[]} activeTasks
+ * @returns {{ npcId: string, npcName: string }|null}
+ */
+function _findHighestPriorityNPCNudge(
+  currentDay, dialogueHistory, npcRelMap, completedTasks, activeTasks,
+) {
+  for (const entry of MISSION_SCHEDULE) {
+    // Skip if dialogue already completed
+    if (dialogueHistory[entry.dialogueId]) continue;
+    // Skip if day not reached
+    if (entry.day > currentDay) continue;
+    // Check prerequisite
+    if (!_checkSchedulePrerequisite(entry.prerequisite, currentDay, npcRelMap, completedTasks, activeTasks)) continue;
+    return { npcId: entry.npcId, npcName: entry.npcName };
+  }
+  return null;
+}
+
+/**
+ * Check a missionSchedule prerequisite against current game state.
+ *
+ * @param {object} prereq
+ * @param {number} currentDay
+ * @param {object} npcRelMap
+ * @param {object[]} completedTasks
+ * @param {object[]} activeTasks
+ * @returns {boolean}
+ */
+function _checkSchedulePrerequisite(prereq, currentDay, npcRelMap, completedTasks, activeTasks) {
+  if (!prereq) return true;
+  switch (prereq.type) {
+    case 'flag':
+      // Flag checks aren't available without registry here; treat as passed
+      return true;
+    case 'dayReached':
+      return currentDay >= prereq.day;
+    case 'questCompleted':
+      return completedTasks.some(t => t.id === prereq.questId && t.status === 'completed');
+    case 'questActive':
+      return activeTasks.some(t => t.id === prereq.questId && t.status === 'active');
+    case 'relationship':
+      return (npcRelMap[prereq.npcId] ?? 0) >= prereq.value;
+    case 'and':
+      return (prereq.conditions ?? []).every(c =>
+        _checkSchedulePrerequisite(c, currentDay, npcRelMap, completedTasks, activeTasks),
+      );
+    default:
+      return false;
+  }
+}
 
 /**
  * Build a daily task object with a deterministic ID.
