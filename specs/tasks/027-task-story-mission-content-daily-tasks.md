@@ -1,5 +1,8 @@
 # Task 027: Story Mission Content & Daily Task Tuning
 
+**GitHub Issue:** [#63 - Task 027: Story Mission Content & Daily Task Tuning](https://github.com/dmeseguerw/spec2cloud_game/issues/63)
+**GitHub PR:** [#64 - [WIP] Add Chapter 1 story missions and daily task tuning](https://github.com/dmeseguerw/spec2cloud_game/pull/64)
+
 ## Description
 Populate the Quest & Objectives System (Task 026) with concrete content: the **Chapter 1 Story Mission chain** (Days 1–14) and the **daily task generation tuning** to ensure the rules from Task 026 produce well-balanced, contextually appropriate tasks. This task is content-focused — it fills the engine from Task 026 with authored data rather than building new systems.
 

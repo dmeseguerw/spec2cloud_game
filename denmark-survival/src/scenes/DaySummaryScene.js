@@ -28,6 +28,8 @@ import {
   SFX_XP_LOSS,
   SFX_LEVEL_UP,
 } from '../constants/AudioKeys.js';
+import { addTask, getActiveTasks } from '../systems/QuestEngine.js';
+import { MISSIONS } from '../data/missions.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Day 1 constants — exported for testing
@@ -616,11 +618,21 @@ export class DaySummaryScene extends BaseScene {
 
   /** "Continue" → advance to the next day's morning scene. */
   _onContinue() {
-    // Day 1 completion: mark tutorial done before loading next day.
+    // Day 1 completion: mark tutorial done and transition to Day 2.
     const currentDay = this.registry.get(RK.CURRENT_DAY);
     if (currentDay === 1 && !this.registry.get(RK.TUTORIAL_COMPLETED)) {
       this.registry.set(RK.TUTORIAL_COMPLETED, true);
       this.registry.set(RK.CURRENT_DAY, 2);
+
+      // Assign story_first_class if story_grocery_run was completed on Day 1.
+      const flags = this.registry.get(RK.GAME_FLAGS) ?? {};
+      if (flags['first_grocery_complete']) {
+        try {
+          addTask(this.registry, MISSIONS.story_first_class);
+        } catch (_) {
+          // Graceful degradation
+        }
+      }
     }
     this.scene.start('GameScene');
   }

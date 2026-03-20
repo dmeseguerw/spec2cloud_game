@@ -13,12 +13,13 @@
  * Scene is launched via `this.scene.start('ShopScene', { shopId: 'netto' })`.
  */
 
-import { BaseScene }  from './BaseScene.js';
-import { GameButton } from '../ui/GameButton.js';
-import { getShop }    from '../systems/ShopSystem.js';
-import { grantXP }    from '../systems/XPEngine.js';
-import { addItem }    from '../systems/InventoryManager.js';
-import * as RK        from '../constants/RegistryKeys.js';
+import { BaseScene }     from './BaseScene.js';
+import { GameButton }    from '../ui/GameButton.js';
+import { getShop }       from '../systems/ShopSystem.js';
+import { grantXP }       from '../systems/XPEngine.js';
+import { addItem }       from '../systems/InventoryManager.js';
+import { checkCompletionConditions } from '../systems/QuestEngine.js';
+import * as RK           from '../constants/RegistryKeys.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Day 1 highlighted item IDs — these receive a gold border in the item list.
@@ -225,7 +226,8 @@ export class ShopScene extends BaseScene {
   /**
    * Buy a single item from the shop.
    * Deducts price from PLAYER_MONEY, adds item to inventory, and on Day 1
-   * sets the 'first_grocery_complete' flag.
+   * sets the 'first_grocery_complete' flag and triggers quest completion via
+   * QuestEngine.checkCompletionConditions.
    *
    * @param {{itemId:string, price:number}} item
    */
@@ -241,13 +243,23 @@ export class ShopScene extends BaseScene {
       // Graceful degradation when InventoryManager is unavailable
     }
 
-    // Day 1: set grocery completion flag
+    // Day 1: set grocery completion flag and trigger quest auto-complete.
     if (isDay1Session(this.registry)) {
       const flags = this.registry.get(RK.GAME_FLAGS) ?? {};
       if (!flags['first_grocery_complete']) {
         flags['first_grocery_complete'] = true;
         this.registry.set(RK.GAME_FLAGS, flags);
-        // Grant quest completion XP
+        // Trigger QuestEngine to auto-complete story_grocery_run via flag condition.
+        try {
+          checkCompletionConditions(this.registry, 'flag:set', {
+            key:   'first_grocery_complete',
+            value: true,
+          });
+        } catch (_) {
+          // Graceful degradation
+        }
+        // Grant quest XP (QuestEngine.completeTask also grants it, but
+        // grantXP here ensures the XP log source is human-readable on Day 1).
         try {
           grantXP(this.registry, 15, 'First grocery run completed', 'Story');
         } catch (_) {

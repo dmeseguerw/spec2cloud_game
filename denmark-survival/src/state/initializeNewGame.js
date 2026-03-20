@@ -75,9 +75,19 @@ export function initializeNewGame(registry) {
   // ── Tutorial / Onboarding ──────────────────────────────────────────────────
   registry.set(RK.TUTORIAL_COMPLETED, false);
 
+  // ── Quest / Task system (Tasks 025/026) ───────────────────────────────────
+  registry.set(RK.ACTIVE_TASKS,    []);
+  registry.set(RK.COMPLETED_TASKS, []);
+  registry.set(RK.TRACKED_TASK_ID, null);
+  registry.set(RK.GAME_FLAGS,      {});
+
+  // ── Collectibles (Task 025) ────────────────────────────────────────────────
+  registry.set(RK.COLLECTED_ITEMS,    []);
+  // Note: WORLD_COLLECTIBLES is set by GameScene._spawnDay1World() before
+  // collectibles are spawned, so it is not initialised here.
+
   // ── Active tasks / scenarios ───────────────────────────────────────────────
   registry.set(RK.COMPLETED_SCENARIOS, []);
-  registry.set(RK.GAME_FLAGS,          {});
 
   // ── Financial clean state ──────────────────────────────────────────────────
   registry.set(RK.PENDING_BILLS,     []);

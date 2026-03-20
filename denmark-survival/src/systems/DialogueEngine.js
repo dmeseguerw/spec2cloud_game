@@ -12,8 +12,8 @@
  *
  * Usage:
  *   const engine = new DialogueEngine();
- *   engine.registerDialogue('lars_welcome', lars_welcome);
- *   engine.startDialogue(registry, 'lars', 'lars_welcome');
+ *   engine.registerDialogue('lars_day1_tutorial', lars_day1_tutorial);
+ *   engine.startDialogue(registry, 'lars', 'lars_day1_tutorial');
  *   const node = engine.getCurrentNode();
  *   const responses = engine.getAvailableResponses(registry);
  *   engine.selectResponse(registry, 0);
@@ -30,6 +30,7 @@ import { grantXP } from './XPEngine.js';
 import { changeRelationship } from './RelationshipSystem.js';
 import { getSkillLevel, incrementSkill } from './SkillSystem.js';
 import { ENCYCLOPEDIA_UNLOCKED } from '../constants/Events.js';
+import { addTask, getMissionDefinition } from './QuestEngine.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Internal helpers
@@ -402,6 +403,14 @@ export class DialogueEngine {
         const flags = { ...(registry.get(RK.GAME_FLAGS) || {}) };
         flags[effect.key] = effect.value;
         registry.set(RK.GAME_FLAGS, flags);
+        break;
+      }
+
+      case 'mission': {
+        const missionDef = getMissionDefinition(effect.missionId);
+        if (missionDef) {
+          addTask(registry, missionDef);
+        }
         break;
       }
 

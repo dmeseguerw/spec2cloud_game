@@ -17,7 +17,7 @@ import { BaseScene } from './BaseScene.js';
 import { Player } from '../entities/Player.js';
 import { InputManager } from '../systems/InputManager.js';
 import { DialogueEngine } from '../systems/DialogueEngine.js';
-import { lars_welcome }         from '../data/dialogues/lars_welcome.js';
+import { lars_day1_tutorial }    from '../data/dialogues/lars_day1_tutorial.js';
 import { mette_shopping }       from '../data/dialogues/mette_shopping.js';
 import { thomas_first_meeting } from '../data/dialogues/thomas_first_meeting.js';
 import {
@@ -27,16 +27,27 @@ import {
 } from '../constants/AssetKeys.js';
 import {
   PLAYER_X, PLAYER_Y, PLAYER_SCENE, PLAYER_LOCATION,
-  CURRENT_LOCATION, CONTEXT_HINT,
+  CURRENT_LOCATION, CONTEXT_HINT, WORLD_COLLECTIBLES,
   PLAYER_HEALTH, PLAYER_ENERGY, PLAYER_MONEY,
   PLAYER_XP, PLAYER_LEVEL, CURRENT_DAY,
   TIME_OF_DAY, SEASON, WEATHER,
-  TUTORIAL_COMPLETED, GAME_FLAGS, INVENTORY, PANT_BOTTLES,
+  TUTORIAL_COMPLETED, GAME_FLAGS,
 } from '../constants/RegistryKeys.js';
 import { initDayCycle } from '../systems/DayCycleEngine.js';
 import { applyDailyWeather, WEATHER_CLOUDY } from '../systems/WeatherSystem.js';
 import { grantXP } from '../systems/XPEngine.js';
-import { addItem } from '../systems/InventoryManager.js';
+import { addTask } from '../systems/QuestEngine.js';
+import {
+  evaluateManifest,
+  getCollectedItems,
+  getPickupSound,
+  collectItem,
+} from '../systems/WorldCollectibleSystem.js';
+import { isDoorOpen, getDoorContextHint } from '../systems/DoorSystem.js';
+import { getItemData } from '../systems/InventoryManager.js';
+import { DEFAULT_COLLECTIBLE_MANIFEST } from '../data/worldCollectibles.js';
+import { DEFAULT_DOORS } from '../data/worldDoors.js';
+import { DAY1_COLLECTIBLE_MANIFEST } from '../data/day1World.js';
 
 /** Default spawn position when no saved position exists. */
 const DEFAULT_SPAWN_X = 400;
@@ -47,14 +58,6 @@ const INTERACT_RANGE = 64;
 
 /** Vertical offset (px) above the NPC sprite for the interaction indicator. */
 const INDICATOR_VERTICAL_OFFSET = -32;
-
-/**
- * Fallback sprite key used for world-item and door interactables when
- * dedicated asset keys are not yet available.
- * Replace with specific AssetKey constants once assets are added.
- */
-const SPRITE_PLACEHOLDER_ITEM = SPRITE_NPC_LARS;
-const SPRITE_PLACEHOLDER_DOOR = SPRITE_NPC_LARS;
 
 export class GameScene extends BaseScene {
   constructor() {
@@ -124,17 +127,33 @@ export class GameScene extends BaseScene {
     this._nearestInteractable = null;
     this._spawnNPCs();
 
-    // ── Day 1 authored world elements ─────────────────────────────────────────
+    // ── Day 1 world manifest override (before collectibles spawn) ─────────────
+    // Set WORLD_COLLECTIBLES to the authored Day 1 pant bottle manifest so that
+    // _spawnCollectibles() picks it up instead of DEFAULT_COLLECTIBLE_MANIFEST.
+    if (this._isDay1()) {
+      this.registry.set(WORLD_COLLECTIBLES, DAY1_COLLECTIBLE_MANIFEST);
+    }
+
+    // ── World collectibles ───────────────────────────────────────────────────
+    this._spawnCollectibles();
+
+    // ── Building doors ────────────────────────────────────────────────────────
+    this._spawnDoors();
+
+    // ── Day 1 authored world elements (apartment door + ambient props) ─────────
     if (this._isDay1()) {
       this._spawnDay1World();
     }
+
+    // ── Building doors ────────────────────────────────────────────────────────
+    this._spawnDoors();
 
     // ── InputManager ─────────────────────────────────────────────────────────
     this._input = new InputManager(this);
 
     // ── DialogueEngine ───────────────────────────────────────────────────────
     this._dialogueEngine = new DialogueEngine();
-    this._dialogueEngine.registerDialogue('lars_welcome',        lars_welcome);
+    this._dialogueEngine.registerDialogue('lars_day1_tutorial',   lars_day1_tutorial);
     this._dialogueEngine.registerDialogue('mette_shopping',      mette_shopping);
     this._dialogueEngine.registerDialogue('thomas_first_meeting', thomas_first_meeting);
 
@@ -187,6 +206,9 @@ export class GameScene extends BaseScene {
 
     // Zone detection.
     this._updateZone(x, y);
+
+    // Door frame visibility based on proximity (2× interact range).
+    this._updateDoorFrames(x, y);
 
     // Interaction detection.
     this._updateInteraction(x, y, time);
@@ -592,9 +614,7 @@ export class GameScene extends BaseScene {
         nearest.indicator.setVisible(true);
       }
       // Notify UIScene with context hint text via registry and event.
-      const hint = nearest
-        ? `Press E to ${nearest.type === 'talk' ? 'talk to' : nearest.type} ${nearest.name}`
-        : null;
+      const hint = nearest ? this._buildContextHint(nearest) : null;
       this.registry.set(CONTEXT_HINT, hint ?? '');
       this.events.emit('interactionhint', hint);
     } else if (nearest?.indicator) {
@@ -607,6 +627,10 @@ export class GameScene extends BaseScene {
 
     // Execute interaction on E press.
     if (nearest && this._input?.isInteractJustPressed(time)) {
+      // Closed doors suppress the interaction callback.
+      if (nearest.type === 'door' && !isDoorOpen(nearest.doorData, this.registry)) {
+        return;
+      }
       nearest.callback(nearest);
     }
   }
@@ -624,6 +648,229 @@ export class GameScene extends BaseScene {
       conversationId,
       engine: this._dialogueEngine,
     });
+  }
+
+  /**
+   * Build the context hint string for a given interactable entry.
+   *
+   * @param {object} entry - Interactable entry with at least `type` and `name`.
+   * @returns {string}
+   */
+  _buildContextHint(entry) {
+    switch (entry.type) {
+      case 'pickup':
+        return `Press E — Pick up ${entry.name}`;
+      case 'door':
+        return getDoorContextHint(entry.doorData, this.registry);
+      case 'talk':
+        return `Press E to talk to ${entry.name}`;
+      default:
+        return `Press E to ${entry.type} ${entry.name}`;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // World collectibles
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Evaluate the daily collectible manifest and place sprites for uncollected items.
+   * Uses WORLD_COLLECTIBLES from the registry if set (allows Task 028 override),
+   * otherwise falls back to DEFAULT_COLLECTIBLE_MANIFEST.
+   */
+  _spawnCollectibles() {
+    const manifest     = this.registry.get(WORLD_COLLECTIBLES) ?? DEFAULT_COLLECTIBLE_MANIFEST;
+    const collectedIds = getCollectedItems(this.registry);
+    const active       = evaluateManifest(manifest, collectedIds);
+
+    for (const def of active) {
+      // Draw a simple golden circle as placeholder collectible sprite.
+      let sprite = null;
+      try {
+        const texKey = `_collectible_${def.id}`;
+        if (!this.textures?.exists(texKey)) {
+          const gfx = this.make?.graphics({ x: 0, y: 0, add: false });
+          if (gfx) {
+            gfx.fillStyle(0xffdd44, 1);
+            gfx.fillCircle(8, 8, 8);
+            gfx.generateTexture(texKey, 16, 16);
+            gfx.destroy();
+          }
+        }
+        sprite = this.add.sprite(def.x, def.y, texKey);
+      } catch {
+        // If sprite creation fails (e.g. in tests), continue without sprite.
+      }
+
+      const itemData = getItemData(def.itemId);
+      const entry = {
+        name: itemData?.name ?? def.itemId,
+        type: 'pickup',
+        x: def.x,
+        y: def.y,
+        sprite,
+        indicator: null,
+        collectibleDef: def,
+        callback: (e) => this._handlePickup(e),
+      };
+      this._interactables.push(entry);
+    }
+  }
+
+  /**
+   * Handle a collectible pickup: animate sprite, add item, show toast if needed.
+   *
+   * @param {object} entry - The interactable entry for this collectible.
+   */
+  _handlePickup(entry) {
+    const { collectibleDef, sprite } = entry;
+
+    const result = collectItem(this.registry, collectibleDef);
+    if (!result.success) return;
+
+    // Remove from interactables immediately so double-pickup is impossible.
+    this._interactables = this._interactables.filter(e => e !== entry);
+    if (this._nearestInteractable === entry) {
+      this._nearestInteractable = null;
+      this.registry.set(CONTEXT_HINT, '');
+    }
+
+    // Grant XP and log it (collectItem emits xp:grant but doesn't call grantXP).
+    if (result.xpGained > 0) {
+      try {
+        const itemData = getItemData(collectibleDef.itemId);
+        const source   = collectibleDef.xpSource ?? `Picked up ${itemData?.name ?? collectibleDef.itemId}`;
+        grantXP(this.registry, result.xpGained, source, 'Exploration');
+      } catch { /* non-critical */ }
+    }
+
+    // Animate sprite float-up + fade-out, then destroy.
+    if (sprite) {
+      try {
+        if (this.tweens) {
+          this.tweens.add({
+            targets: sprite,
+            y: sprite.y - 24,
+            alpha: 0,
+            duration: 500,
+            onComplete: () => sprite.destroy(),
+          });
+        } else {
+          sprite.destroy();
+        }
+      } catch {
+        sprite.destroy?.();
+      }
+    }
+
+    // Play category-specific pickup sound.
+    try {
+      const itemData = getItemData(collectibleDef.itemId);
+      const soundKey = getPickupSound(itemData);
+      this.sound?.play?.(soundKey, { volume: 0.7 });
+    } catch { /* Audio not critical */ }
+
+    // Show first-pickup tooltip notification.
+    if (result.firstPickup && collectibleDef.tooltip) {
+      try {
+        this.events.emit('notification', {
+          message: collectibleDef.tooltip,
+          duration: 4000,
+        });
+      } catch { /* UI not critical */ }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Building doors
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Place door interactables for each door in DEFAULT_DOORS (or a registry override).
+   * Each door gets a coloured frame drawn with Phaser Graphics that pulses green
+   * when open and glows amber when closed, visible within 2× INTERACT_RANGE.
+   */
+  _spawnDoors() {
+    for (const door of DEFAULT_DOORS) {
+      // Create a Graphics object for the door frame indicator.
+      let doorFrame = null;
+      try {
+        doorFrame = this.add.graphics();
+        if (doorFrame?.setAlpha) doorFrame.setAlpha(0);
+      } catch { /* non-critical */ }
+
+      const entry = {
+        name: door.label,
+        type: 'door',
+        x: door.x,
+        y: door.y,
+        sprite: null,
+        indicator: null,
+        doorFrame,
+        doorData: door,
+        callback: (e) => this._handleDoorEntry(e.doorData),
+      };
+      this._interactables.push(entry);
+    }
+  }
+
+  /**
+   * Update door frame visibility and colour based on player proximity.
+   * Frames become visible at 2× INTERACT_RANGE (128 px); colour reflects open state.
+   *
+   * @param {number} px - Player world x.
+   * @param {number} py - Player world y.
+   */
+  _updateDoorFrames(px, py) {
+    const DOOR_VISUAL_RANGE = INTERACT_RANGE * 2;
+
+    for (const entry of this._interactables) {
+      if (entry.type !== 'door' || !entry.doorFrame) continue;
+
+      const dx   = entry.x - px;
+      const dy   = entry.y - py;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist >= DOOR_VISUAL_RANGE) {
+        try { entry.doorFrame.setAlpha(0); } catch { /* non-critical */ }
+        continue;
+      }
+
+      try {
+        const open  = isDoorOpen(entry.doorData, this.registry);
+        const color = open ? 0x44ff44 : 0xffaa00;
+
+        entry.doorFrame.clear();
+        entry.doorFrame.lineStyle(3, color, 1);
+        entry.doorFrame.strokeRect(entry.x - 12, entry.y - 20, 24, 20);
+        entry.doorFrame.setAlpha(0.8);
+      } catch { /* non-critical */ }
+    }
+  }
+
+  /**
+   * Launch the target scene for a door entry.
+   *
+   * @param {object} door - Door definition.
+   */
+  _handleDoorEntry(door) {
+    if (!isDoorOpen(door, this.registry)) return;
+
+    try {
+      this.sound?.play?.('sfx_door_open', { volume: 0.8 });
+    } catch { /* non-critical */ }
+
+    this.scene.launch(door.targetScene, door.targetData);
+
+    // Restore input when the launched scene closes.
+    this.scene.get(door.targetScene)?.events?.once('shutdown', () => {
+      try {
+        this.sound?.play?.('sfx_door_close', { volume: 0.6 });
+      } catch { /* non-critical */ }
+      this._input?.unblockInput?.();
+    });
+
+    this._input?.blockInput?.();
   }
 
   /**
@@ -743,13 +990,13 @@ export class GameScene extends BaseScene {
 
   /**
    * Spawn the three starter NPCs at fixed world positions.
-   * On Day 1, Lars spawns at the apartment building entrance instead of his
-   * default position, using the Day 1 tutorial dialogue.
+   * On Day 1, Lars spawns at the apartment building entrance with the
+   * Day 1 tutorial dialogue.
    */
   _spawnNPCs() {
     const isDay1 = this._isDay1();
 
-    // Lars — Day 1: at apartment building entrance (default spawn area).
+    // Lars — Day 1: apartment building entrance.
     //        Day 2+: near Super Brugsen (Block B, north side near road).
     this.addInteractable({
       name: 'Lars',
@@ -757,7 +1004,7 @@ export class GameScene extends BaseScene {
       x: isDay1 ? DEFAULT_SPAWN_X + 80 : 558,
       y: isDay1 ? DEFAULT_SPAWN_Y - 40 : 295,
       texture: SPRITE_NPC_LARS,
-      callback: () => this._startDialogue('lars', isDay1 ? 'lars_day1_tutorial' : 'lars_welcome'),
+      callback: () => this._startDialogue('lars', 'lars_day1_tutorial'),
     });
 
     // Anna — in Nørreport Torv central square near the fountain
@@ -782,7 +1029,7 @@ export class GameScene extends BaseScene {
   }
 
   // ---------------------------------------------------------------------------
-  // Day 1 authored world elements
+  // Day 1 world setup
   // ---------------------------------------------------------------------------
 
   /**
@@ -799,112 +1046,67 @@ export class GameScene extends BaseScene {
   }
 
   /**
-   * Place Day 1 authored world elements: pant bottle, Netto door, and ambient
-   * static props (bicycle, notice board).  Called only when _isDay1() is true.
+   * Place Day 1 authored world elements: apartment door and ambient static props
+   * (Kasper's bicycle, community notice board).
+   *
+   * The pant bottle is handled via WORLD_COLLECTIBLES override (set before
+   * _spawnCollectibles() is called) — no manual placement needed here.
+   * The Netto door is already in DEFAULT_DOORS and open on Day 1 morning.
    */
   _spawnDay1World() {
-    // ── Pant bottle collectible ───────────────────────────────────────────────
-    // Placed on the pavement halfway between the apartment and Netto.
-    this._pantBottleEntry = this.addInteractable({
-      name:    'Pant bottle',
-      type:    'pickup',
-      x:       460,
-      y:       310,
-      texture: SPRITE_PLACEHOLDER_ITEM,
-      callback: (entry) => this._collectPantBottle(entry),
-    });
-
-    // ── Netto door ────────────────────────────────────────────────────────────
-    // Always open on Day 1 (bypass hour restriction).
+    // ── Apartment door (context-sensitive Day 1 behaviour) ────────────────────
     this.addInteractable({
-      name:     'Netto',
-      type:     'enter',
-      x:        540,
-      y:        120,
-      texture:  SPRITE_PLACEHOLDER_DOOR,
-      callback: () => this._enterShop('netto'),
-    });
-
-    // ── Apartment door ────────────────────────────────────────────────────────
-    this._apartmentDoorEntry = this.addInteractable({
       name:     'Apartment',
       type:     'enter',
       x:        DEFAULT_SPAWN_X,
       y:        DEFAULT_SPAWN_Y + 40,
-      texture:  SPRITE_PLACEHOLDER_DOOR,
+      sprite:   null,
+      indicator: null,
       callback: () => this._onApartmentDoor(),
     });
 
     // ── Ambient props (static, non-interactable) ──────────────────────────────
-    // Kasper's bicycle parked near apartment — rendered as a text label when
-    // sprite assets are unavailable.
+    // Kasper's bicycle parked near apartment.
     if (this.add?.text) {
-      this.add.text(360, 340, '🚲', { fontSize: '22px' }).setDepth(1);
-      this.add.text(610, 135, '📋 Nørrebro Language Exchange — Tuesdays', {
-        fontSize: '11px', color: '#ffffff', backgroundColor: '#334455',
+      this.add.text(DEFAULT_SPAWN_X - 40, DEFAULT_SPAWN_Y + 60, '🚲', {
+        fontSize: '22px',
+      }).setDepth(1);
+      // Community notice board near Netto route.
+      this.add.text(580, 280, '📋 Nørrebro Language Exchange — Tuesdays', {
+        fontSize: '11px',
+        color: '#ffffff',
+        backgroundColor: '#334455',
+        padding: { x: 4, y: 2 },
       }).setDepth(1);
     }
   }
 
   /**
-   * Handle pant bottle pickup: award XP, add to inventory, remove interactable.
-   *
-   * @param {object} entry - The interactable entry for the pant bottle.
-   */
-  _collectPantBottle(entry) {
-    try {
-      grantXP(this.registry, 2, 'Picked up pant bottle', 'Exploration');
-      // Increment pant bottle count and add to inventory
-      const current = this.registry.get(PANT_BOTTLES) ?? 0;
-      this.registry.set(PANT_BOTTLES, current + 1);
-      addItem(this.registry, 'pant_bottle', 1);
-    } catch (_) {
-      // Gracefully handle missing inventory system in test environments
-    }
-    // Remove from scene
-    entry.sprite?.destroy();
-    entry.indicator?.destroy();
-    this._interactables = this._interactables.filter(e => e !== entry);
-    if (this._nearestInteractable === entry) {
-      this._nearestInteractable = null;
-      this.registry.set(CONTEXT_HINT, '');
-    }
-  }
-
-  /**
-   * Enter a shop scene with the given shopId.
-   *
-   * @param {string} shopId - Shop identifier (e.g. 'netto').
-   */
-  _enterShop(shopId) {
-    this.scene.start('ShopScene', { shopId });
-  }
-
-  /**
    * Context-sensitive apartment door handler.
    *
-   * Day 1 + grocery mission incomplete → show "nothing to do here" message.
-   * Day 1 + grocery mission complete   → open day-end confirmation.
-   * Day 2+                             → enter apartment interior.
+   * Day 1 + grocery mission incomplete → show "nothing to do here" nudge.
+   * Day 1 + grocery mission complete   → launch Day Summary.
+   * Day 2+                             → open apartment interior.
    */
   _onApartmentDoor() {
     if (!this._isDay1()) {
-      // Day 2+: enter apartment interior
+      // Day 2+: open apartment interior (placeholder: PauseScene).
       this.openOverlay('PauseScene');
       return;
     }
 
     const flags = this.registry.get(GAME_FLAGS) ?? {};
     if (flags['first_grocery_complete']) {
-      // Grocery complete — allow sleep / day summary
+      // Grocery done — allow sleep / Day Summary.
       this.scene.start('DaySummaryScene', {
-        previousXP:    this.registry.get(PLAYER_XP) ?? 0,
+        previousXP:    this.registry.get(PLAYER_XP)    ?? 0,
         previousLevel: this.registry.get(PLAYER_LEVEL) ?? 1,
       });
     } else {
-      // Grocery not complete — show gentle nudge
-      this.registry.set(CONTEXT_HINT, 'Nothing to do here yet. Lars said something about groceries…');
-      this.events.emit('interactionhint', 'Nothing to do here yet. Lars said something about groceries…');
+      // Grocery not done — gentle nudge, do not end the day.
+      const nudge = 'Nothing to do here yet. Lars said something about groceries…';
+      this.registry.set(CONTEXT_HINT, nudge);
+      this.events.emit('interactionhint', nudge);
     }
   }
 
@@ -932,14 +1134,14 @@ export class GameScene extends BaseScene {
 
   /**
    * Initialise day-cycle tracking and apply the first day's weather.
-   * On Day 1 the weather is fixed to "Cloudy" (overcast, not punishing).
+   * On Day 1, weather is fixed to Cloudy (overcast but not punishing).
    * Wrapped in try/catch so a missing import never breaks the scene.
    */
   _initGameSystems() {
     try {
       initDayCycle(this.registry);
       if (this._isDay1()) {
-        // Day 1 special rule: fixed overcast weather
+        // Day 1 special rule: fixed overcast weather (not random).
         this.registry.set(WEATHER, WEATHER_CLOUDY);
       } else {
         const season = this.registry.get(SEASON) || 'spring';
