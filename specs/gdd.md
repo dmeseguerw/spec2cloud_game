@@ -9,12 +9,14 @@
 ## Table of Contents
 1. [Game Overview](#game-overview)
 2. [Player Experience](#player-experience)
-3. [Game Mechanics](#game-mechanics)
-4. [Progression Systems](#progression-systems)
-5. [Content & Scope](#content--scope)
-6. [User Interface & Controls](#user-interface--controls)
-7. [Art & Audio Direction](#art--audio-direction)
-8. [Success Metrics](#success-metrics)
+3. [Tutorial & First Day Narrative](#tutorial--first-day-narrative)
+4. [Game Mechanics](#game-mechanics)
+5. [Progression Systems](#progression-systems)
+6. [Content & Scope](#content--scope)
+7. [User Interface & Controls](#user-interface--controls)
+8. [Art & Audio Direction](#art--audio-direction)
+9. [Success Metrics](#success-metrics)
+10. [Monetization & Distribution](#monetization--distribution)
 
 ---
 
@@ -145,7 +147,96 @@
 
 ---
 
-## 3. Game Mechanics
+## 3. Tutorial & First Day Narrative
+
+> **Design Intent:** Players should never wonder "what do I do?" — especially in the first five minutes. Every system in the game is introduced through a seamless narrative chain on Day 1. The player *feels* like they discovered the systems themselves, guided by Lars rather than by a pop-up checklist.
+
+### The Narrative Hook
+
+The game begins just after the player's character has arrived in Copenhagen. They step inside their small furnished apartment in Nørrebro — jet-lagged, hungry, and slightly overwhelmed. Lars, the helpful neighbour, knocks on the door.
+
+This opening scene accomplishes several things at once:
+- It establishes **why the player must do something right now** (they haven't eaten since the plane)
+- It introduces the **first NPC relationship** (Lars) with warmth and no pressure
+- It naturally chains into the **first concrete objective** (go buy food)
+- It teaches the player that **NPCs give tasks** — this is how the game communicates goals
+
+Lars does not lecture the player about game mechanics. He simply hands over a scrap of paper — a short grocery list — and says the nearest Netto is just down the road. This single, tangible prop (the grocery list) becomes the player's first tracked objective.
+
+---
+
+### Day 1 Tutorial Chain
+
+Day 1 is a fully authored experience. Each step introduces exactly one new system. The player is never asked to use two unfamiliar systems simultaneously.
+
+**Step 1 — Wake up & talk to Lars**
+*Systems introduced: NPC interaction, dialogue choices, XP feedback*
+Lars knocks and welcomes the player. The conversation ends with him handing over a grocery list. The Objectives Panel (bottom of screen) updates: **"Buy groceries from Netto"**. Lars also mentions that a bottle of vitamin D tablets would be wise to pick up. This quietly foreshadows the vitamin D mechanic without making it mandatory on Day 1.
+
+**Step 2 — Walk to the shop**
+*Systems introduced: world navigation, interaction indicators, the "E to enter" building mechanic*
+The player walks through the neighbourhood toward Netto. A glowing door indicator appears on the shop entrance. A context hint at the bottom of the screen reads "Press E to enter Netto". This is the first time the player enters a building, teaching them that shops are **entered through doors**, not merely by talking to a NPC in the world.
+
+During the walk, one optional pant bottle (an aluminium can) sits on the pavement. A subtle sparkle effect draws attention to it. Pressing E picks it up. A small tooltip explains: *"Pant bottle — return at any shop for 1-3 DKK"*. This teaches world-collectible items without interrupting the main task.
+
+**Step 3 — Shop at Netto**
+*Systems introduced: shop UI, browsing items, checking wallet balance, completing a purchase*
+Inside the shop, the view shifts to the shop inventory screen. Mette greets the player. The grocery list items (Rugbrød, milk, pasta) are highlighted in the item list so the player can see exactly what to buy. After selecting items, the player sees a cart total in DKK. They confirm the purchase — the items move into inventory and money is deducted. The Objectives Panel updates: **"Return home and eat something"**.
+
+If the player has a pant bottle, an optional "Return pant bottles" button appears at the shop counter for a small DKK reward — teaching the return mechanic at the gentlest possible moment.
+
+**Step 4 — Open the inventory and eat**
+*Systems introduced: inventory screen, using/consuming items, health feedback*
+The player presses Tab to open inventory. The Rugbrød is visible with a "Use" button. Pressing it plays a brief eating animation and the health indicator on the HUD bumps slightly. A small "+5 XP — You ate a proper Danish meal!" notification floats up. This is the player's **first XP reward from an inventory action**.
+
+**Step 5 — End the day**
+*Systems introduced: day-end trigger, the Day Summary screen, XP gain/loss recap*
+Back at the apartment, Lars is visible outside and says "Good first day! Get some rest." Walking to the apartment door and pressing E triggers the day-end prompt: *"Go to sleep and end the day?"* Confirming fades to the Day Summary screen. The player sees their XP breakdown:
+- Talked to Lars: +10 XP
+- Completed grocery run: +15 XP
+- Ate a meal: +5 XP
+- Picked up pant bottle: +2 XP
+- **Day 1 Total: +32 XP**
+
+A brief preview of Day 2 shows one new task: "Lars mentioned the language school has a free introductory class." The loop is established.
+
+---
+
+### Tutorial Design Principles
+
+**Principle 1 — Every mechanic is introduced by a character, not a tooltip**
+Lars mentions vitamin D. Mette highlights items on the grocery list. The Day Summary explains XP categories. Mechanics feel like organic advice, not UI pop-ups.
+
+**Principle 2 — Objectives are always visible but never intrusive**
+The Objectives Panel at the bottom-center of the HUD always shows the current active task. It's subtle enough to ignore if the player wants to explore, but always there when the player needs direction. See the [Quest & Objectives System FDD](features/quest-objectives-system.md).
+
+**Principle 3 — Failure on Day 1 is impossible**
+Lars has stocked the player's wallet with enough starting money to complete the grocery run. The shop does not close on Day 1. The day does not end automatically until the player chooses to sleep. There is no way to run out of time or money on the first day — the point is to teach, not challenge.
+
+**Principle 4 — Optional discovery is everywhere**
+The pant bottle on the street. A noticed community notice board near Netto. A colourful bike parked outside with a Kasper figure next to it (not interactive yet on Day 1, but visible — planting familiarity). The world is richer than the task requires, encouraging exploration from the very first session.
+
+**Principle 5 — Day 1 ends on a clear win**
+The Day Summary is designed to feel like an accomplishment, not a report card. The net XP is positive. Lars's closing dialogue says: *"That was a good first step. Tomorrow we can explore a bit more."* The player goes to bed feeling progress.
+
+---
+
+### How Players Know What To Do Next (Every Day)
+
+After Day 1, the game shifts from scripted to systemic — but the player is never without direction. Every day, the Objectives Panel is populated by two layers of tasks:
+
+1. **Story Missions** — Pushed by NPCs through dialogue. When Lars mentions the language school at the end of Day 1, that plants a Story Mission for Day 2. These chain through the Chapter narrative (see Section 6 — Content & Scope).
+
+2. **Daily Maintenance Tasks** — Generated by the day cycle based on player state. If food supply is empty: "You're out of food — visit a shop." If a bill is due: "Rent is due in 2 days." If health is low: "You look tired — consider resting or eating." These always exist and create session-to-session continuity.
+
+The player is never lost because **the game always knows their state** and surfaces the most relevant next task.
+
+> 📎 See [First Day Onboarding FDD](features/first-day-onboarding.md) for the full detailed design of the Day 1 experience.
+> 📎 See [Quest & Objectives System FDD](features/quest-objectives-system.md) for how tasks are tracked, displayed, and chained.
+
+---
+
+## 4. Game Mechanics
 
 ### Player Verbs (Core Actions)
 
@@ -157,7 +248,9 @@
 
 **Interaction Verbs:**
 - **Talk** - Initiate conversations with NPCs
-- **Buy** - Purchase items (groceries, necessities)
+- **Pick Up** - Collect world-spawned items (pant bottles, dropped wallets, notes, seasonal finds)
+- **Enter** - Walk through a building door (E key) to access shop or location interior
+- **Buy** - Purchase items from a shop's browsable inventory
 - **Pay** - Handle bills, taxes, fines
 - **Submit** - Complete bureaucratic tasks
 - **Help** - Assist other characters
@@ -346,7 +439,7 @@ Players don't see these as numbers, but they affect gameplay:
 
 ---
 
-## 4. Progression Systems
+## 5. Progression Systems
 
 ### Player Progression
 
@@ -455,7 +548,7 @@ Players improve through practice, not explicit skill trees:
 
 ---
 
-## 5. Content & Scope
+## 6. Content & Scope
 
 ### Game Structure
 
@@ -687,7 +780,7 @@ Players improve through practice, not explicit skill trees:
 
 ---
 
-## 6. User Interface & Controls
+## 7. User Interface & Controls
 
 ### Input Methods
 
@@ -727,9 +820,8 @@ Players improve through practice, not explicit skill trees:
 - Current money (DKK)
 
 **Bottom Center:**
-- Current area/location name
-- Active quest/objective reminder
-- Control hints (context sensitive)
+- **Objectives Panel** — always-visible strip showing the player's current active task (e.g. "Buy groceries from Netto" or "Talk to Lars"). Tapping/clicking expands to show full task list. Turns green with a checkmark animation when a task is completed. Colour-coded: gold for Story Missions, blue for Daily Maintenance tasks. See [Quest & Objectives System FDD](features/quest-objectives-system.md).
+- Control hints (context sensitive, appear only near interactables)
 
 **Minimalist Design:**
 - HUD can be collapsed to just icons
@@ -813,7 +905,7 @@ Players improve through practice, not explicit skill trees:
 
 ---
 
-## 7. Art & Audio Direction
+## 8. Art & Audio Direction
 
 ### Visual Style
 
@@ -922,7 +1014,7 @@ Players improve through practice, not explicit skill trees:
 
 ---
 
-## 8. Success Metrics
+## 9. Success Metrics
 
 ### Player Engagement Metrics
 
@@ -985,7 +1077,7 @@ Players improve through practice, not explicit skill trees:
 
 ---
 
-## 9. Monetization & Distribution
+## 10. Monetization & Distribution
 
 ### Business Model
 **Premium (Pay Once)**

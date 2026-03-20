@@ -24,13 +24,15 @@ Money is one of the biggest stressors of expat life, and Denmark is famously exp
 
 ### Player Actions
 1. **Check wallet**: View current DKK balance anytime via HUD or pause menu
-2. **Browse shop**: Enter a store and view available items with prices
-3. **Buy items**: Select and purchase groceries, supplies, or services
-4. **Use items**: Consume food, take vitamin D, apply bike repair kit, etc.
-5. **Return bottles (pant)**: Collect and return bottles/cans for 1-3 DKK each
-6. **Pay bills**: Handle rent, utilities, phone, insurance bills when they arrive
-7. **Check inventory**: View carried items through inventory screen
-8. **Check financial overview**: View income, expenses, and upcoming obligations
+2. **Enter a shop**: Walk to a shop entrance and press E to enter the building — the game transitions to the shop interior view
+3. **Browse shop**: View available items in the shop's scrollable inventory list
+4. **Buy items**: Select and purchase groceries, supplies, or services
+5. **Use items**: Consume food, take vitamin D, apply bike repair kit, etc.
+6. **Pick up world items**: Press E near a sparkle-highlighted item on the ground (pant bottles, dropped wallets, seasonal finds) to add it to inventory
+7. **Return bottles (pant)**: Visit the pantalon machine inside a grocery store and return collected pant bottles for DKK
+8. **Pay bills**: Handle rent, utilities, phone, insurance bills when they arrive
+9. **Check inventory**: View carried items through the inventory screen (Tab key)
+10. **Check financial overview**: View income, expenses, and upcoming obligations
 
 ### Visual Design
 
@@ -52,6 +54,23 @@ Money is one of the biggest stressors of expat life, and Denmark is famously exp
 - Items player can't afford are dimmed (not hidden)
 - "Cart" system: select multiple items, then confirm purchase
 - Total cost updates as items are added to cart
+
+**Entering a Shop — Door Interaction:**
+- Every shop in the game world has a **door sprite** with a subtle glowing green frame indicator
+- When the player walks within interaction range, the bottom-of-screen context hint appears: *"Press E — Enter [Shop Name]"*  
+- Pressing E plays a brief door-open sound and transitions to the shop interior view (the shop interface screen)
+- This is the same interaction model used for all buildings — apartments, language school, municipal office — so the behaviour is learned once and applies everywhere
+- Shops can be closed outside their opening hours: the door indicator turns amber and the hint reads *"[Shop Name] is closed — opens at [time]"*
+- Entering a shop costs ~30 in-game minutes (shopping trip time), deducted when the player leaves the shop, not when they enter
+
+**World-Collectible Items — Pickup Design:**
+- Certain items exist as **world sprites** in the game environment — they are physically present in the street or world and do not belong to any shop or NPC
+- Examples: pant bottles (aluminium cans on street corners, beer bottles near benches), dropped wallets (after certain random encounters), seasonal finds (fruit from trees, festival tokens), and planted story items (a note from an NPC)
+- World items are visually distinct from objects that cannot be picked up: they have a **gentle sparkle particle effect** above them and are slightly brighter than background elements
+- Walking within interaction range (64px) displays the context hint: *"Press E — Pick up [Item Name]"*
+- Pressing E plays a small pickup sound (category-specific), adds the item to inventory, and removes the sprite from the world
+- A small floating tooltip appears briefly on pickup explaining what the item is, especially for items with cultural flavour (the first time that item type is collected)
+- World items do not regenerate in the same spot — once collected, they are gone. New items appear in new locations as the day progresses and random encounters trigger
 
 **Bill Notification:**
 - Bills appear as a letter icon in HUD with a due date countdown
@@ -190,11 +209,12 @@ Money is one of the biggest stressors of expat life, and Denmark is famously exp
 This is a uniquely Danish mechanic and a fun way to earn small amounts:
 
 - **How it works**: Certain containers (beer bottles, soda cans, plastic bottles) have a pant symbol
-- **Collection**: Player picks up pant-eligible items throughout the day (from own purchases or found in world)
-- **Return**: Visit a "pantalon" (reverse vending machine) at grocery stores
+- **Collection from shopping**: When the player purchases a beer, soda, or other pant-eligible item from a shop, the empty container remains in inventory after use (marked with a ♻️ icon) — it can then be returned
+- **Collection from world**: Pant bottles also appear as world-collectible sprites in the environment — near park benches, on street corners, outside bars. They are picked up with the standard E-interaction. This teaches the pant mechanic organically (the player sees a can, picks it up, finds it has value)
+- **Return**: Visit the pantalon (reverse vending machine) inside a grocery store — it appears as an interactive machine sprite near the entrance. Press E to open the pant UI, which shows collected pant items and their total return value. Confirm to receive DKK.
 - **Payout**: Small DKK per item (1-3 DKK each)
 - **Capacity**: Can carry up to 10 pant items at a time
-- **Teaching moment**: Cultural insight about Denmark's 90%+ recycling rate
+- **Teaching moment**: First pant bottle pickup (whether from world or shop) triggers a small cultural tooltip: *"♻️ The pant system — Denmark returns over 90% of eligible bottles. It's practically a national sport."*
 
 | Container Type | Pant Value (DKK) |
 |---------------|-----------------|
