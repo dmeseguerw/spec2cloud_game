@@ -20,8 +20,8 @@
 export const DEFAULT_DOORS = [
   {
     id: 'netto_door',
-    x: 540,
-    y: 310,
+    x: 950,
+    y: 300,
     spriteKey: null,
     targetScene: 'ShopScene',
     targetData: { shopId: 'netto' },
@@ -31,8 +31,8 @@ export const DEFAULT_DOORS = [
   },
   {
     id: 'fotex_door',
-    x: 420,
-    y: 420,
+    x: 200,
+    y: 550,
     spriteKey: null,
     targetScene: 'ShopScene',
     targetData: { shopId: 'fotex' },
@@ -42,8 +42,8 @@ export const DEFAULT_DOORS = [
   },
   {
     id: 'matas_door',
-    x: 620,
-    y: 560,
+    x: 1100,
+    y: 200,
     spriteKey: null,
     targetScene: 'ShopScene',
     targetData: { shopId: 'matas' },
@@ -53,8 +53,8 @@ export const DEFAULT_DOORS = [
   },
   {
     id: 'cykelforretning_door',
-    x: 460,
-    y: 730,
+    x: 800,
+    y: 600,
     spriteKey: null,
     targetScene: 'ShopScene',
     targetData: { shopId: 'cykelforretning' },

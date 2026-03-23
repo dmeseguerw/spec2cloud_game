@@ -289,7 +289,7 @@ export class ShopScene extends BaseScene {
 
   /** Return to the previous scene (GameScene). */
   _onBack() {
-    this.scene.start('GameScene');
+    this.scene.stop();
   }
 
   // ---------------------------------------------------------------------------

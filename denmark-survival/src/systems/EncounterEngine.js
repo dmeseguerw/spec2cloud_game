@@ -14,7 +14,7 @@
  * Emits: ENCOUNTER_TRIGGERED, ENCOUNTER_RESOLVED
  */
 
-import { createRequire } from 'node:module';
+import ENCOUNTERS from '../data/encounters.js';
 import * as RK from '../constants/RegistryKeys.js';
 import { ENCOUNTER_TRIGGERED, ENCOUNTER_RESOLVED } from '../constants/Events.js';
 import { grantXP, penalizeXP } from './XPEngine.js';
@@ -22,25 +22,6 @@ import { addItem, removeItem } from './InventoryManager.js';
 import { changeRelationship } from './RelationshipSystem.js';
 import { unlockEntry } from './EncyclopediaManager.js';
 import { incrementSkill } from './SkillSystem.js';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Encounter data loading
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Load encounter definitions from encounters.json.
- * Uses createRequire for Node/Vitest compatibility.
- */
-function _loadEncounters() {
-  try {
-    const require = createRequire(import.meta.url);
-    return require('../data/encounters.json');
-  } catch {
-    return [];
-  }
-}
-
-const ENCOUNTERS = _loadEncounters();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants

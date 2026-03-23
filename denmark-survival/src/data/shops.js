@@ -1,0 +1,102 @@
+/**
+ * src/data/shops.js
+ * Shop data exported as ES6 module for browser compatibility.
+ * Converted from shops.json to avoid Node.js-specific require().
+ */
+
+export default [
+  {
+    "id": "netto",
+    "name": "Netto",
+    "description": "A budget Danish supermarket chain. Basic groceries at low prices.",
+    "location": "Nørrebro",
+    "type": "grocery",
+    "icon": "🛒",
+    "openHours": {
+      "weekday": { "open": 7, "close": 22 },
+      "weekend": { "open": 8, "close": 20 }
+    },
+    "items": [
+      { "itemId": "rugbrod",      "price": 22 },
+      { "itemId": "pasta",        "price": 13 },
+      { "itemId": "milk",         "price": 10 },
+      { "itemId": "vegetables",   "price": 18 },
+      { "itemId": "frozen_meal",  "price": 32 },
+      { "itemId": "beer",         "price": 14 },
+      { "itemId": "coffee",       "price": 7 }
+    ]
+  },
+  {
+    "id": "fotex",
+    "name": "Føtex",
+    "description": "A mid-range Danish supermarket with a wide selection.",
+    "location": "Vesterbro",
+    "type": "grocery",
+    "icon": "🏪",
+    "openHours": {
+      "weekday": { "open": 7, "close": 22 },
+      "weekend": { "open": 8, "close": 20 }
+    },
+    "items": [
+      { "itemId": "rugbrod",      "price": 25 },
+      { "itemId": "smorrebrod",   "price": 40 },
+      { "itemId": "pasta",        "price": 15 },
+      { "itemId": "milk",         "price": 12 },
+      { "itemId": "vegetables",   "price": 20 },
+      { "itemId": "frozen_meal",  "price": 35 },
+      { "itemId": "kanelsnegl",   "price": 18 },
+      { "itemId": "beer",         "price": 15 },
+      { "itemId": "energy_drink", "price": 20 },
+      { "itemId": "coffee",       "price": 8 }
+    ]
+  },
+  {
+    "id": "matas",
+    "name": "Matas",
+    "description": "A Danish pharmacy and health store.",
+    "location": "City Centre",
+    "type": "pharmacy",
+    "icon": "💊",
+    "openHours": {
+      "weekday": { "open": 9, "close": 18 },
+      "weekend": { "open": 10, "close": 16 }
+    },
+    "items": [
+      { "itemId": "vitamin_d",      "price": 80 },
+      { "itemId": "cold_medicine",  "price": 45 },
+      { "itemId": "energy_drink",   "price": 22 }
+    ]
+  },
+  {
+    "id": "cykelforretning",
+    "name": "Cykelforretningen",
+    "description": "A specialist bike shop with repairs and accessories.",
+    "location": "Frederiksberg",
+    "type": "bike_shop",
+    "icon": "🚲",
+    "openHours": {
+      "weekday": { "open": 9, "close": 18 },
+      "weekend": { "open": 10, "close": 15 }
+    },
+    "items": [
+      { "itemId": "bike_repair_kit",  "price": 120 },
+      { "itemId": "bike_lights",      "price": 85 },
+      { "itemId": "bike_lock",        "price": 150 }
+    ]
+  },
+  {
+    "id": "rejsekort_shop",
+    "name": "DSB Rejsekort Shop",
+    "description": "Buy and top-up your Rejsekort travel card here.",
+    "location": "Nørreport Station",
+    "type": "transport_shop",
+    "icon": "🎫",
+    "openHours": {
+      "weekday": { "open": 7, "close": 20 },
+      "weekend": { "open": 8, "close": 18 }
+    },
+    "items": [
+      { "itemId": "rejsekort",  "price": 80 }
+    ]
+  }
+];

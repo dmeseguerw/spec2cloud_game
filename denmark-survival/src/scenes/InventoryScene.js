@@ -156,6 +156,12 @@ export class InventoryScene extends BaseScene {
         color:      '#cccccc',
       }).setOrigin(0.5).setDepth(2);
 
+      // Ensure label was created successfully
+      if (!label) {
+        console.warn(`Failed to create label for category ${cat.key}`);
+        return;
+      }
+
       bg.on('pointerup', () => this._selectCategory(cat.key));
       bg.on('pointerover', () => {
         if (cat.key !== this._activeCategory) bg.setFillStyle(0x253545, 1);
@@ -181,6 +187,7 @@ export class InventoryScene extends BaseScene {
 
   _updateTabHighlight() {
     for (const tab of this._tabs) {
+      if (!tab || !tab.bg || !tab.label) continue;  // Safety check
       const active = tab.key === this._activeCategory;
       tab.bg.setFillStyle(active ? 0x2a4a6a : 0x1a2a3a, 1);
       tab.label.setColor(active ? '#e8d5b7' : '#cccccc');

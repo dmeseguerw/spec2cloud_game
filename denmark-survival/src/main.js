@@ -32,6 +32,7 @@ import { GameScene }              from './scenes/GameScene.js';
 import { UIScene }                from './scenes/UIScene.js';
 import { DialogueScene }          from './scenes/DialogueScene.js';
 import { InventoryScene }         from './scenes/InventoryScene.js';
+import { ShopScene }              from './scenes/ShopScene.js';
 import { DaySummaryScene }        from './scenes/DaySummaryScene.js';
 import { SettingsScene }          from './scenes/SettingsScene.js';
 import { PauseScene }             from './scenes/PauseScene.js';
@@ -88,6 +89,7 @@ const phaserConfig = {
     UIScene,
     DialogueScene,
     InventoryScene,
+    ShopScene,
     DaySummaryScene,
     SettingsScene,
     PauseScene,

@@ -3,7 +3,7 @@
  * Handles shopping at in-game stores: browsing, cart management, checkout,
  * sale generation, and store hours enforcement.
  *
- * Shop data is loaded from src/data/shops.json.
+ * Shop data is loaded from src/data/shops.js.
  * Cart state is stored in the registry under SHOP_CART.
  * Sale state is stored in the registry under SHOP_SALES.
  *
@@ -19,7 +19,7 @@
  * Emits: SHOP_PURCHASE, MONEY_CHANGED, ITEM_ADDED
  */
 
-import { createRequire } from 'node:module';
+import SHOPS from '../data/shops.js';
 import * as RK from '../constants/RegistryKeys.js';
 import {
   SHOP_PURCHASE,
@@ -31,16 +31,6 @@ import { addItem } from './InventoryManager.js';
 // Shop data loading
 // ─────────────────────────────────────────────────────────────────────────────
 
-function _loadShopData() {
-  try {
-    const require = createRequire(import.meta.url);
-    return require('../data/shops.json');
-  } catch {
-    return [];
-  }
-}
-
-const SHOPS = _loadShopData();
 const SHOP_MAP = new Map(SHOPS.map(s => [s.id, s]));
 
 // ─────────────────────────────────────────────────────────────────────────────

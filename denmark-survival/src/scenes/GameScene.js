@@ -140,9 +140,12 @@ export class GameScene extends BaseScene {
     // ── Building doors ────────────────────────────────────────────────────────
     this._spawnDoors();
 
-    // ── Day 1 authored world elements (apartment door + ambient props) ─────────
+    // ── Apartment door (available on all days) ───────────────────────────────
+    this._spawnApartmentDoor();
+
+    // ── Day 1 authored world elements (ambient props) ─────────────────────────
     if (this._isDay1()) {
-      this._spawnDay1World();
+      this._spawnDay1Ambience();
     }
 
     // ── InputManager ─────────────────────────────────────────────────────────
@@ -605,10 +608,22 @@ export class GameScene extends BaseScene {
     if (nearest !== this._nearestInteractable) {
       if (this._nearestInteractable?.indicator) {
         this._nearestInteractable.indicator.setVisible(false);
+        this._nearestInteractable.indicator.setScale(1); // Reset scale
       }
       this._nearestInteractable = nearest;
       if (nearest?.indicator) {
         nearest.indicator.setVisible(true);
+        // Add pulse animation to make it clear this is the active target
+        if (this.tweens) {
+          this.tweens.add({
+            targets: nearest.indicator,
+            scale: 1.2,
+            duration: 400,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+          });
+        }
       }
       // Notify UIScene with context hint text via registry and event.
       const hint = nearest ? this._buildContextHint(nearest) : null;
@@ -699,6 +714,18 @@ export class GameScene extends BaseScene {
         // If sprite creation fails (e.g. in tests), continue without sprite.
       }
 
+      // Create a simple "E" indicator above the collectible
+      let indicator = null;
+      try {
+        indicator = this.add.text(def.x, def.y - 20, 'E', {
+          fontFamily: 'Arial',
+          fontSize: '16px',
+          color: '#ffdd44',
+          stroke: '#000000',
+          strokeThickness: 2,
+        }).setOrigin(0.5).setVisible(false);
+      } catch { /* non-critical */ }
+
       const itemData = getItemData(def.itemId);
       const entry = {
         name: itemData?.name ?? def.itemId,
@@ -706,7 +733,7 @@ export class GameScene extends BaseScene {
         x: def.x,
         y: def.y,
         sprite,
-        indicator: null,
+        indicator,
         collectibleDef: def,
         callback: (e) => this._handlePickup(e),
       };
@@ -796,13 +823,25 @@ export class GameScene extends BaseScene {
         if (doorFrame?.setAlpha) doorFrame.setAlpha(0);
       } catch { /* non-critical */ }
 
+      // Create a visible label above the door so the player can find it.
+      let doorLabel = null;
+      try {
+        doorLabel = this.add.text(door.x, door.y - 24, `🚪 ${door.label}`, {
+          fontFamily: 'Arial',
+          fontSize: '13px',
+          color: '#44ff44',
+          stroke: '#000000',
+          strokeThickness: 3,
+        }).setOrigin(0.5).setDepth(5);
+      } catch { /* non-critical */ }
+
       const entry = {
         name: door.label,
         type: 'door',
         x: door.x,
         y: door.y,
         sprite: null,
-        indicator: null,
+        indicator: doorLabel,
         doorFrame,
         doorData: door,
         callback: (e) => this._handleDoorEntry(e.doorData),
@@ -993,33 +1032,33 @@ export class GameScene extends BaseScene {
   _spawnNPCs() {
     const isDay1 = this._isDay1();
 
-    // Lars — Day 1: apartment building entrance.
+    // Lars — Day 1: far left side to greet player.
     //        Day 2+: near Super Brugsen (Block B, north side near road).
     this.addInteractable({
       name: 'Lars',
       type: 'talk',
-      x: isDay1 ? DEFAULT_SPAWN_X + 80 : 558,
-      y: isDay1 ? DEFAULT_SPAWN_Y - 40 : 295,
+      x: isDay1 ? 150 : 558,
+      y: isDay1 ? 300 : 295,
       texture: SPRITE_NPC_LARS,
       callback: () => this._startDialogue('lars', 'lars_day1_tutorial'),
     });
 
-    // Anna — in Nørreport Torv central square near the fountain
+    // Anna — top center of map
     this.addInteractable({
       name: 'Anna',
       type: 'talk',
-      x: 470,
-      y: 490,
+      x: 640,
+      y: 150,
       texture: SPRITE_NPC_ANNA,
       callback: () => this._startDialogue('anna', 'thomas_first_meeting'),
     });
 
-    // Mette — outside the Cykelbutik bike shop
+    // Mette — bottom right area near bike shop
     this.addInteractable({
       name: 'Mette',
       type: 'talk',
-      x: 455,
-      y: 720,
+      x: 850,
+      y: 580,
       texture: SPRITE_NPC_METTE,
       callback: () => this._startDialogue('mette', 'mette_shopping'),
     });
@@ -1050,25 +1089,45 @@ export class GameScene extends BaseScene {
    * _spawnCollectibles() is called) — no manual placement needed here.
    * The Netto door is already in DEFAULT_DOORS and open on Day 1 morning.
    */
-  _spawnDay1World() {
-    // ── Apartment door (context-sensitive Day 1 behaviour) ────────────────────
-    this.addInteractable({
-      name:     'Apartment',
-      type:     'enter',
-      x:        DEFAULT_SPAWN_X,
-      y:        DEFAULT_SPAWN_Y + 40,
-      sprite:   null,
-      indicator: null,
-      callback: () => this._onApartmentDoor(),
-    });
+  /**
+   * Spawn the apartment door — available on all days, not just Day 1.
+   */
+  _spawnApartmentDoor() {
+    const aptX = 350;
+    const aptY = 480;
 
-    // ── Ambient props (static, non-interactable) ──────────────────────────────
-    // Kasper's bicycle parked near apartment.
+    // Visible label so the player can find the apartment.
+    let aptLabel = null;
+    try {
+      aptLabel = this.add.text(aptX, aptY - 24, '🏠 Apartment', {
+        fontFamily: 'Arial',
+        fontSize: '13px',
+        color: '#aaddff',
+        stroke: '#000000',
+        strokeThickness: 3,
+      }).setOrigin(0.5).setDepth(5);
+    } catch { /* non-critical */ }
+
+    const entry = {
+      name: 'Apartment',
+      type: 'enter',
+      x: aptX,
+      y: aptY,
+      sprite: null,
+      indicator: aptLabel,
+      callback: () => this._onApartmentDoor(),
+    };
+    this._interactables.push(entry);
+  }
+
+  /**
+   * Spawn Day 1 ambient decoration props (non-interactable).
+   */
+  _spawnDay1Ambience() {
     if (this.add?.text) {
       this.add.text(DEFAULT_SPAWN_X - 40, DEFAULT_SPAWN_Y + 60, '🚲', {
         fontSize: '22px',
       }).setDepth(1);
-      // Community notice board near Netto route.
       this.add.text(580, 280, '📋 Nørrebro Language Exchange — Tuesdays', {
         fontSize: '11px',
         color: '#ffffff',
@@ -1086,25 +1145,22 @@ export class GameScene extends BaseScene {
    * Day 2+                             → open apartment interior.
    */
   _onApartmentDoor() {
-    if (!this._isDay1()) {
-      // Day 2+: open apartment interior (placeholder: PauseScene).
-      this.openOverlay('PauseScene');
-      return;
-    }
-
+    const day   = this.registry.get(CURRENT_DAY) ?? 1;
     const flags = this.registry.get(GAME_FLAGS) ?? {};
-    if (flags['first_grocery_complete']) {
-      // Grocery done — allow sleep / Day Summary.
-      this.scene.start('DaySummaryScene', {
-        previousXP:    this.registry.get(PLAYER_XP)    ?? 0,
-        previousLevel: this.registry.get(PLAYER_LEVEL) ?? 1,
-      });
-    } else {
-      // Grocery not done — gentle nudge, do not end the day.
+
+    // Day 1, grocery mission not yet done — gentle nudge, do not end the day.
+    if (day === 1 && !flags['first_grocery_complete']) {
       const nudge = 'Nothing to do here yet. Lars said something about groceries…';
       this.registry.set(CONTEXT_HINT, nudge);
       this.events.emit('interactionhint', nudge);
+      return;
     }
+
+    // Otherwise — end the day and go to the Day Summary screen.
+    this.scene.start('DaySummaryScene', {
+      previousXP:    this.registry.get(PLAYER_XP)    ?? 0,
+      previousLevel: this.registry.get(PLAYER_LEVEL) ?? 1,
+    });
   }
 
   // ---------------------------------------------------------------------------

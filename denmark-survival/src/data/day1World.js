@@ -21,8 +21,8 @@ export const DAY1_COLLECTIBLE_MANIFEST = [
   {
     id:       'day1_pant_bottle',
     itemId:   'pant_aluminium_can',
-    x:        460,
-    y:        310,
+    x:        650,
+    y:        300,
     quantity: 1,
     zone:     'Copenhagen',
     spriteKey: null,
